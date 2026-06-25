@@ -1,0 +1,91 @@
+body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background: #121212; color: #fff; transition: 0.3s; }
+.paste-area { border: 2px dashed #555; padding: 40px; text-align: center; margin-bottom: 20px; cursor: pointer; border-radius: 8px; background: #1e1e1e; }
+#apiKey { width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: none; box-sizing: border-box; }
+
+.controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+button { background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;}
+button:hover { background: #555; }
+
+.btn-warning { background: #b8860b; }
+.btn-warning:hover { background: #daa520; }
+.btn-danger { background: #cc0000; }
+.btn-danger:hover { background: #ff4444; }
+.btn-secondary { background: #2b2b2b; border: 1px solid #555; }
+
+.task-item { background: #2a2a2a; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; align-items: flex-start; gap: 15px; }
+.task-item.completed { opacity: 0.5; }
+.task-item.completed .task-title { text-decoration: line-through; color: #888; }
+
+input[type="checkbox"] { transform: scale(1.5); margin-top: 5px; cursor: pointer; }
+.task-content { flex: 1; }
+.task-title { margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #4CAF50; }
+.task-original { font-size: 12px; color: #888; margin: 0; }
+
+.progress { background: #444; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+/* Làm lại nút Xóa cho rõ ràng */
+.action-group { display: flex; gap: 5px; }
+.delete-btn { background: transparent; border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; }
+.delete-btn:hover { background: #ff4444; color: white; }
+.restore-btn { background: transparent; border: 1px solid #4CAF50; color: #4CAF50; padding: 5px 10px; }
+.restore-btn:hover { background: #4CAF50; color: white; }
+
+.task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.loading { display: none; color: #00ff00; font-weight: bold; margin-bottom: 15px; }
+
+/* Chế độ thu gọn */
+body.mini-mode h2, body.mini-mode #apiKey, body.mini-mode #pasteArea { display: none; }
+body.mini-mode { margin: 0 auto; padding: 10px; }
+
+@keyframes flashHighlight {
+    0% { background-color: #556b2f; }
+    100% { background-color: #2a2a2a; }
+}
+.highlight {
+    animation: flashHighlight 2s ease-out;
+    border-left: 4px solid #4CAF50;
+}
+.edit-btn { background: transparent; border: 1px solid #ffaa00; color: #ffaa00; padding: 5px 10px; }
+.edit-btn:hover { background: #ffaa00; color: white; }
+
+.undo-btn { background: transparent; border: 1px solid #00bcd4; color: #00bcd4; padding: 5px 10px; }
+.undo-btn:hover { background: #00bcd4; color: white; }
+.task-count { font-weight: bold; margin-bottom: 10px; color: #aaa; }
+.drag-handle { cursor: grab; padding-right: 10px; font-size: 18px; color: #888; display: flex; align-items: center; }
+.drag-handle:active { cursor: grabbing; }
+.seq-number { font-weight: bold; color: #555; margin-right: 10px; font-size: 14px; display: flex; align-items: center; }
+.task-item.dragging { opacity: 0.4; border: 1px dashed #4CAF50; background: #222; }
+
+/* Modal */
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); }
+.modal-content { background-color: #1e1e1e; margin: 10% auto; padding: 20px; border: 1px solid #555; width: 90%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+
+/* Nút Redo */
+.redo-btn { background: transparent; border: 1px solid #9c27b0; color: #9c27b0; padding: 5px 10px; }
+.redo-btn:hover { background: #9c27b0; color: white; }
+/* Phân trang */
+.pagination { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; font-weight: bold; }
+.pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Chế độ Lưới (Grid 3 cột) */
+body.grid-layout { max-width: 1400px; } /* Mở rộng chiều rộng web để chứa 3 cột */
+#todoList.grid-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+#todoList.grid-view .task-item { margin-bottom: 0; align-items: flex-start; }
+#todoList.grid-view .action-group { display: none !important; } /* Ẩn các nút Xóa/Sửa */
+#todoList.grid-view .drag-handle { display: none !important; } /* Ẩn nút kéo thả */
+#todoList.grid-view .task-content { width: 100%; margin-top: 5px; }
+/* Phân biệt rõ hơn Grid View */
+#todoList.grid-view {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 10px;
+}
+
+/* Thêm hiệu ứng cho từng item khi ở dạng lưới để dễ nhìn */
+#todoList.grid-view .task-item {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    margin-bottom: 0;
+}
+#todoList.grid-view .task-title { font-size: 14px; } /* Nhỏ lại chút để vừa 3 cột */

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delta Force Quest Translator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>Quest Translator</h2>
+
+    <input type="password" id="apiKey" placeholder="Nhập Gemini API Key vào đây..." onchange="saveApiKey()">
+
+    <div class="paste-area" id="pasteArea">
+        Click vào đây và nhấn <strong>Ctrl + V</strong> để dán ảnh quest
+    </div>
+
+    <div class="controls" id="controls">
+        <button onclick="toggleMiniMode()">👁️ Ẩn/Hiện nhập liệu</button>
+        <button onclick="clearCompleted()" class="btn-warning">🧹 Bỏ task đã xong (<span id="completedCount">0</span>)</button>
+        <button onclick="toggleTrash()" class="btn-secondary">🗑️ Thùng rác (<span id="trashCount">0</span>)</button>
+        <button onclick="toggleViewMode()" class="btn-secondary">🔲 Đổi Giao Diện</button>
+    </div>
+
+    <div id="loading" class="loading">Đang nhờ AI soi ảnh... ⏳</div>
+    <div id="taskCount" class="task-count"></div>
+    <div id="todoList"></div>
+
+    <div id="trashModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #ff4444;">Thùng rác</h3>
+                <div>
+                    <button onclick="emptyTrash()" class="btn-danger">🔥 Xóa sạch</button>
+                    <button onclick="toggleTrash()" class="btn-secondary">❌ Đóng</button>
+                </div>
+            </div>
+            <div id="trashList"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
