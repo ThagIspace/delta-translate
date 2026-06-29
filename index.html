@@ -16,21 +16,28 @@
             Click vào đây và nhấn <strong>Ctrl + V</strong> để dán ảnh quest
         </div>
 
-        <div class="controls" id="controls">
-            <button onclick="toggleMiniMode()" id="btnToggleInput">👁️ Ẩn/Hiện nhập liệu</button>
-            <button onclick="toggleHideCompleted()" id="btnHideCompleted" class="btn-secondary">👻 Đang hiện đã xong</button>
+        <div class="controls-container" id="controls">
+            <!-- Nhóm Hiển thị -->
+            <div class="control-group">
+                <button onclick="toggleViewMode()" id="btnViewMode" class="btn-secondary" title="Giao diện hiển thị">🔲 1 Cột</button>
+                <button onclick="toggleHideCompleted()" id="btnHideCompleted" class="btn-secondary">👻 Hiện đã xong</button>
+                <button onclick="toggleMiniMode()" id="btnToggleInput" class="btn-secondary" title="Ẩn/Hiện nhập liệu">👁️</button>
+            </div>
 
-            <button onclick="addCustomNote()" class="btn-secondary" style="border-color: #ffaa00; color: #ffaa00;">📝 Thêm Ghi Chú</button>
+            <!-- Nhóm Hành động chính -->
+            <div class="control-group">
+                <button onclick="addCustomNote()" class="btn-secondary" style="color: #ffaa00;">📝 Ghi Chú</button>
+                <button onclick="toggleSelectAll()" class="btn-secondary">☑️ Chọn tất cả</button>
+                <button onclick="clearCompleted()" class="btn-warning">🧹 Xóa tick (<span id="completedCount">0</span>)</button>
+            </div>
 
-            <button onclick="toggleSelectAll()" class="btn-secondary">☑️ Đánh dấu tất cả</button>
-            <button onclick="clearCompleted()" class="btn-warning">🧹 Xóa mục đã tick (<span id="completedCount">0</span>)</button>
-
-            <button onclick="toggleTrash()" class="btn-secondary">🗑️ Thùng rác (<span id="trashCount">0</span>)</button>
-            <button onclick="toggleViewMode()" id="btnViewMode" class="btn-secondary">🔲 Giao diện: 1 Cột</button>
-
-            <button onclick="exportData()" class="btn-secondary" style="background: #0056b3; border-color: #004085;">💾 Lưu (Export)</button>
-            <button onclick="document.getElementById('importFile').click()" class="btn-secondary" style="background: #28a745; border-color: #1e7e34;">📂 Mở (Import)</button>
-            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            <!-- Nhóm Dữ liệu -->
+            <div class="control-group">
+                <button onclick="toggleTrash()" class="btn-secondary">🗑️ Rác (<span id="trashCount">0</span>)</button>
+                <button onclick="exportData()" class="btn-secondary" style="color: #4da6ff;">💾 Lưu</button>
+                <button onclick="document.getElementById('importFile').click()" class="btn-secondary" style="color: #4CAF50;">📂 Mở</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
         </div>
 
         <div id="loading" class="loading">Đang nhờ AI soi ảnh... ⏳</div>

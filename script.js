@@ -4,8 +4,6 @@ let tasks = JSON.parse(localStorage.getItem('delta_quests')) || [];
 let trash = JSON.parse(localStorage.getItem('delta_quests_trash')) || [];
 let savedApiKey = localStorage.getItem('gemini_api_key') || "";
 
-let currentPage = 1;
-const ITEMS_PER_PAGE = 6;
 // viewMode: 1 (List), 2 (Grid 2 cột), 3 (Grid 3 cột)
 let viewMode = 1;
 let hideCompleted = false;
@@ -71,9 +69,10 @@ async function processImage(base64Data, mimeType) {
                     contents: [{
                         parts: [
                             { text: promptText },
-                            { inline_data: { mime_type: mimeType, data: base64Data } }
+                            { inlineData: { mimeType: mimeType, data: base64Data } }
                         ]
-                    }]
+                    }],
+                    generationConfig: { responseMimeType: "application/json" }
                 })
             });
 
@@ -85,18 +84,16 @@ async function processImage(base64Data, mimeType) {
             }
 
             let resultText = data.candidates[0].content.parts[0].text;
-            const jsonMatch = resultText.match(/\[[\s\S]*\]/);
 
-            if (jsonMatch) {
-                const newQuests = JSON.parse(jsonMatch[0]);
-
+            try {
+                const newQuests = JSON.parse(resultText);
                 if (newQuests.length === 0) {
                     alert("Không tìm thấy nhiệm vụ nào! Có vẻ bạn dán nhầm ảnh.");
                 } else {
                     mergeQuests(newQuests);
                 }
                 break;
-            } else {
+            } catch (parseError) {
                 if (i === MODELS.length - 1) alert("AI không trả về JSON hợp lệ.");
             }
         } catch (error) {
@@ -200,43 +197,31 @@ function renderTasks(highlightIds = []) {
         document.body.classList.remove('grid-layout');
     }
 
-    let tasksToRender = [];
-    let totalPages = 1;
-
-    if (isGrid) {
-        tasksToRender = visibleTasks;
-    } else {
-        totalPages = Math.ceil(visibleTasks.length / ITEMS_PER_PAGE) || 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-
-        const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-        const endIdx = startIdx + ITEMS_PER_PAGE;
-        tasksToRender = visibleTasks.slice(startIdx, endIdx);
-    }
+    // Hiển thị toàn bộ dữ liệu
+    let tasksToRender = visibleTasks;
 
     listDiv.innerHTML = '';
 
     tasksToRender.forEach((task, localIndex) => {
-        const absoluteIndex = isGrid ? localIndex : ((currentPage - 1) * ITEMS_PER_PAGE) + localIndex;
+        const absoluteIndex = localIndex;
 
         const div = document.createElement('div');
         div.className = `task-item ${task.completed ? 'completed' : ''}`;
 
         if (highlightIds.includes(task.id_goc)) div.classList.add('highlight');
 
-        if (!isGrid) {
-            div.setAttribute('draggable', 'true');
-            div.ondragstart = (e) => dragStart(e, task.id);
-            div.ondragover = (e) => dragOver(e);
-            div.ondrop = (e) => drop(e, task.id);
-            div.ondragend = (e) => dragEnd(e);
-        }
+        // Cho phép kéo thả trên mọi giao diện
+        div.setAttribute('draggable', 'true');
+        div.ondragstart = (e) => dragStart(e, task.id);
+        div.ondragover = (e) => dragOver(e);
+        div.ondrop = (e) => drop(e, task.id);
+        div.ondragend = (e) => dragEnd(e);
 
         const hasHistory = task.history && task.history.length > 0;
         const hasRedo = task.redoHistory && task.redoHistory.length > 0;
 
         div.innerHTML = `
-            ${!isGrid ? `<div class="drag-handle" title="Kéo để di chuyển">↕️</div>` : ''}
+            <div class="drag-handle" title="Kéo để di chuyển">↕️</div>
             <div class="seq-number">#${absoluteIndex + 1}</div>
 
             <!-- Chuyển thành 1 checkbox duy nhất -->
@@ -263,22 +248,14 @@ function renderTasks(highlightIds = []) {
         listDiv.appendChild(div);
     });
 
-    if (!isGrid) {
-        renderPagination(totalPages);
-    } else {
-        const pageDiv = document.getElementById('pagination');
-        if (pageDiv) pageDiv.innerHTML = '';
-    }
+    // Dọn dẹp DOM cũ nếu còn sót lại thẻ div phân trang
+    const pageDiv = document.getElementById('pagination');
+    if (pageDiv) pageDiv.innerHTML = '';
 
     if (highlightIds.length > 0) {
         setTimeout(() => {
-            if (!isGrid && currentPage !== 1) {
-                currentPage = 1;
-                saveAndRender(highlightIds);
-            } else {
-                const firstHighlight = document.querySelector('.highlight');
-                if (firstHighlight) firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            const firstHighlight = document.querySelector('.highlight');
+            if (firstHighlight) firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
     }
 }
@@ -287,7 +264,7 @@ function toggleHideCompleted() {
     hideCompleted = !hideCompleted;
     const btn = document.getElementById('btnHideCompleted');
     if(btn) {
-        btn.innerHTML = hideCompleted ? '👻 Đang ẩn đã xong' : '👻 Đang hiện đã xong';
+        btn.innerHTML = hideCompleted ? '👻 Ẩn đã xong' : '👻 Hiện đã xong';
     }
     saveAndRender();
 }
@@ -318,40 +295,13 @@ function clearCompleted() {
     }
 }
 
-function renderPagination(totalPages) {
-    let pageDiv = document.getElementById('pagination');
-    if (!pageDiv) {
-        pageDiv = document.createElement('div');
-        pageDiv.id = 'pagination';
-        pageDiv.className = 'pagination';
-        document.getElementById('todoList').after(pageDiv);
-    }
-
-    let visibleTasks = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
-    if (visibleTasks.length <= ITEMS_PER_PAGE) {
-        pageDiv.innerHTML = '';
-        return;
-    }
-
-    pageDiv.innerHTML = `
-        <button onclick="changePage(-1)" class="btn-secondary" ${currentPage === 1 ? 'disabled' : ''}>⬅️ Trước</button>
-        <span>Trang ${currentPage} / ${totalPages}</span>
-        <button onclick="changePage(1)" class="btn-secondary" ${currentPage === totalPages ? 'disabled' : ''}>Sau ➡️</button>
-    `;
-}
-
-function changePage(step) {
-    currentPage += step;
-    saveAndRender();
-}
-
 // Thay đổi View Mode theo 3 chu kì (1, 2, 3)
 function toggleViewMode() {
     viewMode = viewMode === 3 ? 1 : viewMode + 1;
 
     const btn = document.getElementById('btnViewMode');
     if(btn) {
-        btn.innerHTML = `🔲 Giao diện: ${viewMode} Cột`;
+        btn.innerHTML = `🔲 ${viewMode} Cột`;
     }
 
     saveAndRender();
@@ -435,13 +385,17 @@ function drop(e, targetId) {
     e.preventDefault();
     if (!draggedItemId || draggedItemId === targetId) return;
 
-    const fromIndex = tasks.findIndex(t => t.id === draggedItemId);
-    const toIndex = tasks.findIndex(t => t.id === targetId);
+    const fromTask = tasks.find(t => t.id === draggedItemId);
+    const toTask = tasks.find(t => t.id === targetId);
 
-    if (fromIndex !== -1 && toIndex !== -1) {
-        const item = tasks.splice(fromIndex, 1)[0];
-        tasks.splice(toIndex, 0, item);
+    if (fromTask && toTask) {
+        // Đặt item được kéo lên ngay trước item đích bằng cách thao tác trên thuộc tính order
+        fromTask.order = toTask.order - 0.5;
+
+        // Cập nhật lại mảng và chuẩn hóa số nguyên cho order
+        tasks.sort((a, b) => a.order - b.order);
         tasks.forEach((t, i) => t.order = i);
+
         saveAndRender();
     }
 }
