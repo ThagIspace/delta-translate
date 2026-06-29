@@ -1,16 +1,25 @@
 const HARDCODED_API_KEY = "";
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=";
 
 let tasks = JSON.parse(localStorage.getItem('delta_quests')) || [];
 let trash = JSON.parse(localStorage.getItem('delta_quests_trash')) || [];
 let savedApiKey = localStorage.getItem('gemini_api_key') || "";
 
 let currentPage = 1;
-const ITEMS_PER_PAGE = 5;
-let isGridView = false;
+const ITEMS_PER_PAGE = 6;
+// viewMode: 1 (List), 2 (Grid 2 cột), 3 (Grid 3 cột)
+let viewMode = 1;
+let hideCompleted = false;
 
+// Đảm bảo dữ liệu cũ có ID và order
+tasks.forEach((t, i) => {
+    if (!t.id) t.id = 't_' + Date.now() + Math.random().toString(36).substr(2, 9);
+    if (t.order === undefined) t.order = i;
+});
+
+// Tự động ẩn phần nhập liệu nếu đã có Key
 if (savedApiKey) {
     document.getElementById('apiKey').value = savedApiKey;
+    document.body.classList.add('mini-mode');
 }
 
 renderTasks();
@@ -19,6 +28,8 @@ renderTrash();
 function saveApiKey() {
     const key = document.getElementById('apiKey').value;
     localStorage.setItem('gemini_api_key', key);
+    // Tự động ẩn sau khi nhập key mới
+    if(key.trim() !== '') document.body.classList.add('mini-mode');
 }
 
 document.addEventListener('paste', async (e) => {
@@ -45,19 +56,14 @@ async function processImage(base64Data, mimeType) {
     const apiKeys = apiKeyInput.split(',').map(k => k.trim()).filter(k => k);
     document.getElementById('loading').style.display = 'block';
 
-    // Cập nhật prompt: Yêu cầu trả về mảng rỗng [] nếu không tìm thấy quest
     const promptText = `Trích xuất nhiệm vụ game Delta Force. Tìm 'Mục tiêu hành động cụ thể'. Bỏ qua cốt truyện. Trả về MỘT mảng JSON: [{"id_goc": "Chữ Trung", "dich_nghia": "Dịch Việt"}]. NẾU ảnh không chứa nhiệm vụ game hoặc không liên quan, hãy trả về mảng rỗng: []`;
-
     const MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash'];
-
-    let success = false;
 
     for (let i = 0; i < MODELS.length; i++) {
         const currentModel = MODELS[i];
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKeys[0]}`; // Dùng key đầu tiên hoặc có thể lặp key tùy logic của bạn
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKeys[0]}`;
 
         try {
-            console.log(`Đang thử model: ${currentModel}...`);
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -74,10 +80,7 @@ async function processImage(base64Data, mimeType) {
             const data = await response.json();
 
             if (data.error) {
-                console.warn(`Model ${currentModel} lỗi:`, data.error.message);
-                if (i === MODELS.length - 1) {
-                    alert("Tất cả model đều lỗi hoặc quá tải!\nChi tiết: " + data.error.message);
-                }
+                if (i === MODELS.length - 1) alert("Tất cả model đều lỗi hoặc quá tải!\nChi tiết: " + data.error.message);
                 continue;
             }
 
@@ -87,17 +90,13 @@ async function processImage(base64Data, mimeType) {
             if (jsonMatch) {
                 const newQuests = JSON.parse(jsonMatch[0]);
 
-                // Xử lý khi AI trả về mảng rỗng
                 if (newQuests.length === 0) {
                     alert("Không tìm thấy nhiệm vụ nào! Có vẻ bạn dán nhầm ảnh.");
                 } else {
                     mergeQuests(newQuests);
                 }
-
-                success = true;
                 break;
             } else {
-                console.log("Dữ liệu gốc:", resultText);
                 if (i === MODELS.length - 1) alert("AI không trả về JSON hợp lệ.");
             }
         } catch (error) {
@@ -109,21 +108,66 @@ async function processImage(base64Data, mimeType) {
     document.getElementById('loading').style.display = 'none';
 }
 
+// Danh sách màu phân biệt rõ ràng cho các nhóm liên tiếp
+const GROUP_COLORS = [
+    '#FF6B6B', '#4ECDC4', '#9B59B6', '#F1C40F',
+    '#E67E22', '#3498DB', '#1ABC9C', '#E74C3C'
+];
+
 function mergeQuests(newQuests) {
     let highlightIds = [];
+    const isGroup = newQuests.length > 1;
+
+    let maxOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.order || 0)) : 0;
+    let maxGroupId = tasks.length > 0 ? Math.max(...tasks.map(t => t.groupId || 0)) : 0;
+    const newGroupId = isGroup ? maxGroupId + 1 : null;
+
+    // Lấy màu cố định theo ID nhóm để tránh trùng 2 lần liên tiếp
+    const groupColor = isGroup ? GROUP_COLORS[(newGroupId - 1) % GROUP_COLORS.length] : null;
+
     newQuests.forEach(newQ => {
         const existingTaskIndex = tasks.findIndex(t => t.id_goc === newQ.id_goc);
         if (existingTaskIndex !== -1) {
             tasks[existingTaskIndex].tien_do = newQ.tien_do;
-            tasks[existingTaskIndex].completed = false; // Bỏ tick nếu up lại ảnh
-            // KHÔNG đè dich_nghia để giữ nguyên text bạn đã sửa
+            tasks[existingTaskIndex].completed = false;
+            if (isGroup) {
+                tasks[existingTaskIndex].groupColor = groupColor;
+                tasks[existingTaskIndex].groupId = newGroupId;
+            }
             highlightIds.push(newQ.id_goc);
         } else {
-            tasks.push({ ...newQ, completed: false });
+            maxOrder++;
+            tasks.push({
+                ...newQ,
+                id: 't_' + Date.now() + Math.random().toString(36).substr(2, 9),
+                completed: false,
+                groupColor: groupColor,
+                groupId: newGroupId,
+                order: maxOrder
+            });
             highlightIds.push(newQ.id_goc);
         }
     });
     saveAndRender(highlightIds);
+}
+
+// Thêm Ghi chú thủ công
+function addCustomNote() {
+    const text = prompt("Nhập nội dung ghi chú / quest tùy chỉnh:");
+    if (!text || text.trim() === '') return;
+
+    let maxOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.order || 0)) : 0;
+
+    const newNote = {
+        id_goc: "📝 Ghi chú thủ công",
+        dich_nghia: text.trim(),
+        id: 't_' + Date.now() + Math.random().toString(36).substr(2, 9),
+        completed: false,
+        order: maxOrder + 1
+    };
+
+    tasks.push(newNote);
+    saveAndRender([newNote.id_goc]);
 }
 
 function renderTasks(highlightIds = []) {
@@ -131,50 +175,60 @@ function renderTasks(highlightIds = []) {
     const countDiv = document.getElementById('taskCount');
     const completedCountSpan = document.getElementById('completedCount');
 
-    listDiv.innerHTML = '';
-    if (countDiv) countDiv.innerText = `Tổng số quest hiện có: ${tasks.length}`;
+    // Tự động sắp xếp: Chưa xong lên trên (theo order), Xong xuống dưới
+    tasks.sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return a.order - b.order;
+    });
 
+    listDiv.className = '';
+
+    // Đếm thông số (Chỉ dùng completed)
     let completedCount = tasks.filter(t => t.completed).length;
     if (completedCountSpan) completedCountSpan.innerText = completedCount;
 
-    // Xử lý bật/tắt class giao diện 3 cột
-    if (isGridView) {
-        listDiv.classList.add('grid-view');
+    // Xử lý Ẩn task đã xong
+    let visibleTasks = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
+    if (countDiv) countDiv.innerText = `Đang hiển thị: ${visibleTasks.length} / ${tasks.length} quest`;
+
+    let isGrid = viewMode > 1;
+
+    if (isGrid) {
+        listDiv.classList.add(viewMode === 2 ? 'grid-view-2' : 'grid-view-3');
         document.body.classList.add('grid-layout');
     } else {
-        listDiv.classList.remove('grid-view');
         document.body.classList.remove('grid-layout');
     }
 
-    // Logic lấy dữ liệu theo chế độ
     let tasksToRender = [];
     let totalPages = 1;
 
-    if (isGridView) {
-        tasksToRender = tasks; // Hiện tất cả không phân trang
+    if (isGrid) {
+        tasksToRender = visibleTasks;
     } else {
-        totalPages = Math.ceil(tasks.length / ITEMS_PER_PAGE) || 1;
+        totalPages = Math.ceil(visibleTasks.length / ITEMS_PER_PAGE) || 1;
         if (currentPage > totalPages) currentPage = totalPages;
 
         const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
         const endIdx = startIdx + ITEMS_PER_PAGE;
-        tasksToRender = tasks.slice(startIdx, endIdx);
+        tasksToRender = visibleTasks.slice(startIdx, endIdx);
     }
 
+    listDiv.innerHTML = '';
+
     tasksToRender.forEach((task, localIndex) => {
-        const absoluteIndex = isGridView ? localIndex : ((currentPage - 1) * ITEMS_PER_PAGE) + localIndex;
+        const absoluteIndex = isGrid ? localIndex : ((currentPage - 1) * ITEMS_PER_PAGE) + localIndex;
 
         const div = document.createElement('div');
         div.className = `task-item ${task.completed ? 'completed' : ''}`;
 
         if (highlightIds.includes(task.id_goc)) div.classList.add('highlight');
 
-        // Chỉ cho phép drag thả khi ở dạng danh sách
-        if (!isGridView) {
+        if (!isGrid) {
             div.setAttribute('draggable', 'true');
-            div.ondragstart = (e) => dragStart(e, absoluteIndex);
+            div.ondragstart = (e) => dragStart(e, task.id);
             div.ondragover = (e) => dragOver(e);
-            div.ondrop = (e) => drop(e, absoluteIndex);
+            div.ondrop = (e) => drop(e, task.id);
             div.ondragend = (e) => dragEnd(e);
         }
 
@@ -182,38 +236,43 @@ function renderTasks(highlightIds = []) {
         const hasRedo = task.redoHistory && task.redoHistory.length > 0;
 
         div.innerHTML = `
-            ${!isGridView ? `<div class="drag-handle" title="Kéo để di chuyển">↕️</div>` : ''}
+            ${!isGrid ? `<div class="drag-handle" title="Kéo để di chuyển">↕️</div>` : ''}
             <div class="seq-number">#${absoluteIndex + 1}</div>
-            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${absoluteIndex})">
+
+            <!-- Chuyển thành 1 checkbox duy nhất -->
+            <input type="checkbox" class="complete-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" title="Đánh dấu hoàn thành / Chọn">
+
             <div class="task-content">
-                <p class="task-title">${task.dich_nghia}</p>
+                <p class="task-title">
+                    ${task.groupId ? `<span class="group-badge" style="color: ${task.groupColor}; border-color: ${task.groupColor};" title="Nhóm quest">🔗 Nhóm ${task.groupId}</span>` : ''}
+                    ${task.dich_nghia}
+                </p>
                 <p class="task-original">${task.id_goc}</p>
             </div>
             <div class="task-right action-group">
                 ${(hasHistory || hasRedo) ? `
                 <div style="display: flex; gap: 5px;">
-                    ${hasHistory ? `<button class="undo-btn" onclick="undoEdit(${absoluteIndex})" title="Lùi lại">↩️</button>` : ''}
-                    ${hasRedo ? `<button class="redo-btn" onclick="redoEdit(${absoluteIndex})" title="Tiến tới">↪️</button>` : ''}
+                    ${hasHistory ? `<button class="undo-btn" onclick="undoEdit('${task.id}')" title="Lùi lại">↩️</button>` : ''}
+                    ${hasRedo ? `<button class="redo-btn" onclick="redoEdit('${task.id}')" title="Tiến tới">↪️</button>` : ''}
                 </div>
                 ` : ''}
-                <button class="edit-btn" onclick="editTask(${absoluteIndex})">✏️ Sửa</button>
-                <button class="delete-btn" onclick="moveToTrash(${absoluteIndex})">🗑️ Xóa</button>
+                <button class="edit-btn" onclick="editTask('${task.id}')">✏️ Sửa</button>
+                <button class="delete-btn" onclick="moveToTrash('${task.id}')">🗑️ Xóa</button>
             </div>
         `;
         listDiv.appendChild(div);
     });
 
-    if (!isGridView) {
+    if (!isGrid) {
         renderPagination(totalPages);
     } else {
         const pageDiv = document.getElementById('pagination');
-        if (pageDiv) pageDiv.innerHTML = ''; // Ẩn thanh trang khi ở chế độ 3 cột
+        if (pageDiv) pageDiv.innerHTML = '';
     }
 
-    // Scroll tới quest mới paste
     if (highlightIds.length > 0) {
         setTimeout(() => {
-            if (!isGridView && currentPage !== 1) {
+            if (!isGrid && currentPage !== 1) {
                 currentPage = 1;
                 saveAndRender(highlightIds);
             } else {
@@ -224,7 +283,41 @@ function renderTasks(highlightIds = []) {
     }
 }
 
-// 3 Hàm mới để hỗ trợ
+function toggleHideCompleted() {
+    hideCompleted = !hideCompleted;
+    const btn = document.getElementById('btnHideCompleted');
+    if(btn) {
+        btn.innerHTML = hideCompleted ? '👻 Đang ẩn đã xong' : '👻 Đang hiện đã xong';
+    }
+    saveAndRender();
+}
+
+// Nút chọn tất cả đổi thành Đánh dấu hoàn thành tất cả các mục ĐANG HIỂN THỊ
+function toggleSelectAll() {
+    let visibleTasks = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
+    const allCompleted = visibleTasks.every(t => t.completed);
+    visibleTasks.forEach(t => t.completed = !allCompleted);
+    saveAndRender();
+}
+
+function toggleTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) task.completed = !task.completed;
+    saveAndRender();
+}
+
+function clearCompleted() {
+    const toDeleteCount = tasks.filter(t => t.completed).length;
+    if(toDeleteCount === 0) return alert("Chưa có nhiệm vụ nào được đánh dấu!");
+
+    if(confirm(`Bạn có chắc chắn muốn chuyển ${toDeleteCount} quest đã tick vào thùng rác?`)) {
+        const toDelete = tasks.filter(t => t.completed);
+        trash = trash.concat(toDelete);
+        tasks = tasks.filter(t => !t.completed);
+        saveAndRender();
+    }
+}
+
 function renderPagination(totalPages) {
     let pageDiv = document.getElementById('pagination');
     if (!pageDiv) {
@@ -234,7 +327,8 @@ function renderPagination(totalPages) {
         document.getElementById('todoList').after(pageDiv);
     }
 
-    if (tasks.length <= ITEMS_PER_PAGE) {
+    let visibleTasks = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
+    if (visibleTasks.length <= ITEMS_PER_PAGE) {
         pageDiv.innerHTML = '';
         return;
     }
@@ -251,55 +345,63 @@ function changePage(step) {
     saveAndRender();
 }
 
+// Thay đổi View Mode theo 3 chu kì (1, 2, 3)
 function toggleViewMode() {
-    isGridView = !isGridView;
+    viewMode = viewMode === 3 ? 1 : viewMode + 1;
+
+    const btn = document.getElementById('btnViewMode');
+    if(btn) {
+        btn.innerHTML = `🔲 Giao diện: ${viewMode} Cột`;
+    }
+
     saveAndRender();
 }
 
-function editTask(index) {
-    const currentText = tasks[index].dich_nghia;
+function editTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    const currentText = task.dich_nghia;
     const newText = prompt("Sửa bản dịch:", currentText);
 
     if (newText !== null && newText.trim() !== "" && newText.trim() !== currentText) {
-        if (!tasks[index].history) tasks[index].history = [];
+        if (!task.history) task.history = [];
+        task.history.push(currentText);
+        if (task.history.length > 2) task.history.shift();
 
-        tasks[index].history.push(currentText);
-        if (tasks[index].history.length > 2) tasks[index].history.shift();
-
-        // Khi sửa mới thì xóa lịch sử redo
-        tasks[index].redoHistory = [];
-
-        tasks[index].dich_nghia = newText.trim();
+        task.redoHistory = [];
+        task.dich_nghia = newText.trim();
         saveAndRender();
     }
 }
 
-function undoEdit(index) {
-    if (tasks[index].history && tasks[index].history.length > 0) {
-        if (!tasks[index].redoHistory) tasks[index].redoHistory = [];
-
-        // Đưa text hiện tại vào Redo
-        tasks[index].redoHistory.push(tasks[index].dich_nghia);
-
-        // Lấy text cũ từ Undo ra dùng
-        const previousText = tasks[index].history.pop();
-        tasks[index].dich_nghia = previousText;
-
+function undoEdit(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task && task.history && task.history.length > 0) {
+        if (!task.redoHistory) task.redoHistory = [];
+        task.redoHistory.push(task.dich_nghia);
+        const previousText = task.history.pop();
+        task.dich_nghia = previousText;
         saveAndRender();
     }
 }
 
-function redoEdit(index) {
-    if (tasks[index].redoHistory && tasks[index].redoHistory.length > 0) {
-        if (!tasks[index].history) tasks[index].history = [];
+function redoEdit(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task && task.redoHistory && task.redoHistory.length > 0) {
+        if (!task.history) task.history = [];
+        task.history.push(task.dich_nghia);
+        const nextText = task.redoHistory.pop();
+        task.dich_nghia = nextText;
+        saveAndRender();
+    }
+}
 
-        // Đưa text hiện tại ngược lại vào Undo
-        tasks[index].history.push(tasks[index].dich_nghia);
-
-        // Lấy text từ Redo ra dùng
-        const nextText = tasks[index].redoHistory.pop();
-        tasks[index].dich_nghia = nextText;
-
+function moveToTrash(id) {
+    const index = tasks.findIndex(t => t.id === id);
+    if (index !== -1) {
+        trash.push(tasks[index]);
+        tasks.splice(index, 1);
         saveAndRender();
     }
 }
@@ -309,7 +411,6 @@ function toggleTrash() {
     modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
 }
 
-// Bấm ra ngoài modal để đóng
 window.onclick = function(event) {
     const modal = document.getElementById('trashModal');
     if (event.target === modal) {
@@ -317,34 +418,37 @@ window.onclick = function(event) {
     }
 }
 
-// Các hàm xử lý sự kiện Drag & Drop
-let draggedItemIndex = null;
+let draggedItemId = null;
 
-function dragStart(e, index) {
-    draggedItemIndex = index;
+function dragStart(e, id) {
+    draggedItemId = id;
     e.target.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
 }
 
 function dragOver(e) {
-    e.preventDefault(); // Cho phép drop
+    e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
 }
 
-function drop(e, targetIndex) {
+function drop(e, targetId) {
     e.preventDefault();
-    if (draggedItemIndex === null || draggedItemIndex === targetIndex) return;
+    if (!draggedItemId || draggedItemId === targetId) return;
 
-    // Cắt quest đang kéo và chèn vào vị trí mới
-    const itemToMove = tasks.splice(draggedItemIndex, 1)[0];
-    tasks.splice(targetIndex, 0, itemToMove);
+    const fromIndex = tasks.findIndex(t => t.id === draggedItemId);
+    const toIndex = tasks.findIndex(t => t.id === targetId);
 
-    saveAndRender();
+    if (fromIndex !== -1 && toIndex !== -1) {
+        const item = tasks.splice(fromIndex, 1)[0];
+        tasks.splice(toIndex, 0, item);
+        tasks.forEach((t, i) => t.order = i);
+        saveAndRender();
+    }
 }
 
 function dragEnd(e) {
     e.target.classList.remove('dragging');
-    draggedItemIndex = null;
+    draggedItemId = null;
 }
 
 function saveAndRender(highlightIds = []) {
@@ -379,17 +483,6 @@ function renderTrash() {
     });
 }
 
-function toggleTask(index) {
-    tasks[index].completed = !tasks[index].completed;
-    saveAndRender();
-}
-
-function moveToTrash(index) {
-    trash.push(tasks[index]);
-    tasks.splice(index, 1);
-    saveAndRender();
-}
-
 function restoreTask(index) {
     tasks.push(trash[index]);
     trash.splice(index, 1);
@@ -398,13 +491,6 @@ function restoreTask(index) {
 
 function deletePermanent(index) {
     trash.splice(index, 1);
-    saveAndRender();
-}
-
-function clearCompleted() {
-    const completedTasks = tasks.filter(task => task.completed);
-    trash = trash.concat(completedTasks);
-    tasks = tasks.filter(task => !task.completed);
     saveAndRender();
 }
 
@@ -425,4 +511,41 @@ function blobToBase64(blob) {
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(blob);
     });
+}
+
+function exportData() {
+    const data = { tasks, trash };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `delta_quests_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.tasks) {
+                data.tasks.forEach((t, i) => {
+                    if (!t.id) t.id = 't_' + Date.now() + Math.random().toString(36).substr(2, 9);
+                    if (t.order === undefined) t.order = i;
+                });
+                tasks = data.tasks;
+            }
+            if (data.trash) trash = data.trash;
+            saveAndRender();
+            alert('Nhập dữ liệu thành công!');
+        } catch (error) {
+            alert('File không hợp lệ hoặc bị lỗi!');
+        }
+        event.target.value = '';
+    };
+    reader.readAsText(file);
 }

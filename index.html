@@ -11,24 +11,37 @@
 
     <input type="password" id="apiKey" placeholder="Nhập Gemini API Key vào đây..." onchange="saveApiKey()">
 
-    <div class="paste-area" id="pasteArea">
-        Click vào đây và nhấn <strong>Ctrl + V</strong> để dán ảnh quest
-    </div>
+    <main>
+        <div class="paste-area" id="pasteArea">
+            Click vào đây và nhấn <strong>Ctrl + V</strong> để dán ảnh quest
+        </div>
 
-    <div class="controls" id="controls">
-        <button onclick="toggleMiniMode()">👁️ Ẩn/Hiện nhập liệu</button>
-        <button onclick="clearCompleted()" class="btn-warning">🧹 Bỏ task đã xong (<span id="completedCount">0</span>)</button>
-        <button onclick="toggleTrash()" class="btn-secondary">🗑️ Thùng rác (<span id="trashCount">0</span>)</button>
-        <button onclick="toggleViewMode()" class="btn-secondary">🔲 Đổi Giao Diện</button>
-    </div>
+        <div class="controls" id="controls">
+            <button onclick="toggleMiniMode()" id="btnToggleInput">👁️ Ẩn/Hiện nhập liệu</button>
+            <button onclick="toggleHideCompleted()" id="btnHideCompleted" class="btn-secondary">👻 Đang hiện đã xong</button>
 
-    <div id="loading" class="loading">Đang nhờ AI soi ảnh... ⏳</div>
-    <div id="taskCount" class="task-count"></div>
-    <div id="todoList"></div>
+            <button onclick="addCustomNote()" class="btn-secondary" style="border-color: #ffaa00; color: #ffaa00;">📝 Thêm Ghi Chú</button>
 
+            <button onclick="toggleSelectAll()" class="btn-secondary">☑️ Đánh dấu tất cả</button>
+            <button onclick="clearCompleted()" class="btn-warning">🧹 Xóa mục đã tick (<span id="completedCount">0</span>)</button>
+
+            <button onclick="toggleTrash()" class="btn-secondary">🗑️ Thùng rác (<span id="trashCount">0</span>)</button>
+            <button onclick="toggleViewMode()" id="btnViewMode" class="btn-secondary">🔲 Giao diện: 1 Cột</button>
+
+            <button onclick="exportData()" class="btn-secondary" style="background: #0056b3; border-color: #004085;">💾 Lưu (Export)</button>
+            <button onclick="document.getElementById('importFile').click()" class="btn-secondary" style="background: #28a745; border-color: #1e7e34;">📂 Mở (Import)</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        </div>
+
+        <div id="loading" class="loading">Đang nhờ AI soi ảnh... ⏳</div>
+        <div id="taskCount" class="task-count"></div>
+        <div id="todoList"></div>
+    </main>
+
+    <!-- Modal Thùng rác -->
     <div id="trashModal" class="modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="modal-header">
                 <h3 style="margin: 0; color: #ff4444;">Thùng rác</h3>
                 <div>
                     <button onclick="emptyTrash()" class="btn-danger">🔥 Xóa sạch</button>
