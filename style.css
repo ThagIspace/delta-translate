@@ -1,96 +1,16 @@
-/* Reset cơ bản */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1f2937; }
+::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #6b7280; }
 
-body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background: #121212; color: #fff; transition: 0.3s; }
-.paste-area { border: 2px dashed #555; padding: 40px; text-align: center; margin-bottom: 20px; cursor: pointer; border-radius: 8px; background: #1e1e1e; }
-#apiKey { width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: none; }
+.dragging { opacity: 0.4; border: 1px dashed #10b981; }
 
-/* Cấu trúc nhóm Control mới */
-.controls-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: flex-start; }
-.control-group { display: flex; gap: 5px; background: #1e1e1e; padding: 5px; border-radius: 8px; border: 1px solid #333; }
-.control-group button { margin: 0; }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
 
-button { background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-weight: bold;}
-button:hover { background: #555; }
-
-.btn-warning { background: #b8860b; }
-.btn-warning:hover { background: #daa520; }
-.btn-danger { background: #cc0000; }
-.btn-danger:hover { background: #ff4444; }
-.btn-secondary { background: #2b2b2b; border: 1px solid #555; }
-
-.task-item { background: #2a2a2a; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; align-items: flex-start; gap: 12px; }
-.task-item.completed { opacity: 0.5; }
-.task-item.completed .task-title { text-decoration: line-through; color: #888; }
-.task-item.dragging { opacity: 0.4; border: 1px dashed #4CAF50; background: #222; }
-
-/* Checkboxes */
-.select-checkbox { transform: scale(1.3); margin-top: 5px; cursor: pointer; accent-color: #ff4444; }
-.complete-checkbox { transform: scale(1.6); margin-top: 4px; cursor: pointer; accent-color: #4CAF50; }
-
-.task-content { flex: 1; margin-top: 2px; }
-.task-title { margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #4CAF50; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.task-original { font-size: 12px; color: #888; margin: 0; }
-.task-count { font-weight: bold; margin-bottom: 10px; color: #aaa; }
-
-.progress { background: #444; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
-.seq-number { font-weight: bold; color: #555; font-size: 14px; margin-top: 3px;}
-
-/* Kéo thả */
-.drag-handle { cursor: grab; font-size: 18px; color: #888; margin-top: 2px; }
-.drag-handle:active { cursor: grabbing; }
-
-/* Các nút thao tác (Action Group) */
-.action-group { display: flex; gap: 5px; }
-.task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
-.delete-btn { background: transparent; border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; }
-.delete-btn:hover { background: #ff4444; color: white; }
-.restore-btn { background: transparent; border: 1px solid #4CAF50; color: #4CAF50; padding: 5px 10px; }
-.restore-btn:hover { background: #4CAF50; color: white; }
-.edit-btn { background: transparent; border: 1px solid #ffaa00; color: #ffaa00; padding: 5px 10px; }
-.edit-btn:hover { background: #ffaa00; color: white; }
-.undo-btn { background: transparent; border: 1px solid #00bcd4; color: #00bcd4; padding: 5px 10px; }
-.undo-btn:hover { background: #00bcd4; color: white; }
-.redo-btn { background: transparent; border: 1px solid #9c27b0; color: #9c27b0; padding: 5px 10px; }
-.redo-btn:hover { background: #9c27b0; color: white; }
-
-.loading { display: none; color: #00ff00; font-weight: bold; margin-bottom: 15px; }
-
-/* Badge Nhóm */
-.group-badge { font-size: 11px; border: 1px solid; padding: 2px 5px; border-radius: 4px; white-space: nowrap; font-weight: normal; }
-
-/* Chế độ thu gọn */
-body.mini-mode h2, body.mini-mode #apiKey, body.mini-mode #pasteArea { display: none; }
-body.mini-mode { max-width: none; margin: 0; padding: 10px; }
-
-/* Giới hạn độ rộng và căn giữa cho giao diện 1 cột */
-body:not(.grid-layout) main { max-width: 800px; margin: 0 auto; }
-
-/* Hiệu ứng Highlight */
-@keyframes flashHighlight {
-    0% { background-color: #556b2f; }
-    100% { background-color: #2a2a2a; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-.highlight { animation: flashHighlight 2s ease-out; border-left: 4px solid #4CAF50; }
 
-/* Modal */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); }
-.modal-content { background-color: #1e1e1e; margin: 10% auto; padding: 20px; border: 1px solid #555; width: 90%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-
-/* Chế độ Lưới (Grid 2 cột và 3 cột) */
-body.grid-layout { max-width: 1400px; margin: 0 auto !important; }
-body.grid-layout .controls-container { justify-content: center; }
-
-/* 2 Cột */
-#todoList.grid-view-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 500px)); justify-content: center; gap: 15px; padding: 10px; width: 100%; margin: 0 auto; }
-/* 3 Cột */
-#todoList.grid-view-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 400px)); justify-content: center; gap: 15px; padding: 10px; width: 100%; margin: 0 auto; }
-
-/* Tùy chỉnh chung cho Grid 2 và 3 */
-#todoList.grid-view-2 .task-item, #todoList.grid-view-3 .task-item { background: #1a1a1a; border: 1px solid #333; margin-bottom: 0; align-items: flex-start; }
-#todoList.grid-view-2 .action-group,
-#todoList.grid-view-3 .action-group { display: none !important; }
-
-#todoList.grid-view-2 .task-content, #todoList.grid-view-3 .task-content { width: 100%; }
-#todoList.grid-view-2 .task-title, #todoList.grid-view-3 .task-title { font-size: 14px; }
+.mini-mode #apiKeyContainer, .mini-mode #pasteArea { display: none; }

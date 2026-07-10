@@ -3,62 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delta Force Quest Translator</title>
+    <title>Milk</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <h2>Quest Translator</h2>
+<body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
 
-    <input type="password" id="apiKey" placeholder="Nhập Gemini API Key vào đây..." onchange="saveApiKey()">
+    <!-- HEADER / NAVIGATION TABS -->
+    <header class="bg-gray-800 border-b border-gray-700 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-white py-4 mr-8">Delta Tools</h1>
+            <nav class="flex space-x-1" id="nav-tabs">
+                <button onclick="switchTab('tab-quests', this)" class="nav-btn active px-4 py-4 font-semibold text-blue-400 border-b-2 border-blue-500 hover:bg-gray-700 transition">
+                    📝 Dịch Nhiệm Vụ
+                </button>
+                <button onclick="switchTab('tab-guns', this)" class="nav-btn px-4 py-4 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-200 hover:bg-gray-700 transition">
+                    🔫 Code Súng
+                </button>
+                <button onclick="switchTab('tab-items', this)" class="nav-btn px-4 py-4 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-200 hover:bg-gray-700 transition">
+                    🎒 Từ Điển Item
+                </button>
+            </nav>
+        </div>
+    </header>
 
-    <main>
-        <div class="paste-area" id="pasteArea">
-            Click vào đây và nhấn <strong>Ctrl + V</strong> để dán ảnh quest
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+
+        <!-- ========================================= -->
+        <!-- TAB 1: DỊCH NHIỆM VỤ -->
+        <!-- ========================================= -->
+        <div id="tab-quests" class="tab-content active max-w-5xl mx-auto w-full">
+
+            <div id="apiKeyContainer" class="mb-4">
+                <input type="password" id="apiKey" placeholder="Nhập Gemini API Key vào đây..." onchange="saveApiKey()"
+                       class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div id="pasteArea" class="border-2 border-dashed border-blue-500 rounded-lg p-10 text-center bg-gray-800 cursor-pointer hover:bg-gray-750 transition mb-6">
+                <p class="text-blue-400 font-semibold text-lg">Click vào đây và nhấn <strong class="text-white">Ctrl + V</strong> để dán ảnh quest</p>
+            </div>
+
+            <div class="flex flex-wrap gap-4 mb-6 bg-gray-800 p-4 rounded-lg border border-gray-700 justify-between items-center">
+                <div class="flex gap-2">
+                    <button onclick="toggleViewMode()" id="btnViewMode" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">🔲 1 Cột</button>
+                    <button onclick="toggleHideCompleted()" id="btnHideCompleted" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">👻 Hiện đã xong</button>
+                    <button onclick="document.body.classList.toggle('mini-mode')" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold" title="Ẩn/Hiện nhập liệu">👁️</button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="addCustomNote()" class="bg-gray-700 text-yellow-400 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">📝 Ghi Chú</button>
+                    <button onclick="toggleSelectAll()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">☑️ Chọn tất cả</button>
+                    <button onclick="clearCompleted()" class="bg-yellow-600 text-black hover:bg-yellow-500 px-3 py-2 rounded text-sm font-bold">🧹 Xóa tick (<span id="completedCount">0</span>)</button>
+                    <button onclick="toggleTrash()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">🗑️ Rác (<span id="trashCount">0</span>)</button>
+                </div>
+            </div>
+
+            <div id="loading" class="hidden text-green-400 font-bold mb-4 text-center text-lg animate-pulse">Đang nhờ AI soi ảnh... ⏳</div>
+            <div id="taskCount" class="text-gray-400 font-bold mb-4"></div>
+
+            <div id="todoList" class="w-full"></div>
         </div>
 
-        <div class="controls-container" id="controls">
-            <!-- Nhóm Hiển thị -->
-            <div class="control-group">
-                <button onclick="toggleViewMode()" id="btnViewMode" class="btn-secondary" title="Giao diện hiển thị">🔲 1 Cột</button>
-                <button onclick="toggleHideCompleted()" id="btnHideCompleted" class="btn-secondary">👻 Hiện đã xong</button>
-                <button onclick="toggleMiniMode()" id="btnToggleInput" class="btn-secondary" title="Ẩn/Hiện nhập liệu">👁️</button>
+        <!-- ========================================= -->
+        <!-- TAB 2: CODE SÚNG -->
+        <!-- ========================================= -->
+        <div id="tab-guns" class="tab-content max-w-4xl mx-auto w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white">Quản lý Code Súng</h2>
+                <button onclick="addGunCode()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold shadow">➕ Thêm Code Mới</button>
             </div>
+            <div id="gunCodeList" class="flex flex-col gap-3"></div>
+        </div>
 
-            <!-- Nhóm Hành động chính -->
-            <div class="control-group">
-                <button onclick="addCustomNote()" class="btn-secondary" style="color: #ffaa00;">📝 Ghi Chú</button>
-                <button onclick="toggleSelectAll()" class="btn-secondary">☑️ Chọn tất cả</button>
-                <button onclick="clearCompleted()" class="btn-warning">🧹 Xóa tick (<span id="completedCount">0</span>)</button>
-            </div>
+        <!-- ========================================= -->
+        <!-- TAB 3: TỪ ĐIỂN ITEM -->
+        <!-- ========================================= -->
+        <div id="tab-items" class="tab-content max-w-7xl mx-auto w-full h-full">
+            <div class="flex flex-col lg:flex-row gap-6 h-full">
+                <!-- Cột trái: Danh sách Item -->
+                <div class="flex-1 flex flex-col">
 
-            <!-- Nhóm Dữ liệu -->
-            <div class="control-group">
-                <button onclick="toggleTrash()" class="btn-secondary">🗑️ Rác (<span id="trashCount">0</span>)</button>
-                <button onclick="exportData()" class="btn-secondary" style="color: #4da6ff;">💾 Lưu</button>
-                <button onclick="document.getElementById('importFile').click()" class="btn-secondary" style="color: #4CAF50;">📂 Mở</button>
-                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                    <div id="itemPasteArea" class="border-2 border-dashed border-purple-500 rounded-lg p-6 text-center bg-gray-800 cursor-pointer hover:bg-gray-750 transition mb-4">
+                        <p class="text-purple-400 font-semibold">Nhấn <strong class="text-white">Ctrl + V</strong> tại đây để dán ảnh kho đồ. AI sẽ tự đọc và phân loại.</p>
+                    </div>
+                    <div id="itemLoading" class="hidden text-purple-400 font-bold mb-4 text-center text-lg animate-pulse">Đang quét ảnh vật phẩm... ⏳</div>
+
+                    <div id="itemCategoryTabs" class="flex flex-wrap gap-2 mb-4"></div>
+                    <div id="itemGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto pr-2 pb-20"></div>
+                </div>
+
+                <!-- Cột phải: Chi tiết Item -->
+                <div class="w-full lg:w-1/3 bg-gray-800 rounded-lg border border-gray-700 p-6 sticky top-6 h-fit min-h-[300px]" id="itemDetailPanel">
+                    <div class="text-center text-gray-500 mt-10">
+                        👈 Chọn một vật phẩm để xem chi tiết
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="loading" class="loading">Đang nhờ AI soi ảnh... ⏳</div>
-        <div id="taskCount" class="task-count"></div>
-        <div id="todoList"></div>
     </main>
 
     <!-- Modal Thùng rác -->
-    <div id="trashModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="margin: 0; color: #ff4444;">Thùng rác</h3>
-                <div>
-                    <button onclick="emptyTrash()" class="btn-danger">🔥 Xóa sạch</button>
-                    <button onclick="toggleTrash()" class="btn-secondary">❌ Đóng</button>
+    <div id="trashModal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center">
+        <div class="bg-gray-800 w-[90%] max-w-2xl rounded-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-red-500">Thùng rác</h3>
+                <div class="flex gap-2">
+                    <button onclick="emptyTrash()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-bold">🔥 Xóa sạch</button>
+                    <button onclick="toggleTrash()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded font-bold">❌ Đóng</button>
                 </div>
             </div>
-            <div id="trashList"></div>
+            <div id="trashList" class="p-4 overflow-y-auto flex-1 flex flex-col gap-2"></div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- SCRIPT TÁCH RỜI -->
+    <script src="app.js"></script>
+    <script src="quest.js"></script>
+    <script src="gun.js"></script>
+    <script src="item.js"></script>
 </body>
 </html>
