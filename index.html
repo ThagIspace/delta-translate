@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milk</title>
+    <title>Delta Force Tools</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
@@ -38,8 +38,14 @@
         <div id="tab-quests" class="tab-content active max-w-5xl mx-auto w-full">
 
             <div id="apiKeyContainer" class="mb-4">
-                <input type="password" id="apiKey" placeholder="Nhập Gemini API Key vào đây..." onchange="saveApiKey()"
-                       class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+                <div class="relative w-full">
+                    <input type="password" id="apiKey" placeholder="Nhập Gemini API Key vào đây..." onchange="saveApiKey()"
+                           class="w-full p-3 pr-24 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+                        <button onclick="toggleApiKeyVisibility()" class="text-gray-400 hover:text-white p-1 rounded transition" title="Ẩn/Hiện Key">👁️</button>
+                        <button onclick="copyApiKey()" class="text-gray-400 hover:text-white p-1 rounded transition" title="Copy Key">📋</button>
+                    </div>
+                </div>
             </div>
 
             <div id="pasteArea" class="border-2 border-dashed border-blue-500 rounded-lg p-10 text-center bg-gray-800 cursor-pointer hover:bg-gray-750 transition mb-6">
@@ -120,6 +126,25 @@
     </div>
 
     <!-- SCRIPT TÁCH RỜI -->
+    <script>
+        // Các hàm phụ cho phần API Key
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('apiKey');
+            if (input.type === 'password') input.type = 'text';
+            else input.type = 'password';
+        }
+
+        function copyApiKey() {
+            const input = document.getElementById('apiKey');
+            if (!input.value) return;
+            navigator.clipboard.writeText(input.value).then(() => {
+                const btn = event.currentTarget;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✔️';
+                setTimeout(() => btn.innerHTML = originalText, 1500);
+            });
+        }
+    </script>
     <script src="app.js"></script>
     <script src="quest.js"></script>
     <script src="gun.js"></script>

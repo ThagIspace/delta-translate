@@ -1,4 +1,3 @@
-// State cho Dịch nhiệm vụ
 let tasks = JSON.parse(localStorage.getItem('delta_quests')) || [];
 let trash = JSON.parse(localStorage.getItem('delta_quests_trash')) || [];
 let viewMode = 1;
@@ -9,9 +8,9 @@ const GROUP_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#f59e0b', '#f97316', '#3
 tasks.forEach((t, i) => {
     if (!t.id) t.id = 't_' + Date.now() + Math.random().toString(36).substr(2, 9);
     if (t.order === undefined) t.order = i;
+    if (t.isPinned === undefined) t.isPinned = false; // Thêm cờ ghim
 });
 
-// Gọi API Gemini Dịch Quest
 async function processQuestImage(base64Data, mimeType) {
     const apiKeyInput = document.getElementById('apiKey').value || HARDCODED_API_KEY;
     if (!apiKeyInput) return alert("Vui lòng nhập API Key!");
@@ -73,14 +72,22 @@ function addCustomNote() {
     saveAndRenderQuest();
 }
 
-function toggleHideCompleted() { hideCompleted = !hideCompleted; document.getElementById('btnHideCompleted').innerHTML = hideCompleted ? '👻 Ẩn đã xong' : '👻 Hiện đã xong'; saveAndRenderQuest(); }
+function toggleHideCompleted() {
+    hideCompleted = !hideCompleted;
+    document.getElementById('btnHideCompleted').innerHTML = hideCompleted ? '👻 Ẩn đã xong' : '👻 Hiện đã xong';
+    saveAndRenderQuest();
+}
 function toggleSelectAll() {
     let vis = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
     const allC = vis.every(t => t.completed);
     vis.forEach(t => t.completed = !allC);
     saveAndRenderQuest();
 }
-function toggleTask(id) { const task = tasks.find(t => t.id === id); if (task) task.completed = !task.completed; saveAndRenderQuest(); }
+function toggleTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) task.completed = !task.completed;
+    saveAndRenderQuest();
+}
 function clearCompleted() {
     const cTasks = tasks.filter(t => t.completed);
     if(cTasks.length === 0) return alert("Chưa có nhiệm vụ nào được đánh dấu!");
@@ -98,57 +105,173 @@ function toggleViewMode() {
 
 function renderTasks() {
     const listDiv = document.getElementById('todoList');
+
+    // Sắp xếp: Ưu tiên Chưa xong -> Đã Ghim -> Order cũ -> Đã xong
     tasks.sort((a, b) => {
-        if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        return a.order - b.order;
+        if (a.completed !== b.completed) return a.completed ? 1 : -1; // Đã xong luôn nằm dưới cùng
+        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;    // Ghim luôn nằm trên cùng
+        return a.order - b.order; // Sắp xếp theo vị trí thủ công
     });
 
     document.getElementById('completedCount').innerText = tasks.filter(t => t.completed).length;
     let visibleTasks = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
     document.getElementById('taskCount').innerText = `Đang hiển thị: ${visibleTasks.length} / ${tasks.length} quest`;
 
+    let isGrid = viewMode > 1;
     listDiv.className = 'w-full gap-4 ' + (viewMode === 1 ? 'flex flex-col' : (viewMode === 2 ? 'grid grid-cols-1 md:grid-cols-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3'));
 
     listDiv.innerHTML = '';
+
+    // Tính toán Index để disable nút Lên/Xuống
+    const pinnedTasks = visibleTasks.filter(t => !t.completed && t.isPinned);
+    const unpinnedTasks = visibleTasks.filter(t => !t.completed && !t.isPinned);
+
     visibleTasks.forEach((task, index) => {
         const div = document.createElement('div');
-        div.className = `bg-gray-800 p-4 rounded-lg flex items-start gap-3 border-l-4 border-transparent shadow ${task.completed ? 'opacity-50' : ''}`;
-        div.setAttribute('draggable', 'true');
-        div.ondragstart = (e) => dragStart(e, task.id);
-        div.ondragover = (e) => dragOver(e);
-        div.ondrop = (e) => drop(e, task.id);
-        div.ondragend = (e) => dragEnd(e);
+        // Xử lý Class bọc ngoài cho từng View
+        if (isGrid) {
+            div.className = `bg-gray-800 p-4 rounded-lg flex flex-col h-full border-l-4 ${task.isPinned ? 'border-green-500 bg-gray-750' : 'border-transparent'} shadow transition-all ${task.completed ? 'opacity-50' : ''}`;
+        } else {
+            div.className = `bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row items-start md:items-center gap-4 border-l-4 ${task.isPinned ? 'border-green-500 bg-gray-750' : 'border-transparent'} shadow transition-all ${task.completed ? 'opacity-50' : ''}`;
+        }
 
         const hasHistory = task.history && task.history.length > 0;
         const hasRedo = task.redoHistory && task.redoHistory.length > 0;
 
-        div.innerHTML = `
-            <div class="cursor-grab text-xl text-gray-500 mt-1" title="Kéo">↕️</div>
-            <div class="font-bold text-gray-500 mt-1 shrink-0">#${index + 1}</div>
-            <input type="checkbox" class="w-5 h-5 mt-1 cursor-pointer accent-blue-600 shrink-0" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+        // Kiểm tra disable nút Lên/Xuống
+        let disableUp = false;
+        let disableDown = false;
 
-            <div class="flex-1 min-w-0">
-                <p class="font-bold text-green-400 mb-1 flex items-center flex-wrap gap-2 ${task.completed ? 'line-through text-gray-500' : ''}">
-                    ${task.groupId ? `<span class="text-xs border px-1 rounded" style="color: ${task.groupColor}; border-color: ${task.groupColor};">🔗 Nhóm ${task.groupId}</span>` : ''}
-                    ${task.dich_nghia}
-                </p>
-                <p class="text-xs text-gray-500 truncate">${task.id_goc}</p>
-            </div>
+        if (task.completed) {
+            disableUp = true; disableDown = true;
+        } else if (task.isPinned) {
+            if (pinnedTasks.indexOf(task) === 0) disableUp = true;
+            if (pinnedTasks.indexOf(task) === pinnedTasks.length - 1) disableDown = true;
+        } else {
+            if (unpinnedTasks.indexOf(task) === 0) disableUp = true;
+            if (unpinnedTasks.indexOf(task) === unpinnedTasks.length - 1) disableDown = true;
+        }
 
-            <div class="flex flex-col items-end gap-2 shrink-0">
-                ${(hasHistory || hasRedo) ? `
-                <div class="flex gap-1">
-                    ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="undoEdit('${task.id}')">↩️</button>` : ''}
-                    ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="redoEdit('${task.id}')">↪️</button>` : ''}
+        const btnUpStyle = disableUp ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-600';
+        const btnDownStyle = disableDown ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-600';
+
+        // Render HTML tùy theo chế độ
+        if (isGrid) {
+            // ==========================================
+            // LAYOUT LƯỚI (GRID VIEW) - Card Dọc
+            // ==========================================
+            div.innerHTML = `
+                <div class="flex items-center justify-between w-full mb-3 border-b border-gray-700 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-gray-500 w-6 text-right">#${index + 1}</span>
+                        <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                    </div>
+                    <div class="flex items-center gap-1 flex-wrap justify-end">
+                        ${task.isPinned ? `<span class="text-xs bg-green-900 text-green-400 border border-green-700 px-1.5 py-0.5 rounded font-bold">📌 Đã ghim</span>` : ''}
+                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold" style="color: ${task.groupColor}; border-color: ${task.groupColor};">🔗 Nhóm ${task.groupId}</span>` : ''}
+                    </div>
                 </div>
-                ` : ''}
-                <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-2 py-1 rounded text-xs transition" onclick="editTask('${task.id}')">✏️ Sửa</button>
-                <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded text-xs transition" onclick="moveToTrash('${task.id}')">🗑️ Xóa</button>
-            </div>
-        `;
+
+                <div class="flex-1 min-w-0 mb-3 w-full">
+                    <p class="font-bold text-green-400 text-base mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${task.dich_nghia}</p>
+                    <p class="text-xs text-gray-500 break-words">${task.id_goc}</p>
+                </div>
+
+                <div class="flex justify-between items-center mt-auto pt-2 gap-2 flex-wrap w-full border-t border-gray-700">
+                    <div class="flex gap-1">
+                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask('${task.id}', -1)"`} title="Chuyển lên">🔼</button>
+                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask('${task.id}', 1)"`} title="Chuyển xuống">🔽</button>
+                        <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin('${task.id}')" title="Ghim/Bỏ ghim">📌</button>
+                    </div>
+
+                    <div class="flex items-center gap-1 ml-auto">
+                        ${(hasHistory || hasRedo) ? `
+                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="undoEdit('${task.id}')">↩️</button>` : ''}
+                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="redoEdit('${task.id}')">↪️</button>` : ''}
+                        ` : ''}
+                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="editTask('${task.id}')">Sửa</button>
+                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="moveToTrash('${task.id}')">Xóa</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // ==========================================
+            // LAYOUT 1 CỘT (LIST VIEW) - Dải Ngang
+            // ==========================================
+            div.innerHTML = `
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="flex flex-col gap-1">
+                        <button class="text-gray-400 ${btnUpStyle} text-xs px-1 rounded" ${disableUp ? 'disabled' : `onclick="moveTask('${task.id}', -1)"`}>🔼</button>
+                        <button class="text-gray-400 ${btnDownStyle} text-xs px-1 rounded" ${disableDown ? 'disabled' : `onclick="moveTask('${task.id}', 1)"`}>🔽</button>
+                    </div>
+                    <span class="font-bold text-gray-500 w-6 text-right">#${index + 1}</span>
+                    <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                </div>
+
+                <div class="flex-1 min-w-0 w-full mt-2 md:mt-0">
+                    <p class="font-bold text-green-400 text-lg mb-1 flex items-center flex-wrap gap-2 ${task.completed ? 'line-through text-gray-500' : ''}">
+                        ${task.isPinned ? `<span class="text-xs bg-green-900 text-green-400 border border-green-700 px-1.5 py-0.5 rounded font-bold">📌 Đã ghim</span>` : ''}
+                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold" style="color: ${task.groupColor}; border-color: ${task.groupColor};">🔗 Nhóm ${task.groupId}</span>` : ''}
+                        ${task.dich_nghia}
+                    </p>
+                    <p class="text-sm text-gray-500 truncate">${task.id_goc}</p>
+                </div>
+
+                <div class="flex flex-row md:flex-col items-center md:items-end gap-2 shrink-0 w-full md:w-auto mt-3 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-700 justify-between md:justify-start">
+                    <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition font-bold whitespace-nowrap" onclick="togglePin('${task.id}')">📌 Ghim</button>
+
+                    <div class="flex items-center gap-2">
+                        ${(hasHistory || hasRedo) ? `
+                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="undoEdit('${task.id}')">↩️</button>` : ''}
+                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="redoEdit('${task.id}')">↪️</button>` : ''}
+                        ` : ''}
+                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="editTask('${task.id}')">Sửa</button>
+                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="moveToTrash('${task.id}')">Xóa</button>
+                    </div>
+                </div>
+            `;
+        }
+
         listDiv.appendChild(div);
     });
 }
+
+// Logic Mới: Ghim Task
+function togglePin(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        task.isPinned = !task.isPinned;
+        saveAndRenderQuest();
+    }
+}
+
+// Logic Mới: Di chuyển Lên/Xuống
+function moveTask(id, direction) {
+    // Chỉ thao tác trên các task chưa hoàn thành (vì task hoàn thành mặc định bị đẩy xuống chót)
+    let workingTasks = tasks.filter(t => !t.completed);
+
+    // Tìm index của task cần di chuyển trong mảng workingTasks
+    const index = workingTasks.findIndex(t => t.id === id);
+    if (index === -1) return;
+
+    // Không thể di chuyển lên nếu đang ở đầu, hoặc xuống nếu đang ở cuối
+    if (index + direction < 0 || index + direction >= workingTasks.length) return;
+
+    // Hoán đổi vị trí order với task lân cận
+    const targetTask = workingTasks[index + direction];
+    const currentTask = workingTasks[index];
+
+    // Ngăn chặn việc bấm "Lên" một task không ghim vượt qua ranh giới của task đã ghim
+    if(currentTask.isPinned !== targetTask.isPinned) return;
+
+    // Đổi order
+    const tempOrder = currentTask.order;
+    currentTask.order = targetTask.order;
+    targetTask.order = tempOrder;
+
+    saveAndRenderQuest();
+}
+
 
 function editTask(id) {
     const task = tasks.find(t => t.id === id);
@@ -195,23 +318,6 @@ function renderTrash() {
 function restoreTask(index) { tasks.push(trash[index]); trash.splice(index, 1); saveAndRenderQuest(); renderTrash(); }
 function deletePermanent(index) { trash.splice(index, 1); saveAndRenderQuest(); renderTrash(); }
 function emptyTrash() { if(confirm("Xóa vĩnh viễn?")) { trash = []; saveAndRenderQuest(); renderTrash(); } }
-
-let draggedItemId = null;
-function dragStart(e, id) { draggedItemId = id; e.target.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
-function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
-function drop(e, targetId) {
-    e.preventDefault();
-    if (!draggedItemId || draggedItemId === targetId) return;
-    const fromTask = tasks.find(t => t.id === draggedItemId);
-    const toTask = tasks.find(t => t.id === targetId);
-    if (fromTask && toTask) {
-        fromTask.order = toTask.order - 0.5;
-        tasks.sort((a, b) => a.order - b.order);
-        tasks.forEach((t, i) => t.order = i);
-        saveAndRenderQuest();
-    }
-}
-function dragEnd(e) { e.target.classList.remove('dragging'); draggedItemId = null; }
 
 function saveAndRenderQuest() {
     localStorage.setItem('delta_quests', JSON.stringify(tasks));
