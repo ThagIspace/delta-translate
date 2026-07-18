@@ -1,6 +1,6 @@
 let tasks = JSON.parse(localStorage.getItem('delta_quests')) || [];
 let trash = JSON.parse(localStorage.getItem('delta_quests_trash')) || [];
-let viewMode = 1;
+let viewMode = 2;
 let hideCompleted = false;
 const GROUP_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#f59e0b', '#f97316', '#3b82f6'];
 
