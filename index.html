@@ -14,7 +14,24 @@
     <!-- HEADER / NAVIGATION TABS -->
     <header class="bg-gray-800 border-b border-gray-700 shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
-            <h1 class="text-xl font-bold text-white py-4 mr-8">Delta Tools</h1>
+            <div class="flex items-center gap-4 mr-8">
+                <h1 class="text-xl font-bold text-white py-4">Delta Tools</h1>
+
+                <!-- BẮT ĐẦU: Cụm nút Export/Import Data -->
+                <div class="hidden sm:flex gap-2 items-center">
+                    <button onclick="exportData()" class="bg-slate-700 hover:bg-slate-600 text-blue-400 border border-slate-600 text-xs px-3 py-1.5 rounded font-bold transition flex items-center gap-1">
+                        💾 Xuất Data
+                    </button>
+                    <button onclick="document.getElementById('importFile').click()" class="bg-slate-700 hover:bg-slate-600 text-green-400 border border-slate-600 text-xs px-3 py-1.5 rounded font-bold transition flex items-center gap-1">
+                        📂 Nhập Data
+                    </button>
+                    <!-- Input file ẩn dùng để mở hộp thoại chọn file -->
+                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+                </div>
+                <!-- KẾT THÚC: Cụm nút Export/Import Data -->
+
+            </div>
+
             <nav class="flex space-x-1" id="nav-tabs">
                 <button onclick="switchTab('tab-quests', this)" class="nav-btn active px-4 py-4 font-semibold text-blue-400 border-b-2 border-blue-500 hover:bg-gray-700 transition">
                     📝 Dịch Nhiệm Vụ
@@ -76,10 +93,22 @@
         <!-- TAB 2: CODE SÚNG -->
         <!-- ========================================= -->
         <div id="tab-guns" class="tab-content max-w-4xl mx-auto w-full">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-white">Quản lý Code Súng</h2>
-                <button onclick="addGunCode()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold shadow">➕ Thêm Code Mới</button>
+                <button onclick="toggleGunTrash()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold shadow transition">
+                    🗑️ Thùng rác (<span id="gunTrashCount">0</span>)
+                </button>
             </div>
+
+            <!-- Khu vực nhập trực tiếp Code Súng mới -->
+            <div class="bg-gray-800 p-4 rounded-lg mb-6 border border-gray-700 shadow-sm flex flex-col md:flex-row gap-3">
+                <input type="text" id="gunNameInput" placeholder="Tên súng (không bắt buộc)..."
+                       class="w-full md:w-1/3 p-3 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+                <input type="text" id="gunCodeInput" placeholder="Dán mã code súng vào đây... (Bắt buộc)"
+                       class="w-full md:flex-1 p-3 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+                <button onclick="addGunCode()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded font-bold shadow transition shrink-0">➕ Thêm Code</button>
+            </div>
+
             <div id="gunCodeList" class="flex flex-col gap-3"></div>
         </div>
 
@@ -122,6 +151,20 @@
                 </div>
             </div>
             <div id="trashList" class="p-4 overflow-y-auto flex-1 flex flex-col gap-2"></div>
+        </div>
+    </div>
+
+    <!-- Modal Thùng rác CHO CODE SÚNG -->
+    <div id="gunTrashModal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center">
+        <div class="bg-gray-800 w-[90%] max-w-2xl rounded-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-red-500">Thùng rác Súng</h3>
+                <div class="flex gap-2">
+                    <button onclick="emptyGunTrash()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-bold">🔥 Xóa sạch</button>
+                    <button onclick="toggleGunTrash()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded font-bold">❌ Đóng</button>
+                </div>
+            </div>
+            <div id="gunTrashList" class="p-4 overflow-y-auto flex-1 flex flex-col gap-2"></div>
         </div>
     </div>
 

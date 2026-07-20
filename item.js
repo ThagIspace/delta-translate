@@ -1,43 +1,31 @@
-// Dữ liệu Item mẫu
-const defaultItemDatabase = [
-    {
-        category: "💊 Y Tế",
-        items: [
-            { name: 'Hộp cứu thương y tế', weight: '2.5KG', rarity: 'purple', icon: '🚑', desc: 'Hồi phục lượng lớn máu và chữa gãy xương tức thì. Thiết yếu khi giao tranh mạnh.', source: 'Bệnh viện, Trạm xá' }
-        ]
-    },
-    {
-        category: "💻 Điện Tử",
-        items: [
-            { name: 'Card Đồ Họa (GPU)', weight: '1.43KG', rarity: 'red', icon: '🖥️', desc: 'Linh kiện có giá trị giao dịch cực cao trên chợ đen.', source: 'Phòng Máy Chủ' }
-        ]
-    }
-];
+let tasks = JSON.parse(localStorage.getItem('delta_quests')) || [];
+let trash = JSON.parse(localStorage.getItem('delta_quests_trash')) || [];
+let translation_cache = JSON.parse(localStorage.getItem('delta_translation_cache')) || {}; // Thêm cache dịch thuật
+let viewMode = 1;
+let hideCompleted = false;
+const GROUP_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#f59e0b', '#f97316', '#3b82f6'];
 
-let itemDatabase = JSON.parse(localStorage.getItem('delta_items')) || defaultItemDatabase;
-let currentItemCategory = 0;
+// Chuẩn hóa data cũ
+tasks.forEach((t, i) => {
+    if (!t.id) t.id = 't_' + Date.now() + Math.random().toString(36).substr(2, 9);
+    if (t.order === undefined) t.order = i;
+    if (t.isPinned === undefined) t.isPinned = false; // Thêm cờ ghim
+});
 
-const rarityColors = {
-    'white': 'border-t-gray-300',
-    'green': 'border-t-green-500',
-    'blue': 'border-t-blue-500',
-    'purple': 'border-t-purple-500',
-    'gold': 'border-t-yellow-400',
-    'red': 'border-t-red-500'
-};
-
-// Gọi API Gemini trích xuất thông tin ảnh Item
-async function processItemImage(base64Data, mimeType) {
-    const apiKeyInput = document.getElementById('apiKey').value || HARDCODED_API_KEY; // Dùng chung apiKey từ Quest Tab
-    if (!apiKeyInput) return alert("Vui lòng nhập API Key ở tab Dịch Nhiệm Vụ!");
+async function processQuestImage(base64Data, mimeType) {
+    const apiKeyInput = document.getElementById('apiKey').value || HARDCODED_API_KEY;
+    if (!apiKeyInput) return alert("Vui lòng nhập API Key!");
     const apiKeys = apiKeyInput.split(',').map(k => k.trim()).filter(k => k);
 
-    document.getElementById('itemLoading').classList.remove('hidden');
-
-    const promptText = `Trích xuất thông tin các vật phẩm từ ảnh. Trả về MỘT mảng JSON với cấu trúc: [{"category": "Danh mục (VD: 💊 Y Tế, 💻 Điện Tử, 🧱 Vật Liệu, 💎 Sưu Tầm, 🔑 Thẻ Khóa...)", "name": "Tên vật phẩm", "weight": "Cân nặng (VD: 2.5KG)", "rarity": "Độ hiếm (chỉ chọn 1: white, green, blue, purple, gold, red)", "desc": "Mô tả dự đoán công dụng", "source": "Nguồn gốc rớt"}]. Trả về mảng rỗng [] nếu không thấy.`;
+    document.getElementById('loading').style.display = 'block';
+    const promptText = `Trích xuất nhiệm vụ game Delta Force. Tìm 'Mục tiêu hành động cụ thể'. Bỏ qua cốt truyện. Trả về MỘT mảng JSON: [{"id_goc": "Chữ Trung", "dich_nghia": "Dịch Việt"}]. NẾU ảnh không chứa nhiệm vụ, trả về: []`;
     const MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash'];
 
     for (let i = 0; i < MODELS.length; i++) {
+        // Tạo bộ đếm thời gian 25s để hủy request nếu mạng lag treo
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
+
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELS[i]}:generateContent?key=${apiKeys[0]}`, {
                 method: 'POST',
@@ -45,126 +33,342 @@ async function processItemImage(base64Data, mimeType) {
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: promptText }, { inlineData: { mimeType: mimeType, data: base64Data } }] }],
                     generationConfig: { responseMimeType: "application/json" }
-                })
+                }),
+                signal: controller.signal // Truyền tín hiệu hủy vào fetch
             });
+
+            clearTimeout(timeoutId); // Nếu request thành công trước 25s thì xóa bộ đếm
             const data = await response.json();
             if (data.error) continue;
 
             const resultText = data.candidates[0].content.parts[0].text;
-            const newItems = JSON.parse(resultText);
-            if (newItems.length > 0) mergeNewItems(newItems);
+            const newQuests = JSON.parse(resultText);
+
+            if (newQuests.length > 0) mergeQuests(newQuests);
             break;
         } catch (e) {
-            if (i === MODELS.length - 1) alert("Lỗi xử lý quét Item!");
+            clearTimeout(timeoutId); // Dọn dẹp bộ đếm khi lỗi
+
+            // Xử lý nếu nguyên nhân lỗi là do Mất mạng hoặc Timeout
+            if (e.name === 'AbortError' || !navigator.onLine) {
+                alert("⏱️ Lỗi kết nối mạng hoặc mạng quá chậm. Đã hủy quét ảnh!");
+                break; // Thoát hẳn vòng lặp, không cố thử model khác nữa
+            }
+
+            if (i === MODELS.length - 1) console.error(e);
         }
     }
-    document.getElementById('itemLoading').classList.add('hidden');
+
+    // ĐẢM BẢO LUÔN TẮT CHỮ LOADING DÙ THÀNH CÔNG HAY THẤT BẠI
+    document.getElementById('loading').style.display = 'none';
 }
 
-function mergeNewItems(newItems) {
-    newItems.forEach(newItem => {
-        let catIndex = itemDatabase.findIndex(c => c.category.includes(newItem.category.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim()));
+function mergeQuests(newQuests) {
+    const isGroup = newQuests.length > 1;
+    let maxOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.order || 0)) : 0;
+    let maxGroupId = tasks.length > 0 ? Math.max(...tasks.map(t => t.groupId || 0)) : 0;
+    const newGroupId = isGroup ? maxGroupId + 1 : null;
+    const groupColor = isGroup ? GROUP_COLORS[(newGroupId - 1) % GROUP_COLORS.length] : null;
 
-        if (catIndex === -1) {
-            itemDatabase.push({ category: newItem.category, items: [] });
-            catIndex = itemDatabase.length - 1;
+    newQuests.forEach(newQ => {
+        // 1. Tìm xem đang có trong list chạy không
+        let existing = tasks.find(t => t.id_goc === newQ.id_goc);
+
+        // 2. Nếu không có, tìm thử trong thùng rác
+        if (!existing) {
+            let trashIdx = trash.findIndex(t => t.id_goc === newQ.id_goc);
+            if (trashIdx !== -1) {
+                existing = trash[trashIdx];
+                trash.splice(trashIdx, 1); // Rút khỏi thùng rác
+                tasks.push(existing);      // Đưa lại vào danh sách chính
+            }
         }
 
-        if (!newItem.icon) {
-            const catName = itemDatabase[catIndex].category;
-            if (catName.includes('Y Tế')) newItem.icon = '💊';
-            else if (catName.includes('Điện Tử')) newItem.icon = '💻';
-            else if (catName.includes('Vật Liệu')) newItem.icon = '🧱';
-            else if (catName.includes('Sưu Tầm')) newItem.icon = '💎';
-            else newItem.icon = '📦';
-        }
-
-        const existingItemIndex = itemDatabase[catIndex].items.findIndex(i => i.name === newItem.name);
-        if (existingItemIndex === -1) {
-            itemDatabase[catIndex].items.push(newItem);
+        if (existing) {
+            // Nếu đã có ở ngoài hoặc vừa cứu từ thùng rác ra -> Kích hoạt lại
+            existing.completed = false;
+            if (isGroup) { existing.groupColor = groupColor; existing.groupId = newGroupId; }
         } else {
-            itemDatabase[catIndex].items[existingItemIndex] = newItem;
+            // 3. Kiểm tra xem quá khứ đã từng dịch và lưu Cache chưa
+            let cachedTranslation = translation_cache[newQ.id_goc];
+            maxOrder++;
+
+            tasks.push({
+                ...newQ,
+                dich_nghia: cachedTranslation || newQ.dich_nghia, // Ưu tiên bản dịch đã lưu trong cache
+                id: 't_' + Date.now() + Math.random().toString(36).substr(2, 9),
+                completed: false,
+                isPinned: false,
+                groupColor,
+                groupId: newGroupId,
+                order: maxOrder
+            });
+
+            // Lưu lại vào cache để mốt dùng
+            translation_cache[newQ.id_goc] = cachedTranslation || newQ.dich_nghia;
         }
     });
 
-    saveItemDatabase();
-    renderItemTabs();
-    renderItemGrid();
-    alert(`Đã thêm/cập nhật ${newItems.length} vật phẩm thành công!`);
+    // Lưu cache xuống LocalStorage
+    localStorage.setItem('delta_translation_cache', JSON.stringify(translation_cache));
+    saveAndRenderQuest();
 }
 
-function saveItemDatabase() {
-    localStorage.setItem('delta_items', JSON.stringify(itemDatabase));
+function addCustomNote() {
+    const text = prompt("Nhập nội dung ghi chú:");
+    if (!text) return;
+    let maxOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.order || 0)) : 0;
+    tasks.push({ id_goc: "📝 Ghi chú", dich_nghia: text.trim(), id: 't_' + Date.now(), completed: false, isPinned: false, order: maxOrder + 1 });
+    saveAndRenderQuest();
 }
 
-function renderItemTabs() {
-    const container = document.getElementById('itemCategoryTabs');
-    container.innerHTML = '';
-    itemDatabase.forEach((cat, index) => {
-        const btn = document.createElement('button');
-        btn.innerText = cat.category;
-        btn.className = `px-4 py-2 rounded font-bold transition ${index === currentItemCategory ? 'bg-blue-600 text-white shadow' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`;
-        btn.onclick = () => {
-            currentItemCategory = index;
-            renderItemTabs();
-            renderItemGrid();
-            document.getElementById('itemDetailPanel').innerHTML = `<div class="text-center text-gray-500 mt-10">👈 Chọn một vật phẩm để xem chi tiết</div>`;
-        };
-        container.appendChild(btn);
+function toggleHideCompleted() {
+    hideCompleted = !hideCompleted;
+    document.getElementById('btnHideCompleted').innerHTML = hideCompleted ? '👻 Ẩn đã xong' : '👻 Hiện đã xong';
+    saveAndRenderQuest();
+}
+function toggleSelectAll() {
+    let vis = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
+    const allC = vis.every(t => t.completed);
+    vis.forEach(t => t.completed = !allC);
+    saveAndRenderQuest();
+}
+function toggleTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) task.completed = !task.completed;
+    saveAndRenderQuest();
+}
+function clearCompleted() {
+    const cTasks = tasks.filter(t => t.completed);
+    if(cTasks.length === 0) return alert("Chưa có nhiệm vụ nào được đánh dấu!");
+    if(confirm(`Chuyển ${cTasks.length} quest vào thùng rác?`)) {
+        trash = trash.concat(cTasks);
+        tasks = tasks.filter(t => !t.completed);
+        saveAndRenderQuest();
+    }
+}
+function toggleViewMode() {
+    viewMode = viewMode === 3 ? 1 : viewMode + 1;
+    document.getElementById('btnViewMode').innerHTML = `🔲 ${viewMode} Cột`;
+    saveAndRenderQuest();
+}
+
+function renderTasks() {
+    const listDiv = document.getElementById('todoList');
+
+    // Sắp xếp: Ưu tiên Chưa xong -> Đã Ghim -> Order cũ -> Đã xong
+    tasks.sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+        return a.order - b.order;
+    });
+
+    document.getElementById('completedCount').innerText = tasks.filter(t => t.completed).length;
+    let visibleTasks = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
+    document.getElementById('taskCount').innerText = `Đang hiển thị: ${visibleTasks.length} / ${tasks.length} quest`;
+
+    let isGrid = viewMode > 1;
+    listDiv.className = 'w-full gap-4 ' + (viewMode === 1 ? 'flex flex-col' : (viewMode === 2 ? 'grid grid-cols-1 md:grid-cols-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3'));
+
+    listDiv.innerHTML = '';
+
+    const pinnedTasks = visibleTasks.filter(t => !t.completed && t.isPinned);
+    const unpinnedTasks = visibleTasks.filter(t => !t.completed && !t.isPinned);
+
+    visibleTasks.forEach((task, index) => {
+        const div = document.createElement('div');
+        // Thêm Class nền và viền sáng nếu được ghim
+        div.className = `bg-gray-800 p-4 rounded-lg flex flex-col h-full border-l-4 ${task.isPinned ? 'border-green-500 bg-gray-750' : 'border-transparent'} shadow transition-all ${task.completed ? 'opacity-50' : ''}`;
+
+        const hasHistory = task.history && task.history.length > 0;
+        const hasRedo = task.redoHistory && task.redoHistory.length > 0;
+
+        // Logic disable nút Lên/Xuống
+        let disableUp = false;
+        let disableDown = false;
+
+        if (task.completed) {
+            disableUp = true; disableDown = true;
+        } else if (task.isPinned) {
+            if (pinnedTasks.indexOf(task) === 0) disableUp = true;
+            if (pinnedTasks.indexOf(task) === pinnedTasks.length - 1) disableDown = true;
+        } else {
+            if (unpinnedTasks.indexOf(task) === 0) disableUp = true;
+            if (unpinnedTasks.indexOf(task) === unpinnedTasks.length - 1) disableDown = true;
+        }
+
+        const btnUpStyle = disableUp ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-600';
+        const btnDownStyle = disableDown ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-600';
+
+        if (isGrid) {
+            // ==========================================
+            // LAYOUT LƯỚI (GRID VIEW) - Card Dọc
+            // ==========================================
+            div.innerHTML = `
+                <div class="flex items-center justify-between w-full mb-3 border-b border-gray-700 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-gray-500 w-6 text-right">#${index + 1}</span>
+                        <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                    </div>
+                    <div class="flex items-center gap-1 flex-wrap justify-end">
+                        ${task.isPinned ? `<span class="text-xs bg-green-900 text-green-400 border border-green-700 px-1.5 py-0.5 rounded font-bold">📌 Đã ghim</span>` : ''}
+                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold" style="color: ${task.groupColor}; border-color: ${task.groupColor};">🔗 Nhóm ${task.groupId}</span>` : ''}
+                    </div>
+                </div>
+
+                <div class="flex-1 min-w-0 mb-3 w-full">
+                    <p class="font-bold text-green-400 text-base mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${task.dich_nghia}</p>
+                    <p class="text-xs text-gray-500 break-words">${task.id_goc}</p>
+                </div>
+
+                <div class="flex justify-between items-center mt-auto pt-2 gap-2 flex-wrap w-full border-t border-gray-700">
+                    <div class="flex gap-1">
+                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask('${task.id}', -1)"`} title="Chuyển lên">🔼</button>
+                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask('${task.id}', 1)"`} title="Chuyển xuống">🔽</button>
+                        <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin('${task.id}')" title="Ghim/Bỏ ghim">📌</button>
+                    </div>
+
+                    <div class="flex items-center gap-1 ml-auto">
+                        ${(hasHistory || hasRedo) ? `
+                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="undoEdit('${task.id}')">↩️</button>` : ''}
+                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="redoEdit('${task.id}')">↪️</button>` : ''}
+                        ` : ''}
+                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="editTask('${task.id}')">Sửa</button>
+                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="moveToTrash('${task.id}')">Xóa</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // ==========================================
+            // LAYOUT 1 CỘT (LIST VIEW) - Bố cục tách rời chống lệch
+            // ==========================================
+            div.innerHTML = `
+                <!-- Header: STT, Checkbox, Tag -->
+                <div class="flex items-center justify-between w-full mb-2">
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-gray-500 w-6 text-right shrink-0">#${index + 1}</span>
+                        <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600 shrink-0" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap justify-end">
+                        ${task.isPinned ? `<span class="text-xs bg-green-900 text-green-400 border border-green-700 px-1.5 py-0.5 rounded font-bold shrink-0">📌 Đã ghim</span>` : ''}
+                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold shrink-0" style="color: ${task.groupColor}; border-color: ${task.groupColor};">🔗 Nhóm ${task.groupId}</span>` : ''}
+                    </div>
+                </div>
+
+                <!-- Body & Action (Cùng hàng trên Desktop, Tách hàng trên Mobile) -->
+                <div class="flex flex-col md:flex-row w-full justify-between items-start md:items-center gap-4">
+
+                    <!-- Dịch nghĩa & ID gốc -->
+                    <div class="flex-1 min-w-0 w-full">
+                        <p class="font-bold text-green-400 text-lg mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${task.dich_nghia}</p>
+                        <p class="text-sm text-gray-500 truncate w-full">${task.id_goc}</p>
+                    </div>
+
+                    <!-- Khu vực các nút bấm -->
+                    <div class="flex flex-wrap items-center gap-2 shrink-0 border-t border-gray-700 md:border-none pt-3 md:pt-0 w-full md:w-auto">
+                        <div class="flex gap-1 border-r border-gray-700 pr-2 mr-1">
+                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask('${task.id}', -1)"`} title="Lên">🔼</button>
+                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask('${task.id}', 1)"`} title="Xuống">🔽</button>
+                            <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin('${task.id}')" title="Ghim">📌</button>
+                        </div>
+
+                        ${(hasHistory || hasRedo) ? `
+                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-1 rounded text-xs" onclick="undoEdit('${task.id}')">↩️</button>` : ''}
+                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-1 rounded text-xs" onclick="redoEdit('${task.id}')">↪️</button>` : ''}
+                        ` : ''}
+                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="editTask('${task.id}')">Sửa</button>
+                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="moveToTrash('${task.id}')">Xóa</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        listDiv.appendChild(div);
     });
 }
 
-function renderItemGrid() {
-    const grid = document.getElementById('itemGrid');
-    grid.innerHTML = '';
-    if(!itemDatabase[currentItemCategory]) return;
-
-    itemDatabase[currentItemCategory].items.forEach(item => {
-        const card = document.createElement('div');
-        const borderColor = rarityColors[item.rarity] || 'border-t-gray-500';
-        card.className = `bg-gray-800 border border-gray-700 border-t-4 ${borderColor} rounded p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-700 transition item-card shadow relative group`;
-        card.innerHTML = `
-            <button class="absolute top-1 right-1 text-gray-500 hover:text-red-500 hidden group-hover:block" onclick="deleteItem(event, '${item.name}')">❌</button>
-            <div class="text-4xl mb-2">${item.icon}</div>
-            <div class="text-sm font-bold text-gray-200 text-center w-full truncate">${item.name}</div>
-            <div class="text-xs text-gray-500 mt-1 w-full text-right">${item.weight}</div>
-        `;
-        card.onclick = () => showItemDetail(item, card);
-        grid.appendChild(card);
-    });
-}
-
-function deleteItem(e, itemName) {
-    e.stopPropagation();
-    if(confirm(`Xóa vật phẩm "${itemName}" khỏi cơ sở dữ liệu?`)) {
-        itemDatabase[currentItemCategory].items = itemDatabase[currentItemCategory].items.filter(i => i.name !== itemName);
-        saveItemDatabase();
-        renderItemGrid();
-        document.getElementById('itemDetailPanel').innerHTML = `<div class="text-center text-gray-500 mt-10">👈 Chọn một vật phẩm để xem chi tiết</div>`;
+function togglePin(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        task.isPinned = !task.isPinned;
+        saveAndRenderQuest();
     }
 }
 
-function showItemDetail(item, cardElement) {
-    document.querySelectorAll('.item-card').forEach(c => c.classList.remove('ring-2', 'ring-white', 'bg-gray-700'));
-    cardElement.classList.add('ring-2', 'ring-white', 'bg-gray-700');
+function moveTask(id, direction) {
+    let workingTasks = tasks.filter(t => !t.completed);
+    const index = workingTasks.findIndex(t => t.id === id);
+    if (index === -1) return;
+    if (index + direction < 0 || index + direction >= workingTasks.length) return;
 
-    const panel = document.getElementById('itemDetailPanel');
-    const borderColor = rarityColors[item.rarity] || 'border-t-gray-500';
-    panel.innerHTML = `
-        <div class="border-t-4 ${borderColor} pt-4 flex gap-4 items-center mb-6 pb-4 border-b border-gray-700">
-            <div class="text-6xl">${item.icon}</div>
-            <div>
-                <h3 class="text-2xl font-bold text-white">${item.name}</h3>
-                <p class="text-gray-400 text-sm mt-1">Trọng lượng: ${item.weight}</p>
-            </div>
-        </div>
-        <div class="text-gray-300 leading-relaxed text-sm lg:text-base flex-1">${item.desc}</div>
-        <div class="mt-6 pt-4 border-t border-dashed border-gray-600 text-sm">
-            <span class="text-gray-500">Nguồn gốc rớt:</span><br>
-            <span class="text-gray-300 font-semibold">${item.source}</span>
-        </div>
-    `;
+    const targetTask = workingTasks[index + direction];
+    const currentTask = workingTasks[index];
+
+    if(currentTask.isPinned !== targetTask.isPinned) return;
+
+    const tempOrder = currentTask.order;
+    currentTask.order = targetTask.order;
+    targetTask.order = tempOrder;
+    saveAndRenderQuest();
 }
 
-renderItemTabs();
-renderItemGrid();
+function editTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    const newText = prompt("Sửa bản dịch:", task.dich_nghia);
+    if (newText !== null && newText.trim() !== "" && newText.trim() !== task.dich_nghia) {
+        if (!task.history) task.history = [];
+        task.history.push(task.dich_nghia);
+        if (task.history.length > 2) task.history.shift();
+        task.redoHistory = [];
+        task.dich_nghia = newText.trim();
+
+        // Cập nhật bản dịch mới vào cache luôn
+        translation_cache[task.id_goc] = task.dich_nghia;
+        localStorage.setItem('delta_translation_cache', JSON.stringify(translation_cache));
+
+        saveAndRenderQuest();
+    }
+}
+function undoEdit(id) { const t = tasks.find(t => t.id === id); if(t && t.history?.length) { t.redoHistory = t.redoHistory || []; t.redoHistory.push(t.dich_nghia); t.dich_nghia = t.history.pop(); saveAndRenderQuest(); } }
+function redoEdit(id) { const t = tasks.find(t => t.id === id); if(t && t.redoHistory?.length) { t.history = t.history || []; t.history.push(t.dich_nghia); t.dich_nghia = t.redoHistory.pop(); saveAndRenderQuest(); } }
+function moveToTrash(id) { const idx = tasks.findIndex(t => t.id === id); if(idx !== -1) { trash.push(tasks[idx]); tasks.splice(idx, 1); saveAndRenderQuest(); } }
+
+function toggleTrash() {
+    const modal = document.getElementById('trashModal');
+    modal.classList.toggle('hidden');
+    renderTrash();
+}
+function renderTrash() {
+    const list = document.getElementById('trashList');
+    document.getElementById('trashCount').innerText = trash.length;
+    list.innerHTML = '';
+    trash.forEach((task, index) => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-700 p-3 rounded flex justify-between items-center opacity-70';
+        div.innerHTML = `
+            <div>
+                <p class="text-gray-400 font-bold">${task.dich_nghia}</p>
+                <p class="text-xs text-gray-500">${task.id_goc}</p>
+            </div>
+            <div class="flex gap-2">
+                <button class="text-green-400 border border-green-400 px-2 py-1 rounded text-xs hover:bg-green-400 hover:text-white" onclick="restoreTask(${index})">♻️ Khôi phục</button>
+                <button class="text-red-500 border border-red-500 px-2 py-1 rounded text-xs hover:bg-red-500 hover:text-white" onclick="deletePermanent(${index})">❌</button>
+            </div>
+        `;
+        list.prepend(div);
+    });
+}
+function restoreTask(index) { tasks.push(trash[index]); trash.splice(index, 1); saveAndRenderQuest(); renderTrash(); }
+function deletePermanent(index) { trash.splice(index, 1); saveAndRenderQuest(); renderTrash(); }
+function emptyTrash() { if(confirm("Xóa vĩnh viễn?")) { trash = []; saveAndRenderQuest(); renderTrash(); } }
+
+function saveAndRenderQuest() {
+    localStorage.setItem('delta_quests', JSON.stringify(tasks));
+    localStorage.setItem('delta_quests_trash', JSON.stringify(trash));
+    renderTasks();
+}
+
+// Chạy lần đầu để load dữ liệu
+renderTasks();
+renderTrash();

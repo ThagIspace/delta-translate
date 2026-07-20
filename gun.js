@@ -5,51 +5,161 @@ const defaultGunCodes = [
 ];
 
 let gunCodes = JSON.parse(localStorage.getItem('delta_gun_codes')) || defaultGunCodes;
+let gunTrash = JSON.parse(localStorage.getItem('delta_gun_codes_trash')) || []; // Dữ liệu Thùng rác súng
+let editingGunId = null; // Biến lưu ID súng đang được sửa
 
 function renderGunCodes() {
     const list = document.getElementById('gunCodeList');
+
+    // Cập nhật số lượng thùng rác
+    const trashCountEl = document.getElementById('gunTrashCount');
+    if (trashCountEl) trashCountEl.innerText = gunTrash.length;
+
     list.innerHTML = '';
     gunCodes.forEach(gun => {
         const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-yellow-500 shadow-sm';
-        div.innerHTML = `
-            <div class="flex-1 w-full">
-                <div class="text-lg font-bold text-white mb-1">${gun.name}</div>
-                <div class="font-mono bg-gray-900 text-green-400 px-3 py-1 rounded select-all break-all inline-block border border-gray-700">${gun.code}</div>
-            </div>
-            <div class="flex gap-2 w-full sm:w-auto shrink-0">
-                <button class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded font-bold shadow w-full sm:w-auto" onclick="copyGunCode('${gun.code}')">📋 Copy</button>
-                <button class="bg-gray-600 hover:bg-gray-500 px-3 py-2 rounded font-bold shadow w-full sm:w-auto" onclick="editGunCode('${gun.id}')">✏️ Sửa</button>
-                <button class="bg-red-600 hover:bg-red-500 px-3 py-2 rounded font-bold shadow w-full sm:w-auto" onclick="deleteGunCode('${gun.id}')">🗑️</button>
-            </div>
-        `;
+        div.className = 'bg-gray-800 p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-yellow-500 shadow-sm transition-all';
+
+        // KIỂM TRA: Nếu súng này đang ở trạng thái Edit
+        if (editingGunId === gun.id) {
+            div.innerHTML = `
+                <div class="flex-1 w-full flex flex-col gap-2">
+                    <input type="text" id="editGunName_${gun.id}" value="${gun.name}" placeholder="Tên súng..." class="w-full p-2 rounded bg-gray-900 border border-blue-500 text-white focus:outline-none">
+                    <input type="text" id="editGunCode_${gun.id}" value="${gun.code}" placeholder="Code súng..." class="w-full p-2 rounded bg-gray-900 border border-blue-500 text-green-400 font-mono focus:outline-none">
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto shrink-0 mt-3 sm:mt-0">
+                    <button class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="saveEditGunCode('${gun.id}')">💾 Lưu</button>
+                    <button class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="cancelEditGunCode()">❌ Hủy</button>
+                </div>
+            `;
+        }
+        // TRẠNG THÁI BÌNH THƯỜNG
+        else {
+            div.innerHTML = `
+                <div class="flex-1 w-full min-w-0">
+                    <div class="text-lg font-bold text-white mb-1 truncate">${gun.name}</div>
+                    <div class="font-mono bg-gray-900 text-green-400 px-3 py-1 rounded select-all break-all inline-block border border-gray-700 max-w-full">${gun.code}</div>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+                    <button class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="copyGunCode('${gun.code}')">📋 Copy</button>
+                    <button class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="startEditGunCode('${gun.id}')">✏️ Sửa</button>
+                    <button class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="deleteGunCode('${gun.id}')">🗑️ Xóa</button>
+                </div>
+            `;
+        }
         list.appendChild(div);
     });
 }
 
 function addGunCode() {
-    const name = prompt("Nhập Tên súng (VD: M416 Đục tường):");
-    if (!name) return;
-    const code = prompt("Dán Code súng vào đây:");
-    if (!code) return;
-    gunCodes.push({ id: 'g_' + Date.now(), name: name.trim(), code: code.trim() });
+    const nameInput = document.getElementById('gunNameInput');
+    const codeInput = document.getElementById('gunCodeInput');
+
+    const code = codeInput.value.trim();
+    let name = nameInput.value.trim();
+
+    if (!code) {
+        alert("Vui lòng dán code súng vào ô!");
+        codeInput.focus();
+        return;
+    }
+    if (!name) name = "Súng ẩn danh #" + Math.floor(1000 + Math.random() * 9000);
+
+    gunCodes.unshift({ id: 'g_' + Date.now(), name: name, code: code });
     saveGunCodes();
+
+    nameInput.value = '';
+    codeInput.value = '';
 }
 
-function editGunCode(id) {
+/* ================= LORIC SỬA TRỰC TIẾP (INLINE) ================= */
+function startEditGunCode(id) {
+    editingGunId = id;
+    renderGunCodes();
+}
+
+function cancelEditGunCode() {
+    editingGunId = null;
+    renderGunCodes();
+}
+
+function saveEditGunCode(id) {
     const gun = gunCodes.find(g => g.id === id);
     if (!gun) return;
-    const newName = prompt("Sửa Tên súng:", gun.name);
-    if (newName === null) return;
-    const newCode = prompt("Sửa Code súng:", gun.code);
-    if (newCode === null) return;
-    gun.name = newName.trim() || gun.name;
-    gun.code = newCode.trim() || gun.code;
+
+    const newName = document.getElementById(`editGunName_${id}`).value.trim();
+    const newCode = document.getElementById(`editGunCode_${id}`).value.trim();
+
+    if (!newCode) {
+        alert("Code súng không được để trống!");
+        return;
+    }
+
+    gun.name = newName || "Súng ẩn danh #" + Math.floor(1000 + Math.random() * 9000);
+    gun.code = newCode;
+    editingGunId = null; // Tắt chế độ sửa
     saveGunCodes();
 }
 
+/* ================= LORIC THÙNG RÁC ================= */
 function deleteGunCode(id) {
-    if(confirm("Xóa code súng này?")) { gunCodes = gunCodes.filter(g => g.id !== id); saveGunCodes(); }
+    if(confirm("Chuyển code súng này vào thùng rác?")) {
+        const idx = gunCodes.findIndex(g => g.id === id);
+        if (idx !== -1) {
+            gunTrash.push(gunCodes[idx]); // Đẩy vào thùng rác
+            gunCodes.splice(idx, 1);      // Xóa khỏi list chính
+            saveGunCodes();
+        }
+    }
+}
+
+function toggleGunTrash() {
+    const modal = document.getElementById('gunTrashModal');
+    modal.classList.toggle('hidden');
+    renderGunTrash();
+}
+
+function renderGunTrash() {
+    const list = document.getElementById('gunTrashList');
+    document.getElementById('gunTrashCount').innerText = gunTrash.length;
+    list.innerHTML = '';
+
+    gunTrash.forEach((gun, index) => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-700 p-3 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 opacity-80';
+        div.innerHTML = `
+            <div class="flex-1 min-w-0 mr-4">
+                <p class="text-gray-300 font-bold truncate">${gun.name}</p>
+                <p class="text-xs text-gray-500 font-mono truncate">${gun.code}</p>
+            </div>
+            <div class="flex gap-2 shrink-0 w-full sm:w-auto">
+                <button class="text-green-400 border border-green-400 px-3 py-1.5 rounded text-sm hover:bg-green-400 hover:text-white font-bold flex-1 sm:flex-none" onclick="restoreGunCode(${index})">♻️ Khôi phục</button>
+                <button class="text-red-500 border border-red-500 px-3 py-1.5 rounded text-sm hover:bg-red-500 hover:text-white flex-1 sm:flex-none" onclick="deletePermanentGunCode(${index})">❌</button>
+            </div>
+        `;
+        list.prepend(div);
+    });
+}
+
+function restoreGunCode(index) {
+    gunCodes.unshift(gunTrash[index]);
+    gunTrash.splice(index, 1);
+    saveGunCodes();
+    renderGunTrash();
+}
+
+function deletePermanentGunCode(index) {
+    gunTrash.splice(index, 1);
+    saveGunCodes();
+    renderGunTrash();
+}
+
+function emptyGunTrash() {
+    if(confirm("Xóa vĩnh viễn toàn bộ code súng trong thùng rác?")) {
+        gunTrash = [];
+        saveGunCodes();
+        renderGunTrash();
+    }
 }
 
 function copyGunCode(code) {
@@ -64,6 +174,7 @@ function copyGunCode(code) {
 
 function saveGunCodes() {
     localStorage.setItem('delta_gun_codes', JSON.stringify(gunCodes));
+    localStorage.setItem('delta_gun_codes_trash', JSON.stringify(gunTrash)); // Lưu thêm thùng rác
     renderGunCodes();
 }
 
