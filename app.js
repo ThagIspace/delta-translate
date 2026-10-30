@@ -2,6 +2,18 @@
 const HARDCODED_API_KEY = "";
 let savedApiKey = localStorage.getItem('gemini_api_key') || "";
 
+// Dữ liệu chỉ được hiển thị như văn bản, kể cả khi chứa thẻ HTML hoặc dấu nháy.
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[char]);
+}
+
+// Mã hóa cả chuỗi JavaScript và thuộc tính HTML chứa chuỗi đó.
+function htmlArgument(value) {
+    return escapeHtml(JSON.stringify(value));
+}
+
 // Tự động thu gọn nếu đã có API Key
 if (savedApiKey) {
     document.getElementById('apiKey').value = savedApiKey;
@@ -105,6 +117,35 @@ function exportData() {
     URL.revokeObjectURL(url);
 }
 
+function validateBackupData(data) {
+    const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    const isQuest = value => isObject(value)
+        && typeof value.id_goc === 'string' && typeof value.dich_nghia === 'string'
+        && (value.id === undefined || typeof value.id === 'string')
+        && ['completed', 'isPinned'].every(key => value[key] === undefined || typeof value[key] === 'boolean')
+        && (value.order === undefined || Number.isFinite(value.order))
+        && (value.groupId === undefined || value.groupId === null || Number.isSafeInteger(value.groupId))
+        && (value.groupColor === undefined || value.groupColor === null || typeof value.groupColor === 'string')
+        && ['history', 'redoHistory'].every(key => value[key] === undefined
+            || (Array.isArray(value[key]) && value[key].every(text => typeof text === 'string')));
+    const isGun = value => isObject(value) && ['id', 'name', 'code'].every(key => typeof value[key] === 'string');
+    const validators = {
+        delta_quests: value => Array.isArray(value) && value.every(isQuest),
+        delta_quests_trash: value => Array.isArray(value) && value.every(isQuest),
+        delta_translation_cache: value => isObject(value) && Object.values(value).every(text => typeof text === 'string'),
+        delta_gun_codes: value => value === null || (Array.isArray(value) && value.every(isGun)),
+        delta_gun_codes_trash: value => Array.isArray(value) && value.every(isGun)
+    };
+    if (!isObject(data)) throw new Error('Invalid backup');
+    const entries = Object.keys(validators)
+        .filter(key => Object.prototype.hasOwnProperty.call(data, key))
+        .map(key => [key, data[key]]);
+    if (!entries.length || entries.some(([key, value]) => !validators[key](value))) {
+        throw new Error('Invalid backup');
+    }
+    return entries;
+}
+
 function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -113,16 +154,11 @@ function importData(event) {
     reader.onload = function(e) {
         try {
             const importedData = JSON.parse(e.target.result);
-            if (confirm('⚠️ CẢNH BÁO: Ghi đè toàn bộ dữ liệu Quests & Súng hiện tại bằng file backup?')) {
-
-                if (importedData.delta_quests) localStorage.setItem('delta_quests', JSON.stringify(importedData.delta_quests));
-                if (importedData.delta_quests_trash) localStorage.setItem('delta_quests_trash', JSON.stringify(importedData.delta_quests_trash));
-                if (importedData.delta_translation_cache) localStorage.setItem('delta_translation_cache', JSON.stringify(importedData.delta_translation_cache));
-                if (importedData.delta_gun_codes) localStorage.setItem('delta_gun_codes', JSON.stringify(importedData.delta_gun_codes));
-
-                // Bổ sung khôi phục rác súng
-                if (importedData.delta_gun_codes_trash) {
-                    localStorage.setItem('delta_gun_codes_trash', JSON.stringify(importedData.delta_gun_codes_trash));
+            // Kiểm tra tất cả phần dữ liệu trước khi bắt đầu ghi đè.
+            const entries = validateBackupData(importedData);
+            if (confirm('⚠️ CẢNH BÁO: Ghi đè dữ liệu Quests & Súng có trong file backup?')) {
+                for (const [key, value] of entries) {
+                    localStorage.setItem(key, JSON.stringify(value));
                 }
 
                 alert('✅ Khôi phục dữ liệu thành công!');

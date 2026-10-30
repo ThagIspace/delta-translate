@@ -60,7 +60,7 @@
                            class="w-full p-3 pr-24 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
                     <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
                         <button onclick="toggleApiKeyVisibility()" class="text-gray-400 hover:text-white p-1 rounded transition" title="Ẩn/Hiện Key">👁️</button>
-                        <button onclick="copyApiKey()" class="text-gray-400 hover:text-white p-1 rounded transition" title="Copy Key">📋</button>
+                        <button onclick="copyApiKey(this)" class="text-gray-400 hover:text-white p-1 rounded transition" title="Copy Key">📋</button>
                     </div>
                 </div>
             </div>
@@ -177,15 +177,22 @@
             else input.type = 'password';
         }
 
-        function copyApiKey() {
+        async function copyApiKey(btn) {
             const input = document.getElementById('apiKey');
-            if (!input.value) return;
-            navigator.clipboard.writeText(input.value).then(() => {
-                const btn = event.currentTarget;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '✔️';
-                setTimeout(() => btn.innerHTML = originalText, 1500);
-            });
+            if (!input.value || btn.disabled) return;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            try {
+                await navigator.clipboard.writeText(input.value);
+                btn.textContent = '✔️';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 1500);
+            } catch {
+                btn.disabled = false;
+                alert('Không thể copy API key. Vui lòng cho phép trình duyệt sao chép hoặc copy thủ công.');
+            }
         }
     </script>
     <script src="app.js"></script>

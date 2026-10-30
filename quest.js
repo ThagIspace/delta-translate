@@ -176,6 +176,8 @@ function renderTasks() {
     const unpinnedTasks = visibleTasks.filter(t => !t.completed && !t.isPinned);
 
     visibleTasks.forEach((task, index) => {
+        const taskId = htmlArgument(task.id);
+        const groupColor = /^#[0-9a-f]{6}$/i.test(task.groupColor) ? task.groupColor : GROUP_COLORS[0];
         const div = document.createElement('div');
         // Thêm Class nền và viền sáng nếu được ghim
         div.className = `bg-gray-800 p-4 rounded-lg flex flex-col h-full border-l-4 ${task.isPinned ? 'border-green-500 bg-gray-750' : 'border-transparent'} shadow transition-all ${task.completed ? 'opacity-50' : ''}`;
@@ -208,33 +210,33 @@ function renderTasks() {
                 <div class="flex items-center justify-between w-full mb-3 border-b border-gray-700 pb-2">
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-gray-500 w-6 text-right">#${index + 1}</span>
-                        <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                        <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600" ${task.completed ? 'checked' : ''} onchange="toggleTask(${taskId})">
                     </div>
                     <div class="flex items-center gap-1 flex-wrap justify-end">
                         ${task.isPinned ? `<span class="text-xs bg-green-900 text-green-400 border border-green-700 px-1.5 py-0.5 rounded font-bold">📌 Đã ghim</span>` : ''}
-                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold" style="color: ${task.groupColor}; border-color: ${task.groupColor};">🔗 Nhóm ${task.groupId}</span>` : ''}
+                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold" style="color: ${groupColor}; border-color: ${groupColor};">🔗 Nhóm ${escapeHtml(task.groupId)}</span>` : ''}
                     </div>
                 </div>
 
                 <div class="flex-1 min-w-0 mb-3 w-full">
-                    <p class="font-bold text-green-400 text-base mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${task.dich_nghia}</p>
-                    <p class="text-xs text-gray-500 break-words">${task.id_goc}</p>
+                    <p class="font-bold text-green-400 text-base mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${escapeHtml(task.dich_nghia)}</p>
+                    <p class="text-xs text-gray-500 break-words">${escapeHtml(task.id_goc)}</p>
                 </div>
 
                 <div class="flex justify-between items-center mt-auto pt-2 gap-2 flex-wrap w-full border-t border-gray-700">
                     <div class="flex gap-1">
-                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask('${task.id}', -1)"`} title="Chuyển lên">🔼</button>
-                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask('${task.id}', 1)"`} title="Chuyển xuống">🔽</button>
-                        <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin('${task.id}')" title="Ghim/Bỏ ghim">📌</button>
+                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask(${taskId}, -1)"`} title="Chuyển lên">🔼</button>
+                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask(${taskId}, 1)"`} title="Chuyển xuống">🔽</button>
+                        <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin(${taskId})" title="Ghim/Bỏ ghim">📌</button>
                     </div>
 
                     <div class="flex items-center gap-1 ml-auto">
                         ${(hasHistory || hasRedo) ? `
-                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="undoEdit('${task.id}')">↩️</button>` : ''}
-                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="redoEdit('${task.id}')">↪️</button>` : ''}
+                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="undoEdit(${taskId})">↩️</button>` : ''}
+                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-0.5 rounded text-xs" onclick="redoEdit(${taskId})">↪️</button>` : ''}
                         ` : ''}
-                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="editTask('${task.id}')">Sửa</button>
-                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="moveToTrash('${task.id}')">Xóa</button>
+                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="editTask(${taskId})">Sửa</button>
+                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded text-xs transition font-bold" onclick="moveToTrash(${taskId})">Xóa</button>
                     </div>
                 </div>
             `;
@@ -247,11 +249,11 @@ function renderTasks() {
                 <div class="flex items-center justify-between w-full mb-2">
                     <div class="flex items-center gap-3">
                         <span class="font-bold text-gray-500 w-6 text-right shrink-0">#${index + 1}</span>
-                        <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600 shrink-0" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                        <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600 shrink-0" ${task.completed ? 'checked' : ''} onchange="toggleTask(${taskId})">
                     </div>
                     <div class="flex items-center gap-2 flex-wrap justify-end">
                         ${task.isPinned ? `<span class="text-xs bg-green-900 text-green-400 border border-green-700 px-1.5 py-0.5 rounded font-bold shrink-0">📌 Đã ghim</span>` : ''}
-                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold shrink-0" style="color: ${task.groupColor}; border-color: ${task.groupColor};">🔗 Nhóm ${task.groupId}</span>` : ''}
+                        ${task.groupId ? `<span class="text-xs border px-1.5 py-0.5 rounded font-bold shrink-0" style="color: ${groupColor}; border-color: ${groupColor};">🔗 Nhóm ${escapeHtml(task.groupId)}</span>` : ''}
                     </div>
                 </div>
 
@@ -260,24 +262,24 @@ function renderTasks() {
 
                     <!-- Dịch nghĩa & ID gốc -->
                     <div class="flex-1 min-w-0 w-full">
-                        <p class="font-bold text-green-400 text-lg mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${task.dich_nghia}</p>
-                        <p class="text-sm text-gray-500 truncate w-full">${task.id_goc}</p>
+                        <p class="font-bold text-green-400 text-lg mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${escapeHtml(task.dich_nghia)}</p>
+                        <p class="text-sm text-gray-500 truncate w-full">${escapeHtml(task.id_goc)}</p>
                     </div>
 
                     <!-- Khu vực các nút bấm -->
                     <div class="flex flex-wrap items-center gap-2 shrink-0 border-t border-gray-700 md:border-none pt-3 md:pt-0 w-full md:w-auto">
                         <div class="flex gap-1 border-r border-gray-700 pr-2 mr-1">
-                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask('${task.id}', -1)"`} title="Lên">🔼</button>
-                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask('${task.id}', 1)"`} title="Xuống">🔽</button>
-                            <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin('${task.id}')" title="Ghim">📌</button>
+                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask(${taskId}, -1)"`} title="Lên">🔼</button>
+                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask(${taskId}, 1)"`} title="Xuống">🔽</button>
+                            <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin(${taskId})" title="Ghim">📌</button>
                         </div>
 
                         ${(hasHistory || hasRedo) ? `
-                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-1 rounded text-xs" onclick="undoEdit('${task.id}')">↩️</button>` : ''}
-                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-1 rounded text-xs" onclick="redoEdit('${task.id}')">↪️</button>` : ''}
+                            ${hasHistory ? `<button class="text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-white px-2 py-1 rounded text-xs" onclick="undoEdit(${taskId})">↩️</button>` : ''}
+                            ${hasRedo ? `<button class="text-purple-400 border border-purple-400 hover:bg-purple-400 hover:text-white px-2 py-1 rounded text-xs" onclick="redoEdit(${taskId})">↪️</button>` : ''}
                         ` : ''}
-                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="editTask('${task.id}')">Sửa</button>
-                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="moveToTrash('${task.id}')">Xóa</button>
+                        <button class="text-yellow-500 border border-yellow-500 hover:bg-yellow-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="editTask(${taskId})">Sửa</button>
+                        <button class="text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded text-sm transition font-bold" onclick="moveToTrash(${taskId})">Xóa</button>
                     </div>
                 </div>
             `;
@@ -348,8 +350,8 @@ function renderTrash() {
         div.className = 'bg-gray-700 p-3 rounded flex justify-between items-center opacity-70';
         div.innerHTML = `
             <div>
-                <p class="text-gray-400 font-bold">${task.dich_nghia}</p>
-                <p class="text-xs text-gray-500">${task.id_goc}</p>
+                <p class="text-gray-400 font-bold">${escapeHtml(task.dich_nghia)}</p>
+                <p class="text-xs text-gray-500">${escapeHtml(task.id_goc)}</p>
             </div>
             <div class="flex gap-2">
                 <button class="text-green-400 border border-green-400 px-2 py-1 rounded text-xs hover:bg-green-400 hover:text-white" onclick="restoreTask(${index})">♻️ Khôi phục</button>

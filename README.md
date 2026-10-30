@@ -45,9 +45,11 @@ Server chỉ lắng nghe trên máy local. Chỉ dùng server này cho phát tri
 - `item.js`: hiện là bản sao của `quest.js`, trùng khai báo biến toàn cục khi
   trang tải. Chưa có hàm `processItemImage`, nên tab **Từ Điển Item** chưa hoạt động.
 
-Review tĩnh còn thấy nội dung người dùng/AI/file backup được ghép trực tiếp vào
-`innerHTML` và thuộc tính xử lý sự kiện; cần xử lý an toàn trước khi dùng dữ liệu
-không tin cậy. Nút copy API key đang lấy `event.currentTarget` trong callback bất
-đồng bộ, có thể lỗi sau khi copy. Các lỗi này chưa được sửa trong bước setup local.
+Đã bổ sung xử lý ký tự HTML và đối số trong nút bấm cho dữ liệu nhiệm vụ/code
+súng, bao gồm thùng rác và ô chỉnh sửa. Màu nhóm chỉ nhận mã hex sáu ký tự.
+File backup được kiểm tra cấu trúc trước khi ghi đè dữ liệu; file chỉ chứa một
+phần dữ liệu vẫn được hỗ trợ. Nút copy API key nhận trực tiếp nút được bấm;
+copy API key/code súng có thông báo khi trình duyệt không cho sao chép.
+Các thay đổi này đã được rà diff, chưa được kiểm chứng bằng browser QA.
 
 Chưa chạy test, browser QA hoặc gọi Gemini để xác minh bản dịch/model/quota.
