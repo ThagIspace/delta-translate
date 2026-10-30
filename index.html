@@ -142,8 +142,9 @@
         <!-- TAB 2: CODE SÚNG -->
         <!-- ========================================= -->
         <div id="tab-guns" class="tab-content max-w-4xl mx-auto w-full">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex flex-wrap gap-3 justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-white">Quản lý Code Súng</h2>
+                <button id="addDefaultGunCodesButton" onclick="addDefaultGunCodes()" class="tool-btn">＋ Thêm mã mặc định</button>
                 <button onclick="toggleGunTrash()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold shadow transition">
                     🗑️ Thùng rác (<span id="gunTrashCount">0</span>)
                 </button>
@@ -160,10 +161,11 @@
 
             <div class="mb-4">
                 <label for="gunSearch" class="block text-sm text-gray-300 mb-2">Tìm code súng</label>
-                <input type="search" id="gunSearch" oninput="renderGunCodes()" placeholder="Tìm theo tên súng hoặc mã code..."
+                <input type="search" id="gunSearch" oninput="renderGunCodes()" placeholder="Tìm theo tên súng, mã code hoặc ghi chú..."
                        class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
             </div>
             <p id="gunCount" class="text-gray-400 font-bold mb-4" role="status"></p>
+            <p class="text-sm text-gray-400 mb-4">Dùng ↑ ↓ để đổi vị trí trong kết quả đang hiện; thứ tự tự lưu. Số thứ tự theo danh sách đầy đủ. Ghi chú cấp độ không được copy cùng mã.</p>
             <div id="gunCodeList" class="flex flex-col gap-3"></div>
         </div>
 

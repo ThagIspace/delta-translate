@@ -82,7 +82,8 @@ function validateBackupData(data) {
         && (value.groupColor === undefined || value.groupColor === null || typeof value.groupColor === 'string')
         && ['history', 'redoHistory'].every(key => value[key] === undefined
             || (Array.isArray(value[key]) && value[key].every(text => typeof text === 'string')));
-    const isGun = value => isObject(value) && ['id', 'name', 'code'].every(key => typeof value[key] === 'string');
+    const isGun = value => isObject(value) && ['id', 'name', 'code'].every(key => typeof value[key] === 'string')
+        && (value.note === undefined || typeof value.note === 'string');
     const validators = {
         delta_quests: value => Array.isArray(value) && value.every(isQuest),
         delta_quests_trash: value => Array.isArray(value) && value.every(isQuest),

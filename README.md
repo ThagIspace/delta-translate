@@ -26,7 +26,10 @@ Dùng cùng trình duyệt, địa chỉ và cổng để thấy lại dữ li�
 - **Yandex ↗:** mở đúng đường dẫn Trung → Việt trong tab ngoài. App không tự
   tải ảnh lên Yandex; người dùng chủ động chọn ảnh tại đó.
 - **Code súng:** quản lý, tìm kiếm, copy, chỉnh sửa và thùng rác; không cần key.
-  Code khởi tạo là ví dụ.
+  Danh sách mặc định gồm 8 mã người dùng cung cấp: SG552, SMG-45, M870, M14,
+  M249, .357, Vector và M4A1, theo đúng thứ tự này. Vector có ghi chú mốc LVL 33,
+  M4A1 có ghi chú mốc LVL 40; ghi chú hiển thị riêng, không nằm trong mã copy.
+  Chưa kiểm chứng khả năng nhập các mã này trong game.
 - **Wiki Item:** chỉ có thông báo sẽ làm sau cùng. `item.js` cũ được giữ nguyên
   trong repo nhưng không tải vào trang vì chứa bản sao các khai báo của quest.
 
@@ -100,6 +103,18 @@ không phân biệt chữ hoa và dấu tiếng Việt. Xóa ô tìm để bỏ 
 thự trong các mục đang hiện và cùng trạng thái ghim. **Xóa tất cả đã tick**
 chuyển mọi nhiệm vụ đã tick vào thùng rác, kể cả mục bị bộ lọc ẩn; có xác nhận số mục.
 
+Code súng có số thứ tự theo danh sách đầy đủ và nút ↑/↓ để hoán đổi với mục
+liền kề trong kết quả đang hiện. Thứ tự lưu cùng danh sách, không thêm trường
+`order`. Khi đang chỉnh sửa, nút đổi thứ tự tạm khóa để giữ nội dung đang nhập.
+Ghi chú có thể sửa/xóa trong ô chỉnh sửa và đi theo mã vào thùng rác/backup.
+Tìm kiếm code súng cũng tìm trong ghi chú.
+
+Danh sách đã lưu, kể cả danh sách rỗng, không bị thay bằng mặc định mới. Bấm
+**Thêm mã mặc định** để bổ sung các mã còn thiếu vào cuối danh sách; không
+thay thứ tự cũ và không tự lấy lại mã đang có trong thùng rác. Người chưa lưu
+danh sách sẽ thấy 8 mã mặc định ngay khi mở tab. Backup cũ không có ghi chú
+vẫn nhập được; trường `note` mới là tùy chọn và phải là chuỗi nếu có.
+
 **Xuất Data** giữ định dạng backup nhiệm vụ/cache dịch/code súng và thùng rác
 hiện có. Không xuất key, ảnh hoặc cấu hình AI. **Nhập Data** kiểm tra cấu trúc
 trước khi ghi đè các phần có trong file; vẫn hỗ trợ backup chỉ chứa một phần.
@@ -136,3 +151,7 @@ bố cục bằng kích thước trình duyệt giả lập, chưa phải điệ
 API thật, độ chính xác dịch/vị trí trên ảnh game, QA trên điện thoại thật, test suite và
 lint/typecheck: **NOT RUN**. CI: **NOT CHECKED**. Kết quả giả lập không chứng
 minh quyền truy cập model, hạn mức hoặc chất lượng dịch thực tế.
+
+Đợt cập nhật danh sách code súng mặc định, ghi chú và đổi thứ tự chỉ rà diff;
+test/QA riêng cho thay đổi này: **NOT RUN**. Các kết quả QA phía trên là bằng
+chứng của các đợt trước, không xác minh tính năng code súng mới.
