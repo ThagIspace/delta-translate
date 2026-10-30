@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Minh họa hộp thoại dùng chung</title>
+    <link rel="stylesheet" href="dialog.css">
+    <style>
+        body { margin: 0; padding: 2rem; font: 16px/1.6 system-ui, sans-serif; background: #f1f5f9; color: #0f172a; }
+        main { max-width: 700px; margin: auto; }
+        .examples { display: flex; flex-wrap: wrap; gap: .75rem; }
+        .examples button { padding: .75rem 1rem; cursor: pointer; }
+        #result { white-space: pre-wrap; overflow-wrap: anywhere; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Hộp thoại dùng chung</h1>
+        <p>Minh họa độc lập, giao diện sáng. Không tải file giao diện hay dữ liệu của Delta Tools.</p>
+        <div class="examples">
+            <button id="notice">Thông báo</button>
+            <button id="confirmation">Xác nhận</button>
+            <button id="input">Nhập nội dung</button>
+        </div>
+        <p id="result" role="status">Chọn một ví dụ để bắt đầu. Không có dữ liệu nào bị xóa hoặc lưu.</p>
+    </main>
+    <script src="dialog.js"></script>
+    <script>
+        const dialogs = SiteDialog.create({ theme: 'light', labels: {
+            alertTitle: 'Thông báo', confirmTitle: 'Xác nhận', promptTitle: 'Nhập nội dung',
+            ok: 'Đã hiểu', confirm: 'Xác nhận', cancel: 'Hủy', save: 'Lưu',
+            inputLabel: 'Nội dung', requiredMessage: 'Vui lòng nhập nội dung.'
+        } });
+        const result = document.getElementById('result');
+        document.getElementById('notice').addEventListener('click', async () => {
+            await dialogs.alert('Đây là một thông báo ở giữa màn hình.');
+            result.textContent = 'Đã đóng thông báo.';
+        });
+        document.getElementById('confirmation').addEventListener('click', async () => {
+            const accepted = await dialogs.confirm({ title: 'Xác nhận ví dụ?', message: 'Đây chỉ là minh họa, không xóa dữ liệu.', confirmText: 'Đồng ý', danger: true });
+            result.textContent = accepted ? 'Bạn đã đồng ý.' : 'Bạn đã hủy.';
+        });
+        document.getElementById('input').addEventListener('click', async () => {
+            const text = await dialogs.prompt({ message: 'Nhập một ghi chú ví dụ.', multiline: true, required: true });
+            result.textContent = text === null ? 'Đã hủy nhập.' : `Nội dung: ${text}`;
+        });
+    </script>
+</body>
+</html>

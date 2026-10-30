@@ -89,17 +89,17 @@ function moveGunCode(id, direction) {
     saveGunCodes();
 }
 
-function addDefaultGunCodes() {
+async function addDefaultGunCodes() {
     if (editingGunId !== null) return;
     const existingCodes = new Set([...gunCodes, ...gunTrash].map(gun => gun.code));
     const missing = defaultGunCodes.filter(gun => !existingCodes.has(gun.code));
-    if (!missing.length) return alert('Các mã mặc định đã có trong danh sách hoặc thùng rác.');
+    if (!missing.length) return appDialogs.alert('Các mã mặc định đã có trong danh sách hoặc thùng rác.');
     gunCodes.push(...missing.map(gun => ({ ...gun, id: 'g_' + Date.now() + Math.random().toString(36).slice(2, 11) })));
     saveGunCodes();
-    alert(`Đã bổ sung ${missing.length} mã mặc định ở cuối danh sách. Xóa ô tìm kiếm nếu chưa thấy.`);
+    await appDialogs.alert({ title: 'Đã bổ sung mã mặc định', message: `Đã bổ sung ${missing.length} mã ở cuối danh sách. Xóa ô tìm kiếm nếu chưa thấy.` });
 }
 
-function addGunCode() {
+async function addGunCode() {
     const nameInput = document.getElementById('gunNameInput');
     const codeInput = document.getElementById('gunCodeInput');
 
@@ -107,7 +107,7 @@ function addGunCode() {
     let name = nameInput.value.trim();
 
     if (!code) {
-        alert("Vui lòng dán code súng vào ô!");
+        await appDialogs.alert('Vui lòng dán code súng vào ô!');
         codeInput.focus();
         return;
     }
@@ -131,7 +131,7 @@ function cancelEditGunCode() {
     renderGunCodes();
 }
 
-function saveEditGunCode(id) {
+async function saveEditGunCode(id) {
     const gun = gunCodes.find(g => g.id === id);
     if (!gun) return;
 
@@ -140,7 +140,7 @@ function saveEditGunCode(id) {
     const newNote = document.getElementById(`editGunNote_${id}`).value.trim();
 
     if (!newCode) {
-        alert("Code súng không được để trống!");
+        await appDialogs.alert('Code súng không được để trống!');
         return;
     }
 
@@ -153,8 +153,15 @@ function saveEditGunCode(id) {
 }
 
 /* ================= LORIC THÙNG RÁC ================= */
-function deleteGunCode(id) {
-    if(confirm("Chuyển code súng này vào thùng rác?")) {
+async function deleteGunCode(id) {
+    const gun = gunCodes.find(item => item.id === id);
+    if (!gun) return;
+    if (await appDialogs.confirm({
+        title: 'Chuyển code súng vào thùng rác?',
+        message: gun.name,
+        detail: `${gun.code}\nBạn có thể khôi phục từ Thùng rác.`,
+        confirmText: 'Chuyển vào thùng rác'
+    })) {
         const idx = gunCodes.findIndex(g => g.id === id);
         if (idx !== -1) {
             gunTrash.push(gunCodes[idx]); // Đẩy vào thùng rác
@@ -206,9 +213,15 @@ function deletePermanentGunCode(index) {
     renderGunTrash();
 }
 
-function emptyGunTrash() {
-    if(confirm("Xóa vĩnh viễn toàn bộ code súng trong thùng rác?")) {
-        gunTrash = [];
+async function emptyGunTrash() {
+    const selected = new Set(gunTrash);
+    if (await appDialogs.confirm({
+        title: 'Xóa vĩnh viễn code súng?',
+        message: `Xóa vĩnh viễn ${selected.size} code súng đang có trong thùng rác?`,
+        detail: 'Mã tự thêm chỉ có thể lấy lại từ backup đã xuất trước đó.',
+        confirmText: 'Xóa vĩnh viễn', danger: true
+    })) {
+        gunTrash = gunTrash.filter(gun => !selected.has(gun));
         saveGunCodes();
         renderGunTrash();
     }
@@ -223,7 +236,7 @@ async function copyGunCode(code) {
         document.body.appendChild(alertMsg);
         setTimeout(() => alertMsg.remove(), 2000);
     } catch {
-        alert('Không thể copy code súng. Vui lòng cho phép trình duyệt sao chép hoặc copy thủ công.');
+        await appDialogs.alert({ title: 'Không thể copy', message: 'Trình duyệt không cho sao chép code súng. Bạn có thể chọn mã và copy thủ công.' });
     }
 }
 

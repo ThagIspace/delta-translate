@@ -7,7 +7,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=dcc0930">
+    <link rel="stylesheet" href="style.css?v=dialogs-1">
+    <link rel="stylesheet" href="shared/dialog/dialog.css?v=1">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
 
@@ -260,10 +261,11 @@
         <div class="dialog-heading"><h2 id="imageViewerTitle">Xem ảnh</h2><div class="flex gap-2"><button onclick="document.getElementById('viewerImage').classList.toggle('natural-size')" class="tool-btn">Vừa khung / kích thước gốc</button><button onclick="document.getElementById('imageViewer').close()" class="tool-btn">Đóng</button></div></div>
         <div class="viewer-surface"><img id="viewerImage" alt="Ảnh phóng to"></div>
     </dialog>
-    <script src="app.js?v=dcc0930"></script>
-    <script src="ai.js?v=dcc0930"></script>
-    <script src="quest.js?v=dcc0930"></script>
-    <script src="image.js?v=dcc0930"></script>
-    <script src="gun.js?v=dcc0930"></script>
+    <script src="shared/dialog/dialog.js?v=1"></script>
+    <script src="app.js?v=dialogs-1"></script>
+    <script src="ai.js?v=dialogs-1"></script>
+    <script src="quest.js?v=dialogs-1"></script>
+    <script src="image.js?v=dialogs-1"></script>
+    <script src="gun.js?v=dialogs-1"></script>
 </body>
 </html>

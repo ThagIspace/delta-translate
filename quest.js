@@ -46,7 +46,7 @@ function cancelQuestTranslation() {
     setQuestStatus('Đã hủy xử lý; yêu cầu đã gửi vẫn có thể tính vào hạn mức của nhà cung cấp.', 'info');
 }
 async function processQuestImage(image, provider = aiProvider) {
-    if (questRun) return;
+    if (questRun || importingBackup) return;
     lastQuestImage = image;
     document.getElementById('questOriginal').src = image.dataUrl;
     document.getElementById('questPreview').hidden = false;
@@ -128,9 +128,9 @@ function mergeQuests(newQuests) {
     saveAndRenderQuest();
 }
 
-function addCustomNote() {
-    const text = prompt("Nhập nội dung ghi chú:");
-    if (!text) return;
+async function addCustomNote() {
+    const text = await appDialogs.prompt({ title: 'Thêm ghi chú', message: 'Nhập nội dung ghi chú cho danh sách nhiệm vụ.', multiline: true, required: true });
+    if (text === null || !text.trim()) return;
     let maxOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.order || 0)) : 0;
     tasks.push({ id_goc: "📝 Ghi chú", dich_nghia: text.trim(), id: 't_' + Date.now(), completed: false, isPinned: false, order: maxOrder + 1 });
     saveAndRenderQuest();
@@ -152,12 +152,14 @@ function toggleTask(id) {
     if (task) task.completed = !task.completed;
     saveAndRenderQuest();
 }
-function clearCompleted() {
+async function clearCompleted() {
     const cTasks = tasks.filter(t => t.completed);
-    if(cTasks.length === 0) return alert("Chưa có nhiệm vụ nào được đánh dấu!");
-    if(confirm(`Chuyển ${cTasks.length} quest vào thùng rác?`)) {
-        trash = trash.concat(cTasks);
-        tasks = tasks.filter(t => !t.completed);
+    if(cTasks.length === 0) return appDialogs.alert('Chưa có nhiệm vụ nào được đánh dấu!');
+    const selected = new Set(cTasks);
+    if (await appDialogs.confirm({ title: 'Dọn nhiệm vụ đã tick?', message: `Chuyển ${cTasks.length} nhiệm vụ đã tick vào thùng rác?`, detail: 'Bao gồm các mục đã tick đang bị bộ lọc ẩn. Bạn có thể khôi phục từ Thùng rác.', confirmText: 'Chuyển vào thùng rác' })) {
+        const confirmed = tasks.filter(task => selected.has(task) && task.completed);
+        trash = trash.concat(confirmed);
+        tasks = tasks.filter(task => !confirmed.includes(task));
         saveAndRenderQuest();
     }
 }
@@ -337,10 +339,11 @@ function moveTask(id, direction) {
     saveAndRenderQuest();
 }
 
-function editTask(id) {
+async function editTask(id) {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
-    const newText = prompt("Sửa bản dịch:", task.dich_nghia);
+    const newText = await appDialogs.prompt({ title: 'Sửa bản dịch', message: task.id_goc, value: task.dich_nghia, inputLabel: 'Bản dịch', multiline: true, required: true });
+    if (!tasks.includes(task)) return;
     if (newText !== null && newText.trim() !== "" && newText.trim() !== task.dich_nghia) {
         if (!task.history) task.history = [];
         task.history.push(task.dich_nghia);
@@ -386,7 +389,14 @@ function renderTrash() {
 }
 function restoreTask(index) { tasks.push(trash[index]); trash.splice(index, 1); saveAndRenderQuest(); renderTrash(); }
 function deletePermanent(index) { trash.splice(index, 1); saveAndRenderQuest(); renderTrash(); }
-function emptyTrash() { if(confirm("Xóa vĩnh viễn?")) { trash = []; saveAndRenderQuest(); renderTrash(); } }
+async function emptyTrash() {
+    const selected = new Set(trash);
+    if (await appDialogs.confirm({ title: 'Xóa vĩnh viễn nhiệm vụ?', message: `Xóa vĩnh viễn ${selected.size} nhiệm vụ đang có trong thùng rác?`, detail: 'Không thể khôi phục từ Thùng rác sau thao tác này.', confirmText: 'Xóa vĩnh viễn', danger: true })) {
+        trash = trash.filter(task => !selected.has(task));
+        saveAndRenderQuest();
+        renderTrash();
+    }
+}
 
 function saveAndRenderQuest() {
     localStorage.setItem('delta_quests', JSON.stringify(tasks));

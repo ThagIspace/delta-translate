@@ -1,3 +1,10 @@
+const appDialogs = SiteDialog.create({ labels: {
+    alertTitle: 'Thông báo', confirmTitle: 'Xác nhận', promptTitle: 'Nhập nội dung',
+    ok: 'Đã hiểu', confirm: 'Xác nhận', cancel: 'Hủy', save: 'Lưu',
+    inputLabel: 'Nội dung', requiredMessage: 'Vui lòng nhập nội dung.'
+} });
+let importingBackup = false;
+
 // Dữ liệu chỉ được hiển thị như văn bản, kể cả khi chứa thẻ HTML hoặc dấu nháy.
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -102,27 +109,47 @@ function validateBackupData(data) {
 }
 
 function importData(event) {
+    if (importingBackup) return;
     const file = event.target.files[0];
     if (!file) return;
+    importingBackup = true;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
+        let reloadRequested = false;
         try {
             const importedData = JSON.parse(e.target.result);
             // Kiểm tra tất cả phần dữ liệu trước khi bắt đầu ghi đè.
             const entries = validateBackupData(importedData);
-            if (confirm('⚠️ CẢNH BÁO: Ghi đè dữ liệu Quests & Súng có trong file backup?')) {
+            if (await appDialogs.confirm({
+                title: 'Nhập dữ liệu từ backup?',
+                message: 'Ghi đè dữ liệu nhiệm vụ và code súng có trong file backup?',
+                detail: 'Các phần dữ liệu có trong file sẽ thay thế dữ liệu hiện tại. Hãy xuất backup trước nếu cần giữ bản cũ.',
+                confirmText: 'Ghi đè dữ liệu', danger: true
+            })) {
+                // Hộp thoại mới không đóng băng JavaScript như confirm/alert native.
+                // Không để kết quả AI trả muộn ghi đè backup trong lúc chờ thông báo.
+                if (typeof cancelQuestTranslation === 'function') cancelQuestTranslation();
+                if (typeof cancelFullTranslation === 'function') cancelFullTranslation();
                 for (const [key, value] of entries) {
                     localStorage.setItem(key, JSON.stringify(value));
                 }
 
-                alert('✅ Khôi phục dữ liệu thành công!');
+                await appDialogs.alert({ title: 'Đã khôi phục dữ liệu', message: 'Dữ liệu đã được nhập. Trang sẽ tải lại sau khi bạn đóng thông báo.' });
                 location.reload();
+                reloadRequested = true;
             }
         } catch (error) {
-            alert('❌ File backup không hợp lệ hoặc bị lỗi định dạng!');
+            await appDialogs.alert({ title: 'Không nhập được backup', message: 'File backup không hợp lệ, sai định dạng hoặc trình duyệt không lưu được dữ liệu.' });
+        } finally {
+            if (!reloadRequested) importingBackup = false;
+            event.target.value = '';
         }
-        event.target.value = '';
     };
-    reader.readAsText(file);
+    const reportReadFailure = async () => {
+        try { await appDialogs.alert({ title: 'Không đọc được backup', message: 'Hãy chọn lại file backup rồi thử lại.' }); }
+        finally { importingBackup = false; event.target.value = ''; }
+    };
+    reader.onerror = reader.onabort = reportReadFailure;
+    try { reader.readAsText(file); } catch { void reportReadFailure(); }
 }

@@ -36,6 +36,22 @@ Dùng cùng trình duyệt, địa chỉ và cổng để thấy lại dữ li�
 Lần truy cập đầu có khung bắt đầu, có thể bỏ qua. **Hướng dẫn** luôn mở được
 qua thanh trên; **Cài đặt AI** chứa liên kết lấy key Gemini/Groq.
 
+## Hộp thoại dùng chung
+
+Thông báo, xác nhận và nhập ghi chú/bản dịch dùng hộp thoại giữa màn hình thay
+cho `alert/confirm/prompt` của trình duyệt. Có hàng đợi, Hủy/Esc, nhãn hành động
+cụ thể và màu cảnh báo khi xóa vĩnh viễn/ghi đè. Thông báo nhỏ “Đã copy” và
+trạng thái dịch vẫn hiển thị tại chỗ. Hành vi Thêm mã mặc định giữ nguyên.
+
+Bộ độc lập tại [`shared/dialog`](shared/dialog/README.md) chỉ cần sao chép
+`dialog.js` và `dialog.css` sang site khác, không phụ thuộc Tailwind hay dữ liệu
+Delta Tools. Có theme sáng/tối, nhãn tùy chỉnh và `example.html` minh họa riêng.
+Không thay `window.alert/confirm/prompt`; code gọi phải chờ bằng `await`.
+
+Khi xác nhận nhập backup, app hủy các yêu cầu AI đang chờ trước khi ghi đè và
+không nhận ảnh mới cho tới khi hoàn tất/hủy luồng nhập. Việc này tránh kết quả
+AI trả muộn ghi lại dữ liệu cũ trong lúc hộp thông báo thành công đang mở.
+
 ## Cài đặt AI và key
 
 1. Mở **Cài đặt AI**, chọn nhà cung cấp mặc định Gemini hoặc Groq.
@@ -159,3 +175,7 @@ nút ↑/↓ và ghi chú LVL 33/40. Trang dùng mã phiên bản trên URL tài
 cập nhật các tài nguyên này. Chưa chạy QA thao tác đổi thứ tự, copy, lưu lại
 hoặc backup cho thay đổi code súng mới. Các kết quả QA phía trên là bằng chứng
 của các đợt trước, không xác minh các thao tác mới đó.
+
+Đợt hộp thoại dùng chung và trang minh họa chỉ rà source/diff. Tests/browser QA
+cho component và các luồng mới: **NOT RUN**; CI: **NOT CHECKED**. Chưa xác minh
+việc tái dùng trên site khác bằng chạy thực tế.

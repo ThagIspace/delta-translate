@@ -23,6 +23,7 @@ async function handleImageSelection(event, mode) {
     event.target.value = '';
 }
 async function handleImageFile(file, mode) {
+    if (importingBackup) return;
     if (readingImages[mode] || (mode === 'quest' ? questRun : fullRun)) {
         imageStatus(mode, 'Đang xử lý ảnh trước. Hãy chờ hoặc hủy rồi gửi ảnh mới.', 'info');
         return;
@@ -50,9 +51,11 @@ async function handleImageFile(file, mode) {
     } finally {
         readingImages[mode] = false;
     }
-    if (image) {
+    if (image && !importingBackup) {
         if (mode === 'quest') processQuestImage(image);
         else processFullImage(image);
+    } else if (image) {
+        imageStatus(mode, 'Đã bỏ ảnh đang đọc vì đang nhập backup. Gửi lại ảnh sau khi hoàn tất hoặc hủy nhập.', 'info');
     }
 }
 
@@ -100,7 +103,7 @@ function clearFullTranslation() {
     showFullImage(false);
 }
 async function processFullImage(image, provider = aiProvider) {
-    if (fullRun) return;
+    if (fullRun || importingBackup) return;
     lastFullImage = image;
     document.getElementById('fullOriginal').src = image.dataUrl;
     document.getElementById('fullPreview').hidden = false;
