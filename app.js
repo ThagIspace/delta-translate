@@ -5,6 +5,24 @@ const appDialogs = SiteDialog.create({ labels: {
 } });
 let importingBackup = false;
 
+// Cuộn trang chính; không tác động các khung cuộn riêng hoặc hộp thoại.
+(() => {
+    const button = document.getElementById('scrollToTop');
+    const main = document.querySelector('main');
+    const update = () => {
+        button.hidden = Math.max(window.scrollY, main.scrollTop) < 300;
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    main.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('pageshow', update);
+    button.addEventListener('click', () => {
+        const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+        window.scrollTo({ top: 0, behavior });
+        main.scrollTo({ top: 0, behavior });
+    });
+    update();
+})();
+
 // Dữ liệu chỉ được hiển thị như văn bản, kể cả khi chứa thẻ HTML hoặc dấu nháy.
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
