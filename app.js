@@ -14,6 +14,13 @@ function htmlArgument(value) {
     return escapeHtml(JSON.stringify(value));
 }
 
+function matchesSearch(query, ...values) {
+    const normalize = value => String(value ?? '').normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
+    const term = normalize(query).trim();
+    return !term || values.some(value => normalize(value).includes(term));
+}
+
 // Tự động thu gọn nếu đã có API Key
 if (savedApiKey) {
     document.getElementById('apiKey').value = savedApiKey;
@@ -60,12 +67,6 @@ window.addEventListener('online', () => {
 
 // Xử lý sự kiện "Ctrl + V" dùng chung và tự động phân luồng
 document.addEventListener('paste', async (e) => {
-    // KHI BẤM PASTE, NẾU KHÔNG CÓ MẠNG THÌ DỪNG LUÔN
-    if (!navigator.onLine) {
-        alert("❌ Không có kết nối mạng! Vui lòng kiểm tra lại Internet trước khi dán ảnh.");
-        return;
-    }
-
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     for (const item of items) {
         if (item.type.indexOf('image') === 0) {
@@ -81,6 +82,10 @@ document.addEventListener('paste', async (e) => {
             if (isQuestTab) {
                 if(typeof processQuestImage === 'function') processQuestImage(base64Data, mimeType);
             } else if (isItemTab) {
+                if (!navigator.onLine) {
+                    alert("❌ Không có kết nối mạng! Vui lòng kiểm tra lại Internet trước khi dán ảnh.");
+                    return;
+                }
                 if(typeof processItemImage === 'function') processItemImage(base64Data, mimeType);
             } else {
                 alert("Vui lòng mở tab Dịch Nhiệm Vụ hoặc Từ Điển Item để dán ảnh.");

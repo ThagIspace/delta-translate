@@ -16,7 +16,13 @@ function renderGunCodes() {
     if (trashCountEl) trashCountEl.innerText = gunTrash.length;
 
     list.innerHTML = '';
-    gunCodes.forEach(gun => {
+    const query = document.getElementById('gunSearch').value;
+    const visibleGunCodes = gunCodes.filter(gun => matchesSearch(query, gun.name, gun.code));
+    document.getElementById('gunCount').textContent = `Đang hiển thị: ${visibleGunCodes.length} / ${gunCodes.length} code súng`;
+    if (!visibleGunCodes.length) {
+        list.textContent = gunCodes.length ? 'Không tìm thấy code súng phù hợp.' : 'Chưa có code súng. Thêm code ở phía trên.';
+    }
+    visibleGunCodes.forEach(gun => {
         const gunId = htmlArgument(gun.id);
         const div = document.createElement('div');
         div.className = 'bg-gray-800 p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-yellow-500 shadow-sm transition-all';

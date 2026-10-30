@@ -12,55 +12,150 @@ tasks.forEach((t, i) => {
     if (t.isPinned === undefined) t.isPinned = false; // Thêm cờ ghim
 });
 
+// Chỉ giữ ảnh gần nhất trong bộ nhớ của trang, không ghi ảnh vào localStorage.
+let lastQuestImage = null;
+let questProcessing = false;
+
+function setQuestStatus(message, state, canRetry = true) {
+    document.getElementById('questStatus').classList.remove('hidden');
+    const text = document.getElementById('questStatusText');
+    text.textContent = message;
+    text.className = state === 'error' ? 'text-red-400' : state === 'success' ? 'text-green-400' : 'text-gray-200';
+    const retry = document.getElementById('retryQuestButton');
+    retry.classList.toggle('hidden', !canRetry || !lastQuestImage);
+    retry.disabled = questProcessing;
+}
+
+function retryQuestImage() {
+    if (lastQuestImage && !questProcessing) {
+        processQuestImage(lastQuestImage.base64Data, lastQuestImage.mimeType);
+    }
+}
+
+function getQuestApiError(httpStatus, error) {
+    const reasons = Array.isArray(error?.details) ? error.details.map(detail => detail?.reason) : [];
+    const invalidKey = reasons.some(reason => ['API_KEY_INVALID', 'API_KEY_EXPIRED'].includes(reason))
+        || /api key not valid|api key expired/i.test(error?.message || '');
+    if (httpStatus === 401 || invalidKey) {
+        return { message: 'API key không hợp lệ hoặc đã hết hiệu lực. Mở ô API key bằng nút 👁️ trên thanh công cụ, sửa key rồi bấm Thử lại.' };
+    }
+    if (httpStatus === 403) return { message: 'API key hoặc project chưa được phép dùng dịch vụ này. Kiểm tra quyền và trạng thái project trong Google AI Studio.' };
+    if (httpStatus === 402) return { message: 'Tài khoản API đã hết số dư trả trước. Kiểm tra thanh toán trong Google AI Studio trước khi thử lại.' };
+    if (httpStatus === 429 || error?.status === 'RESOURCE_EXHAUSTED') {
+        return { message: 'Đã chạm giới hạn lượt dùng hoặc hạn mức API. Hãy chờ rồi thử lại; nếu vẫn lỗi, kiểm tra hạn mức trong Google AI Studio.' };
+    }
+    if (httpStatus === 404) return { message: 'Không truy cập được model dịch đã cấu hình. Cần kiểm tra model hoặc quyền truy cập nếu thử lại vẫn lỗi.', fallback: true };
+    if (httpStatus === 408 || httpStatus === 504) return { message: 'Dịch ảnh mất quá nhiều thời gian. Hãy thử lại hoặc dán ảnh nhỏ, rõ hơn.' };
+    if (httpStatus >= 500) return { message: 'Dịch vụ AI đang lỗi hoặc quá tải. Vui lòng đợi một lúc rồi thử lại.', fallback: true };
+    if (httpStatus === 400) return { message: 'AI không chấp nhận yêu cầu hoặc ảnh này. Hãy thử ảnh PNG/JPEG khác; nếu vẫn lỗi, cần kiểm tra cấu hình dịch.' };
+    return { message: `Không thể dịch ảnh (mã lỗi ${httpStatus}). Hãy thử lại sau.` };
+}
+
 async function processQuestImage(base64Data, mimeType) {
-    const apiKeyInput = document.getElementById('apiKey').value || HARDCODED_API_KEY;
-    if (!apiKeyInput) return alert("Vui lòng nhập API Key!");
-    const apiKeys = apiKeyInput.split(',').map(k => k.trim()).filter(k => k);
-
-    document.getElementById('loading').style.display = 'block';
-    const promptText = `Trích xuất nhiệm vụ game Delta Force. Tìm 'Mục tiêu hành động cụ thể'. Bỏ qua cốt truyện. Trả về MỘT mảng JSON: [{"id_goc": "Chữ Trung", "dich_nghia": "Dịch Việt"}]. NẾU ảnh không chứa nhiệm vụ, trả về: []`;
-    const MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash'];
-
-    for (let i = 0; i < MODELS.length; i++) {
-        // Tạo bộ đếm thời gian 25s để hủy request nếu mạng lag treo
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 25000);
-
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELS[i]}:generateContent?key=${apiKeys[0]}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }, { inlineData: { mimeType: mimeType, data: base64Data } }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                }),
-                signal: controller.signal // Truyền tín hiệu hủy vào fetch
-            });
-
-            clearTimeout(timeoutId); // Nếu request thành công trước 25s thì xóa bộ đếm
-            const data = await response.json();
-            if (data.error) continue;
-
-            const resultText = data.candidates[0].content.parts[0].text;
-            const newQuests = JSON.parse(resultText);
-
-            if (newQuests.length > 0) mergeQuests(newQuests);
-            break;
-        } catch (e) {
-            clearTimeout(timeoutId); // Dọn dẹp bộ đếm khi lỗi
-
-            // Xử lý nếu nguyên nhân lỗi là do Mất mạng hoặc Timeout
-            if (e.name === 'AbortError' || !navigator.onLine) {
-                alert("⏱️ Lỗi kết nối mạng hoặc mạng quá chậm. Đã hủy quét ảnh!");
-                break; // Thoát hẳn vòng lặp, không cố thử model khác nữa
-            }
-
-            if (i === MODELS.length - 1) console.error(e);
-        }
+    if (questProcessing) {
+        setQuestStatus('Đang dịch ảnh trước. Vui lòng chờ xong rồi dán ảnh mới.', 'info', false);
+        return;
+    }
+    lastQuestImage = { base64Data, mimeType };
+    const apiKeys = (document.getElementById('apiKey').value || HARDCODED_API_KEY)
+        .split(',').map(key => key.trim()).filter(Boolean);
+    if (!apiKeys.length) {
+        document.body.classList.remove('mini-mode');
+        setQuestStatus('Chưa có API key. Nhập Gemini API key rồi bấm Thử lại ảnh vừa dán.', 'error');
+        return;
+    }
+    if (!navigator.onLine) {
+        setQuestStatus('Đang mất kết nối Internet. Khi có mạng trở lại, bấm Thử lại ảnh vừa dán.', 'error');
+        return;
     }
 
-    // ĐẢM BẢO LUÔN TẮT CHỮ LOADING DÙ THÀNH CÔNG HAY THẤT BẠI
-    document.getElementById('loading').style.display = 'none';
+    questProcessing = true;
+    document.getElementById('loading').style.display = 'block';
+    setQuestStatus('Đang đọc và dịch ảnh nhiệm vụ…', 'info', false);
+    const promptText = `Trích xuất nhiệm vụ game Delta Force. Tìm 'Mục tiêu hành động cụ thể'. Bỏ qua cốt truyện. Trả về MỘT mảng JSON: [{"id_goc": "Chữ Trung", "dich_nghia": "Dịch Việt"}]. NẾU ảnh không chứa nhiệm vụ, trả về: []`;
+    const MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash'];
+    try {
+        for (let i = 0; i < MODELS.length; i++) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 25000);
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELS[i]}:generateContent?key=${encodeURIComponent(apiKeys[0])}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }, { inlineData: { mimeType, data: base64Data } }] }],
+                        generationConfig: { responseMimeType: 'application/json' }
+                    }),
+                    signal: controller.signal
+                });
+                // Một số lỗi máy chủ không trả JSON; vẫn phân loại theo HTTP status.
+                let data;
+                try {
+                    data = await response.json();
+                } catch (error) {
+                    if (error.name !== 'SyntaxError') throw error;
+                    data = null;
+                }
+                if (!response.ok || data?.error) {
+                    const issue = getQuestApiError(response.ok ? Number(data.error.code) || 500 : response.status, data?.error);
+                    if (issue.fallback && i < MODELS.length - 1) {
+                        setQuestStatus('Model đầu chưa xử lý được ảnh. Đang thử model dự phòng…', 'info', false);
+                        continue;
+                    }
+                    setQuestStatus(issue.message, 'error');
+                    return;
+                }
+                if (data?.promptFeedback?.blockReason) {
+                    setQuestStatus('AI đã từ chối xử lý ảnh này. Hãy dán ảnh nhiệm vụ khác, rõ và chỉ chứa nội dung game.', 'error');
+                    return;
+                }
+                let newQuests;
+                try {
+                    const candidate = data?.candidates?.[0];
+                    if (candidate?.finishReason && candidate.finishReason !== 'STOP') throw new Error('Incomplete response');
+                    const resultText = candidate?.content?.parts?.map(part => part.text || '').join('');
+                    const parsed = JSON.parse(resultText);
+                    if (!Array.isArray(parsed) || !parsed.every(quest => quest
+                        && typeof quest.id_goc === 'string' && quest.id_goc.trim()
+                        && typeof quest.dich_nghia === 'string' && quest.dich_nghia.trim())) {
+                        throw new Error('Invalid quest data');
+                    }
+                    newQuests = parsed.map(quest => ({ id_goc: quest.id_goc.trim(), dich_nghia: quest.dich_nghia.trim() }));
+                } catch {
+                    if (i < MODELS.length - 1) {
+                        setQuestStatus('AI trả kết quả chưa đọc được. Đang thử model dự phòng…', 'info', false);
+                        continue;
+                    }
+                    setQuestStatus('AI chưa trả được bản dịch hợp lệ hoặc kết quả bị ngắt. Hãy thử lại hoặc dán ảnh rõ hơn.', 'error');
+                    return;
+                }
+                if (!newQuests.length) {
+                    setQuestStatus('AI không tìm thấy nhiệm vụ trong ảnh. Hãy dán ảnh rõ phần mục tiêu nhiệm vụ.', 'info');
+                    return;
+                }
+                try {
+                    mergeQuests(newQuests);
+                } catch {
+                    setQuestStatus('Đã đọc ảnh nhưng không lưu hoặc hiển thị được kết quả. Hãy xuất dữ liệu để sao lưu và kiểm tra dung lượng lưu trữ của trình duyệt.', 'error', false);
+                    return;
+                }
+                setQuestStatus(`Đã xử lý ${newQuests.length} nhiệm vụ. Nhiệm vụ trùng được dùng lại trong danh sách.`, 'success', false);
+                return;
+            } catch (error) {
+                const message = error.name === 'AbortError'
+                    ? 'Dịch ảnh đã quá 25 giây nên được dừng lại. Bấm Thử lại hoặc dán ảnh nhỏ hơn.'
+                    : 'Không kết nối được với dịch vụ AI. Kiểm tra Internet hoặc kết nối trình duyệt rồi bấm Thử lại.';
+                setQuestStatus(message, 'error');
+                return;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+    } finally {
+        questProcessing = false;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('retryQuestButton').disabled = false;
+    }
 }
 
 function mergeQuests(newQuests) {
@@ -128,7 +223,7 @@ function toggleHideCompleted() {
     saveAndRenderQuest();
 }
 function toggleSelectAll() {
-    let vis = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
+    const vis = getVisibleTasks();
     const allC = vis.every(t => t.completed);
     vis.forEach(t => t.completed = !allC);
     saveAndRenderQuest();
@@ -153,6 +248,12 @@ function toggleViewMode() {
     saveAndRenderQuest();
 }
 
+function getVisibleTasks() {
+    const query = document.getElementById('questSearch').value;
+    return tasks.filter(task => (!hideCompleted || !task.completed)
+        && matchesSearch(query, task.dich_nghia, task.id_goc));
+}
+
 function renderTasks() {
     const listDiv = document.getElementById('todoList');
 
@@ -164,13 +265,16 @@ function renderTasks() {
     });
 
     document.getElementById('completedCount').innerText = tasks.filter(t => t.completed).length;
-    let visibleTasks = hideCompleted ? tasks.filter(t => !t.completed) : tasks;
+    const visibleTasks = getVisibleTasks();
     document.getElementById('taskCount').innerText = `Đang hiển thị: ${visibleTasks.length} / ${tasks.length} quest`;
 
     let isGrid = viewMode > 1;
     listDiv.className = 'w-full gap-4 ' + (viewMode === 1 ? 'flex flex-col' : (viewMode === 2 ? 'grid grid-cols-1 md:grid-cols-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3'));
 
     listDiv.innerHTML = '';
+    if (!visibleTasks.length) {
+        listDiv.textContent = tasks.length ? 'Không có nhiệm vụ phù hợp với bộ lọc hiện tại.' : 'Chưa có nhiệm vụ. Dán ảnh hoặc thêm ghi chú để bắt đầu.';
+    }
 
     const pinnedTasks = visibleTasks.filter(t => !t.completed && t.isPinned);
     const unpinnedTasks = visibleTasks.filter(t => !t.completed && !t.isPinned);
@@ -298,7 +402,7 @@ function togglePin(id) {
 }
 
 function moveTask(id, direction) {
-    let workingTasks = tasks.filter(t => !t.completed);
+    const workingTasks = getVisibleTasks().filter(task => !task.completed);
     const index = workingTasks.findIndex(t => t.id === id);
     if (index === -1) return;
     if (index + direction < 0 || index + direction >= workingTasks.length) return;

@@ -77,12 +77,21 @@
                 </div>
                 <div class="flex gap-2">
                     <button onclick="addCustomNote()" class="bg-gray-700 text-yellow-400 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">📝 Ghi Chú</button>
-                    <button onclick="toggleSelectAll()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">☑️ Chọn tất cả</button>
-                    <button onclick="clearCompleted()" class="bg-yellow-600 text-black hover:bg-yellow-500 px-3 py-2 rounded text-sm font-bold">🧹 Xóa tick (<span id="completedCount">0</span>)</button>
+                    <button onclick="toggleSelectAll()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">☑️ Chọn mục đang hiện</button>
+                    <button onclick="clearCompleted()" class="bg-yellow-600 text-black hover:bg-yellow-500 px-3 py-2 rounded text-sm font-bold">🧹 Xóa tất cả đã tick (<span id="completedCount">0</span>)</button>
                     <button onclick="toggleTrash()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">🗑️ Rác (<span id="trashCount">0</span>)</button>
                 </div>
             </div>
 
+            <div class="mb-4">
+                <label for="questSearch" class="block text-sm text-gray-300 mb-2">Tìm nhiệm vụ / ghi chú</label>
+                <input type="search" id="questSearch" oninput="renderTasks()" placeholder="Tìm theo bản dịch hoặc chữ gốc..."
+                       class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <div id="questStatus" class="hidden mb-4 p-3 rounded bg-gray-800 border border-gray-700">
+                <p id="questStatusText" role="status" aria-live="polite"></p>
+                <button id="retryQuestButton" onclick="retryQuestImage()" class="hidden mt-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-3 py-2 rounded text-sm font-bold">Thử lại ảnh vừa dán</button>
+            </div>
             <div id="loading" class="hidden text-green-400 font-bold mb-4 text-center text-lg animate-pulse">Đang nhờ AI soi ảnh... ⏳</div>
             <div id="taskCount" class="text-gray-400 font-bold mb-4"></div>
 
@@ -109,6 +118,12 @@
                 <button onclick="addGunCode()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded font-bold shadow transition shrink-0">➕ Thêm Code</button>
             </div>
 
+            <div class="mb-4">
+                <label for="gunSearch" class="block text-sm text-gray-300 mb-2">Tìm code súng</label>
+                <input type="search" id="gunSearch" oninput="renderGunCodes()" placeholder="Tìm theo tên súng hoặc mã code..."
+                       class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <p id="gunCount" class="text-gray-400 font-bold mb-4" role="status"></p>
             <div id="gunCodeList" class="flex flex-col gap-3"></div>
         </div>
 

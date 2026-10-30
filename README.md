@@ -35,6 +35,28 @@ Server chỉ lắng nghe trên máy local. Chỉ dùng server này cho phát tri
 - Không đưa API key vào source code hay commit. Không dùng key nhạy cảm trên
   trình duyệt/máy dùng chung vì key được lưu tại trình duyệt.
 
+## Tìm kiếm và trạng thái dịch
+
+- Ô tìm nhiệm vụ lọc theo bản dịch, chữ gốc và ghi chú; ô tìm code súng lọc theo
+  tên hoặc mã code. Có thể gõ không dấu, không phân biệt chữ hoa/thường.
+  Xóa nội dung ô tìm kiếm để xem lại danh sách. Bộ lọc không xóa dữ liệu.
+- **Chọn mục đang hiện** chỉ tick/bỏ tick các nhiệm vụ đang khớp bộ lọc.
+  Nút lên/xuống đổi thứ tự trong các nhiệm vụ đang hiện, cùng trạng thái ghim.
+  **Xóa tất cả đã tick** vẫn chuyển mọi nhiệm vụ đã tick vào thùng rác,
+  bao gồm mục đang bị bộ lọc ẩn; hộp xác nhận hiển thị tổng số mục sẽ chuyển.
+- Khu vực trạng thái dịch báo đang xử lý, thành công, không tìm thấy nhiệm vụ,
+  thiếu/key không hợp lệ, thiếu quyền, giới hạn API, lỗi kết nối, quá thời gian
+  hoặc kết quả AI không hợp lệ. Mã lỗi được đối chiếu với
+  [tài liệu GenerateContent của Google](https://ai.google.dev/gemini-api/docs/generate-content/api-errors).
+- Khi dịch thất bại hoặc không thấy nhiệm vụ, dùng **Thử lại ảnh vừa dán**.
+  Nút dùng API key đang nhập; không cần dán lại ảnh sau khi sửa key/kết nối.
+  Ảnh gần nhất chỉ nằm trong bộ nhớ trang, mất khi tải lại và không vào backup.
+  Bấm thử lại sẽ gọi AI và có thể tính vào hạn mức sử dụng.
+- Mỗi lần chỉ xử lý một ảnh. Nếu dán ảnh khác khi đang dịch, hãy chờ rồi dán lại.
+  Giữ hai model đã cấu hình; chỉ chuyển sang model dự phòng khi model không truy
+  cập được, dịch vụ lỗi hoặc kết quả không hợp lệ. Không tự lặp lại khi lỗi key,
+  quyền hoặc hạn mức. Chưa xác minh hai model bằng API thật.
+
 ## Cấu trúc và hạn chế hiện tại
 
 - `index.html`: giao diện và các tab.
