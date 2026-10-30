@@ -174,7 +174,7 @@
             else entry.link.removeAttribute('aria-disabled');
         }
         refreshControls();
-        status.textContent = value ? 'Đang sắp xếp menu. Các mục tạm ngừng mở trang.' : 'Đã kết thúc sắp xếp menu.';
+        status.textContent = value ? 'Đang sắp xếp menu. Các mục tạm ngừng mở trang.' : '';
     }
     arrangeButton.onclick = () => setArranging(!arranging);
     document.getElementById('navResetButton').onclick = () => {
