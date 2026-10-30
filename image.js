@@ -210,7 +210,7 @@ function renderFullText(blocks) {
         const section = document.createElement('div');
         section.className = 'p-3 rounded bg-gray-800 border border-gray-700';
         const original = document.createElement('p');
-        original.className = 'text-sm text-gray-400 whitespace-pre-wrap break-words';
+        original.className = 'text-sm text-gray-200 whitespace-pre-wrap break-words';
         original.textContent = `${index + 1}. ${block.original}`;
         const translated = document.createElement('p');
         translated.className = 'text-green-400 whitespace-pre-wrap break-words';

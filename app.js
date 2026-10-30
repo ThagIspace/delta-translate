@@ -29,11 +29,11 @@ function switchTab(tabId, btnElement) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('text-blue-400', 'border-blue-500');
-        btn.classList.add('text-gray-400', 'border-transparent');
+        btn.classList.add('text-gray-200', 'border-transparent');
         btn.removeAttribute('aria-current');
     });
     document.getElementById(tabId).classList.add('active');
-    btnElement.classList.remove('text-gray-400', 'border-transparent');
+    btnElement.classList.remove('text-gray-200', 'border-transparent');
     btnElement.classList.add('text-blue-400', 'border-blue-500');
     btnElement.setAttribute('aria-current', 'page');
 }

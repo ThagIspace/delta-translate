@@ -234,7 +234,7 @@ function renderTasks() {
             div.innerHTML = `
                 <div class="flex items-center justify-between w-full mb-3 border-b border-gray-700 pb-2">
                     <div class="flex items-center gap-2">
-                        <span class="font-bold text-gray-500 w-6 text-right">#${index + 1}</span>
+                        <span class="font-bold text-gray-200 w-6 text-right">#${index + 1}</span>
                         <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600" ${task.completed ? 'checked' : ''} onchange="toggleTask(${taskId})">
                     </div>
                     <div class="flex items-center gap-1 flex-wrap justify-end">
@@ -244,14 +244,14 @@ function renderTasks() {
                 </div>
 
                 <div class="flex-1 min-w-0 mb-3 w-full">
-                    <p class="font-bold text-green-400 text-base mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${escapeHtml(task.dich_nghia)}</p>
-                    <p class="text-xs text-gray-500 break-words">${escapeHtml(task.id_goc)}</p>
+                    <p class="font-bold text-green-400 text-base mb-1 ${task.completed ? 'line-through text-gray-200' : ''}">${escapeHtml(task.dich_nghia)}</p>
+                    <p class="text-xs text-gray-200 break-words">${escapeHtml(task.id_goc)}</p>
                 </div>
 
                 <div class="flex justify-between items-center mt-auto pt-2 gap-2 flex-wrap w-full border-t border-gray-700">
                     <div class="flex gap-1">
-                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask(${taskId}, -1)"`} title="Chuyển lên">🔼</button>
-                        <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask(${taskId}, 1)"`} title="Chuyển xuống">🔽</button>
+                        <button class="text-gray-200 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask(${taskId}, -1)"`} title="Chuyển lên">🔼</button>
+                        <button class="text-gray-200 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask(${taskId}, 1)"`} title="Chuyển xuống">🔽</button>
                         <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin(${taskId})" title="Ghim/Bỏ ghim">📌</button>
                     </div>
 
@@ -273,7 +273,7 @@ function renderTasks() {
                 <!-- Header: STT, Checkbox, Tag -->
                 <div class="flex items-center justify-between w-full mb-2">
                     <div class="flex items-center gap-3">
-                        <span class="font-bold text-gray-500 w-6 text-right shrink-0">#${index + 1}</span>
+                        <span class="font-bold text-gray-200 w-6 text-right shrink-0">#${index + 1}</span>
                         <input type="checkbox" class="w-5 h-5 cursor-pointer accent-blue-600 shrink-0" ${task.completed ? 'checked' : ''} onchange="toggleTask(${taskId})">
                     </div>
                     <div class="flex items-center gap-2 flex-wrap justify-end">
@@ -287,15 +287,15 @@ function renderTasks() {
 
                     <!-- Dịch nghĩa & ID gốc -->
                     <div class="flex-1 min-w-0 w-full">
-                        <p class="font-bold text-green-400 text-lg mb-1 ${task.completed ? 'line-through text-gray-500' : ''}">${escapeHtml(task.dich_nghia)}</p>
-                        <p class="text-sm text-gray-500 truncate w-full">${escapeHtml(task.id_goc)}</p>
+                        <p class="font-bold text-green-400 text-lg mb-1 ${task.completed ? 'line-through text-gray-200' : ''}">${escapeHtml(task.dich_nghia)}</p>
+                        <p class="text-sm text-gray-200 truncate w-full">${escapeHtml(task.id_goc)}</p>
                     </div>
 
                     <!-- Khu vực các nút bấm -->
                     <div class="flex flex-wrap items-center gap-2 shrink-0 border-t border-gray-700 md:border-none pt-3 md:pt-0 w-full md:w-auto">
                         <div class="flex gap-1 border-r border-gray-700 pr-2 mr-1">
-                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask(${taskId}, -1)"`} title="Lên">🔼</button>
-                            <button class="text-gray-400 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask(${taskId}, 1)"`} title="Xuống">🔽</button>
+                            <button class="text-gray-200 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnUpStyle}" ${disableUp ? 'disabled' : `onclick="moveTask(${taskId}, -1)"`} title="Lên">🔼</button>
+                            <button class="text-gray-200 border border-gray-600 px-2 py-1 rounded text-xs transition ${btnDownStyle}" ${disableDown ? 'disabled' : `onclick="moveTask(${taskId}, 1)"`} title="Xuống">🔽</button>
                             <button class="text-white border ${task.isPinned ? 'border-green-500 bg-green-600' : 'border-gray-600 hover:bg-gray-600'} px-2 py-1 rounded text-xs transition" onclick="togglePin(${taskId})" title="Ghim">📌</button>
                         </div>
 
@@ -376,8 +376,8 @@ function renderTrash() {
         div.className = 'bg-gray-700 p-3 rounded flex justify-between items-center opacity-70';
         div.innerHTML = `
             <div>
-                <p class="text-gray-400 font-bold">${escapeHtml(task.dich_nghia)}</p>
-                <p class="text-xs text-gray-500">${escapeHtml(task.id_goc)}</p>
+                <p class="text-gray-200 font-bold">${escapeHtml(task.dich_nghia)}</p>
+                <p class="text-xs text-gray-200">${escapeHtml(task.id_goc)}</p>
             </div>
             <div class="flex gap-2">
                 <button class="text-green-400 border border-green-400 px-2 py-1 rounded text-xs hover:bg-green-400 hover:text-white" onclick="restoreTask(${index})">♻️ Khôi phục</button>

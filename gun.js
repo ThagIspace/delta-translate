@@ -45,7 +45,7 @@ function renderGunCodes() {
         if (editingGunId === gun.id) {
             div.innerHTML = `
                 <div class="flex-1 w-full flex flex-col gap-2">
-                    <span class="text-sm text-gray-400 font-bold">#${ordinal}</span>
+                    <span class="text-sm text-gray-200 font-bold">#${ordinal}</span>
                     <input type="text" id="editGunName_${escapeHtml(gun.id)}" value="${escapeHtml(gun.name)}" placeholder="Tên súng..." class="w-full p-2 rounded bg-gray-900 border border-blue-500 text-white focus:outline-none">
                     <input type="text" id="editGunCode_${escapeHtml(gun.id)}" value="${escapeHtml(gun.code)}" placeholder="Code súng..." class="w-full p-2 rounded bg-gray-900 border border-blue-500 text-green-400 font-mono focus:outline-none">
                     <input type="text" id="editGunNote_${escapeHtml(gun.id)}" value="${escapeHtml(gun.note)}" placeholder="Ghi chú (không nằm trong mã copy)..." aria-label="Ghi chú code súng" class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-yellow-300 focus:outline-none">
@@ -60,7 +60,7 @@ function renderGunCodes() {
         else {
             div.innerHTML = `
                 <div class="flex-1 w-full min-w-0">
-                    <div class="text-lg font-bold text-white mb-1 break-words"><span class="text-gray-400 mr-2">#${ordinal}</span>${escapeHtml(gun.name)}</div>
+                    <div class="text-lg font-bold text-white mb-1 break-words"><span class="text-gray-200 mr-2">#${ordinal}</span>${escapeHtml(gun.name)}</div>
                     <div class="font-mono bg-gray-900 text-green-400 px-3 py-1 rounded select-all break-all inline-block border border-gray-700 max-w-full">${escapeHtml(gun.code)}</div>
                     ${gun.note ? `<p class="text-yellow-300 text-sm mt-2 whitespace-pre-wrap break-words">${escapeHtml(gun.note)}</p>` : ''}
                 </div>
@@ -188,7 +188,7 @@ function renderGunTrash() {
         div.innerHTML = `
             <div class="flex-1 min-w-0 mr-4">
                 <p class="text-gray-300 font-bold truncate">${escapeHtml(gun.name)}</p>
-                <p class="text-xs text-gray-500 font-mono truncate">${escapeHtml(gun.code)}</p>
+                <p class="text-xs text-gray-200 font-mono truncate">${escapeHtml(gun.code)}</p>
                 ${gun.note ? `<p class="text-yellow-300 text-sm mt-1 whitespace-pre-wrap break-words">${escapeHtml(gun.note)}</p>` : ''}
             </div>
             <div class="flex gap-2 shrink-0 w-full sm:w-auto">

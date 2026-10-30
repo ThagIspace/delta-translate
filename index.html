@@ -7,8 +7,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=dialogs-1">
-    <link rel="stylesheet" href="shared/dialog/dialog.css?v=1">
+    <link rel="stylesheet" href="style.css?v=contrast-1">
+    <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
 
@@ -25,10 +25,10 @@
         </div>
         <nav class="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto" id="nav-tabs" aria-label="Chức năng">
             <button data-tab="tab-quests" onclick="switchTab('tab-quests', this)" aria-current="page" class="nav-btn text-blue-400 border-blue-500">📝 Dịch nhiệm vụ</button>
-            <button data-tab="tab-full" onclick="switchTab('tab-full', this)" class="nav-btn text-gray-400 border-transparent">🖼️ Dịch toàn ảnh</button>
+            <button data-tab="tab-full" onclick="switchTab('tab-full', this)" class="nav-btn text-gray-200 border-transparent">🖼️ Dịch toàn ảnh</button>
             <a href="https://translate.yandex.com/en/?source_lang=zh&amp;target_lang=vi" target="_blank" rel="noopener noreferrer" class="nav-link">Yandex ↗</a>
-            <button data-tab="tab-guns" onclick="switchTab('tab-guns', this)" class="nav-btn text-gray-400 border-transparent">🔫 Code súng</button>
-            <button data-tab="tab-items" onclick="switchTab('tab-items', this)" class="nav-btn text-gray-400 border-transparent">🎒 Wiki Item</button>
+            <button data-tab="tab-guns" onclick="switchTab('tab-guns', this)" class="nav-btn text-gray-200 border-transparent">🔫 Code súng</button>
+            <button data-tab="tab-items" onclick="switchTab('tab-items', this)" class="nav-btn text-gray-200 border-transparent">🎒 Wiki Item</button>
         </nav>
     </header>
 
@@ -41,7 +41,7 @@
                 <li><span class="step-number" aria-hidden="true">2</span><div><strong>Nhập API key</strong><p>Mở trang lấy key, nhập và lưu vào app.</p></div></li>
                 <li><span class="step-number" aria-hidden="true">3</span><div><strong>Gửi ảnh để dịch</strong><p>Chọn kiểu dịch, dán ảnh hoặc chọn file.</p></div></li>
             </ol>
-            <p class="text-gray-400 text-sm mb-3">Code súng và liên kết Yandex dùng được ngay, không cần nhập key vào app. Hướng dẫn luôn mở lại được ở thanh trên.</p>
+            <p class="text-gray-200 text-sm mb-3">Code súng và liên kết Yandex dùng được ngay, không cần nhập key vào app. Hướng dẫn luôn mở lại được ở thanh trên.</p>
             <div class="flex flex-wrap gap-2">
                 <button onclick="dismissWelcome(); openAiSettings()" class="primary-btn">Thiết lập AI</button>
                 <button onclick="dismissWelcome(); openGuide()" class="tool-btn">Xem hướng dẫn</button>
@@ -56,20 +56,20 @@
         <div id="tab-quests" class="tab-content active max-w-5xl mx-auto w-full">
 
             <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-                <p data-provider-badge class="text-sm text-gray-400"></p>
+                <p data-provider-badge class="text-sm text-gray-200"></p>
                 <button onclick="openAiSettings()" class="tool-btn">Chọn AI / nhập key</button>
             </div>
             <div id="pasteArea" class="image-drop mb-4">
                 <p class="text-blue-400 font-semibold mb-2">Dán ảnh nhiệm vụ bằng Ctrl+V hoặc chọn ảnh</p>
-                <p id="questUploadHelp" class="text-sm text-gray-400 mb-3">PNG, JPEG, WebP · tối đa 2 MB</p>
+                <p id="questUploadHelp" class="text-sm text-gray-200 mb-3">PNG, JPEG, WebP · tối đa 2 MB</p>
                 <label class="file-picker" for="questImageFile">
                     <span aria-hidden="true">＋</span> Chọn ảnh nhiệm vụ
                     <input id="questImageFile" type="file" accept="image/png,image/jpeg,image/webp" aria-describedby="questUploadHelp" onchange="handleImageSelection(event, 'quest')">
                 </label>
-                <p class="text-xs text-gray-400 mt-2">Ảnh được gửi đến nhà cung cấp AI đang chọn để dịch. Chỉ mục tiêu nhiệm vụ được thêm vào danh sách.</p>
+                <p class="text-xs text-gray-200 mt-2">Ảnh được gửi đến nhà cung cấp AI đang chọn để dịch. Chỉ mục tiêu nhiệm vụ được thêm vào danh sách.</p>
             </div>
             <div id="questPreview" class="mb-4" hidden>
-                <p class="text-sm text-gray-400 mb-2">Ảnh nhiệm vụ gần nhất · bấm ảnh để phóng to</p>
+                <p class="text-sm text-gray-200 mb-2">Ảnh nhiệm vụ gần nhất · bấm ảnh để phóng to</p>
                 <button onclick="openImageViewer('quest')" class="preview-button" aria-label="Phóng to ảnh nhiệm vụ"><img id="questOriginal" alt="Ảnh nhiệm vụ gốc" class="source-preview"></button>
             </div>
 
@@ -99,25 +99,25 @@
                 <button id="cancelQuestButton" onclick="cancelQuestTranslation()" class="tool-btn mt-2" hidden>Hủy xử lý</button>
             </div>
             <div id="loading" class="hidden text-green-400 font-bold mb-4 text-center text-lg animate-pulse">Đang nhờ AI soi ảnh... ⏳</div>
-            <div id="taskCount" class="text-gray-400 font-bold mb-4"></div>
+            <div id="taskCount" class="text-gray-200 font-bold mb-4"></div>
 
             <div id="todoList" class="w-full"></div>
         </div>
 
         <section id="tab-full" class="tab-content max-w-6xl mx-auto w-full" aria-label="Dịch toàn ảnh">
             <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-                <div><h2 class="text-2xl font-bold">Dịch toàn bộ chữ trong ảnh</h2><p data-provider-badge class="text-sm text-gray-400 mt-1"></p></div>
+                <div><h2 class="text-2xl font-bold">Dịch toàn bộ chữ trong ảnh</h2><p data-provider-badge class="text-sm text-gray-200 mt-1"></p></div>
                 <button onclick="openAiSettings()" class="tool-btn">Chọn AI / nhập key</button>
             </div>
-            <p class="text-sm text-gray-400 mb-4">Bản thử nghiệm: chữ Việt được đặt lên ô nền che chữ gốc. Vị trí/chữ nhỏ có thể sai; hãy đối chiếu ảnh gốc. Kết quả không được thêm vào danh sách nhiệm vụ.</p>
+            <p class="text-sm text-gray-200 mb-4">Bản thử nghiệm: chữ Việt được đặt lên ô nền che chữ gốc. Vị trí/chữ nhỏ có thể sai; hãy đối chiếu ảnh gốc. Kết quả không được thêm vào danh sách nhiệm vụ.</p>
             <div class="image-drop mb-4">
                 <p class="font-semibold text-blue-400 mb-2">Dán ảnh bằng Ctrl+V hoặc chọn file để dịch toàn ảnh</p>
-                <p id="fullUploadHelp" class="text-sm text-gray-400 mb-3">PNG, JPEG, WebP · tối đa 2 MB</p>
+                <p id="fullUploadHelp" class="text-sm text-gray-200 mb-3">PNG, JPEG, WebP · tối đa 2 MB</p>
                 <label class="file-picker" for="fullImageFile">
                     <span aria-hidden="true">＋</span> Chọn ảnh cần dịch
                     <input id="fullImageFile" type="file" accept="image/png,image/jpeg,image/webp" aria-describedby="fullUploadHelp" onchange="handleImageSelection(event, 'full')">
                 </label>
-                <p class="text-xs text-gray-400 mt-2">Ảnh được gửi đến AI đang chọn. Chỉ giữ ảnh/kết quả trong phiên mở trang, không đưa vào backup.</p>
+                <p class="text-xs text-gray-200 mt-2">Ảnh được gửi đến AI đang chọn. Chỉ giữ ảnh/kết quả trong phiên mở trang, không đưa vào backup.</p>
             </div>
             <div id="fullStatus" class="mb-4 p-3 rounded bg-gray-800 border border-gray-700" hidden>
                 <p id="fullStatusText" role="status" aria-live="polite"></p>
@@ -165,14 +165,14 @@
                 <input type="search" id="gunSearch" oninput="renderGunCodes()" placeholder="Tìm theo tên súng, mã code hoặc ghi chú..."
                        class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
             </div>
-            <p id="gunCount" class="text-gray-400 font-bold mb-4" role="status"></p>
-            <p class="text-sm text-gray-400 mb-4">Dùng ↑ ↓ để đổi vị trí trong kết quả đang hiện; thứ tự tự lưu. Số thứ tự theo danh sách đầy đủ. Ghi chú cấp độ không được copy cùng mã.</p>
+            <p id="gunCount" class="text-gray-200 font-bold mb-4" role="status"></p>
+            <p class="text-sm text-gray-200 mb-4">Dùng ↑ ↓ để đổi vị trí trong kết quả đang hiện; thứ tự tự lưu. Số thứ tự theo danh sách đầy đủ. Ghi chú cấp độ không được copy cùng mã.</p>
             <div id="gunCodeList" class="flex flex-col gap-3"></div>
         </div>
 
         <section id="tab-items" class="tab-content max-w-5xl mx-auto w-full">
             <h2 class="text-2xl font-bold mb-3">Wiki Item</h2>
-            <p class="text-gray-400">Phần tra cứu vật phẩm sẽ được triển khai sau cùng. Hiện chưa có dữ liệu wiki hoặc chức năng quét item.</p>
+            <p class="text-gray-200">Phần tra cứu vật phẩm sẽ được triển khai sau cùng. Hiện chưa có dữ liệu wiki hoặc chức năng quét item.</p>
         </section>
 
     </main>
@@ -210,7 +210,7 @@
         <div class="dialog-body">
         <label for="aiProvider" class="block mb-2">Nhà cung cấp mặc định</label>
         <select id="aiProvider" class="settings-input mb-4"><option value="gemini">Gemini</option><option value="groq">Groq</option></select>
-        <p class="text-sm text-gray-400 mb-4">Chỉ cần key của một nhà cung cấp. App không tự đổi nhà cung cấp hoặc tự gọi API khi mở trang/lưu cài đặt.</p>
+        <p class="text-sm text-gray-200 mb-4">Chỉ cần key của một nhà cung cấp. App không tự đổi nhà cung cấp hoặc tự gọi API khi mở trang/lưu cài đặt.</p>
         <fieldset class="settings-group">
             <legend class="font-bold">Gemini</legend>
             <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline">Mở trang lấy key Gemini ↗</a>
@@ -236,7 +236,7 @@
             <label class="text-sm"><input type="checkbox" id="groqRemember"> Ghi nhớ key trên trình duyệt này</label>
         </fieldset>
 
-        <p class="text-sm text-gray-400 mb-4">Không chọn ghi nhớ: key dùng trong phiên tab hiện tại. Key đã ghi nhớ nằm trong bộ nhớ trình duyệt, không phù hợp máy dùng chung. File Xuất Data không chứa key.</p>
+        <p class="text-sm text-gray-200 mb-4">Không chọn ghi nhớ: key dùng trong phiên tab hiện tại. Key đã ghi nhớ nằm trong bộ nhớ trình duyệt, không phù hợp máy dùng chung. File Xuất Data không chứa key.</p>
         </div>
         <div class="dialog-actions">
             <button onclick="saveAiSettings()" class="primary-btn">Lưu cài đặt</button>
@@ -262,10 +262,10 @@
         <div class="viewer-surface"><img id="viewerImage" alt="Ảnh phóng to"></div>
     </dialog>
     <script src="shared/dialog/dialog.js?v=1"></script>
-    <script src="app.js?v=dialogs-1"></script>
-    <script src="ai.js?v=dialogs-1"></script>
-    <script src="quest.js?v=dialogs-1"></script>
-    <script src="image.js?v=dialogs-1"></script>
-    <script src="gun.js?v=dialogs-1"></script>
+    <script src="app.js?v=contrast-1"></script>
+    <script src="ai.js?v=contrast-1"></script>
+    <script src="quest.js?v=contrast-1"></script>
+    <script src="image.js?v=contrast-1"></script>
+    <script src="gun.js?v=contrast-1"></script>
 </body>
 </html>
