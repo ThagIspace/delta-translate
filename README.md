@@ -41,7 +41,7 @@ qua thanh trên; **Cài đặt AI** chứa liên kết lấy key Gemini/Groq.
 Thông báo, xác nhận và nhập ghi chú/bản dịch dùng hộp thoại giữa màn hình thay
 cho `alert/confirm/prompt` của trình duyệt. Có hàng đợi, Hủy/Esc, nhãn hành động
 cụ thể và màu cảnh báo khi xóa vĩnh viễn/ghi đè. Thông báo nhỏ “Đã copy” và
-trạng thái dịch vẫn hiển thị tại chỗ. Hành vi Thêm mã mặc định giữ nguyên.
+trạng thái dịch vẫn hiển thị tại chỗ.
 
 Bộ độc lập tại [`shared/dialog`](shared/dialog/README.md) chỉ cần sao chép
 `dialog.js` và `dialog.css` sang site khác, không phụ thuộc Tailwind hay dữ liệu
@@ -125,11 +125,20 @@ liền kề trong kết quả đang hiện. Thứ tự lưu cùng danh sách, kh
 Ghi chú có thể sửa/xóa trong ô chỉnh sửa và đi theo mã vào thùng rác/backup.
 Tìm kiếm code súng cũng tìm trong ghi chú.
 
-Danh sách đã lưu, kể cả danh sách rỗng, không bị thay bằng mặc định mới. Bấm
-**Thêm mã mặc định** để bổ sung các mã còn thiếu vào cuối danh sách; không
-thay thứ tự cũ và không tự lấy lại mã đang có trong thùng rác. Người chưa lưu
-danh sách sẽ thấy 8 mã mặc định ngay khi mở tab. Backup cũ không có ghi chú
-vẫn nhập được; trường `note` mới là tùy chọn và phải là chuỗi nếu có.
+Danh sách đã lưu, kể cả danh sách rỗng, không bị tự thay bằng mặc định mới. Bấm
+**Khôi phục mã mặc định** để lấy lại mã mặc định còn thiếu trong danh sách:
+
+- Nếu còn trong Thùng rác, lấy lại bản ghi đó và giữ tên/ghi chú đã sửa.
+- Nếu đã xóa vĩnh viễn, thêm lại bản gốc có sẵn trong app, gồm ghi chú LVL.
+- Mã đang có được giữ nguyên, không thêm trùng; các mã khôi phục nối vào cuối
+  theo thứ tự mặc định và không đổi thứ tự danh sách đang có. Mã trong Thùng
+  rác trùng với mã đang có cũng được giữ nguyên trong Thùng rác.
+- Chỉ áp dụng cho 8 chuỗi code mặc định, không khôi phục mã tự thêm. Nếu đã sửa
+  chuỗi code của một bản mặc định, bản sửa không bị ghi đè; bản gốc thiếu có
+  thể được thêm lại riêng. Mã tự thêm đã xóa vĩnh viễn cần backup để lấy lại.
+
+Người chưa lưu danh sách sẽ thấy 8 mã mặc định ngay khi mở tab. Backup cũ không
+có ghi chú vẫn nhập được; trường `note` mới là tùy chọn và phải là chuỗi nếu có.
 
 **Xuất Data** giữ định dạng backup nhiệm vụ/cache dịch/code súng và thùng rác
 hiện có. Không xuất key, ảnh hoặc cấu hình AI. **Nhập Data** kiểm tra cấu trúc
@@ -179,3 +188,6 @@ của các đợt trước, không xác minh các thao tác mới đó.
 Đợt hộp thoại dùng chung và trang minh họa chỉ rà source/diff. Tests/browser QA
 cho component và các luồng mới: **NOT RUN**; CI: **NOT CHECKED**. Chưa xác minh
 việc tái dùng trên site khác bằng chạy thực tế.
+
+Đợt đổi nút sang Khôi phục mã mặc định chỉ rà source/diff; test/QA cho hành vi
+khôi phục từ Thùng rác hoặc bản gốc: **NOT RUN**.

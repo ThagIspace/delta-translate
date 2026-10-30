@@ -28,7 +28,7 @@ function renderGunCodes() {
 
     list.innerHTML = '';
     const visibleGunCodes = getVisibleGunCodes();
-    document.getElementById('addDefaultGunCodesButton').disabled = editingGunId !== null;
+    document.getElementById('restoreDefaultGunCodesButton').disabled = editingGunId !== null;
     document.getElementById('gunCount').textContent = `Đang hiển thị: ${visibleGunCodes.length} / ${gunCodes.length} code súng`;
     if (!visibleGunCodes.length) {
         list.textContent = gunCodes.length ? 'Không tìm thấy code súng phù hợp.' : 'Chưa có code súng. Thêm code ở phía trên.';
@@ -89,14 +89,41 @@ function moveGunCode(id, direction) {
     saveGunCodes();
 }
 
-async function addDefaultGunCodes() {
+async function restoreDefaultGunCodes() {
     if (editingGunId !== null) return;
-    const existingCodes = new Set([...gunCodes, ...gunTrash].map(gun => gun.code));
+    const existingCodes = new Set(gunCodes.map(gun => gun.code));
     const missing = defaultGunCodes.filter(gun => !existingCodes.has(gun.code));
-    if (!missing.length) return appDialogs.alert('Các mã mặc định đã có trong danh sách hoặc thùng rác.');
-    gunCodes.push(...missing.map(gun => ({ ...gun, id: 'g_' + Date.now() + Math.random().toString(36).slice(2, 11) })));
+    if (!missing.length) return appDialogs.alert({ title: 'Đã đủ mã mặc định', message: `Cả ${defaultGunCodes.length} mã mặc định đều đang có trong danh sách. Không có mã nào cần khôi phục.` });
+    const usedIds = new Set(gunCodes.map(gun => gun.id));
+    function newId() {
+        let id;
+        do { id = 'g_' + Date.now() + Math.random().toString(36).slice(2, 11); } while (usedIds.has(id));
+        return id;
+    }
+    let restored = 0;
+    let recreated = 0;
+    for (const original of missing) {
+        const trashIndex = gunTrash.findIndex(gun => gun.code === original.code);
+        let gun;
+        if (trashIndex !== -1) {
+            [gun] = gunTrash.splice(trashIndex, 1);
+            // Giữ tên/ghi chú đã sửa. Chỉ đổi id khi đụng một bản ghi đang có.
+            if (usedIds.has(gun.id)) gun = { ...gun, id: newId() };
+            restored++;
+        } else {
+            gun = { ...original, id: newId() };
+            recreated++;
+        }
+        usedIds.add(gun.id);
+        gunCodes.push(gun);
+    }
     saveGunCodes();
-    await appDialogs.alert({ title: 'Đã bổ sung mã mặc định', message: `Đã bổ sung ${missing.length} mã ở cuối danh sách. Xóa ô tìm kiếm nếu chưa thấy.` });
+    renderGunTrash();
+    await appDialogs.alert({
+        title: 'Đã khôi phục mã mặc định',
+        message: `Đã lấy lại ${restored} mã từ Thùng rác và thêm lại ${recreated} mã từ bản gốc.`,
+        detail: 'Các mã khôi phục nằm ở cuối danh sách; mã đang có và thứ tự cũ được giữ nguyên. Xóa ô tìm kiếm nếu chưa thấy.'
+    });
 }
 
 async function addGunCode() {

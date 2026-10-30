@@ -145,11 +145,13 @@
         <div id="tab-guns" class="tab-content max-w-4xl mx-auto w-full">
             <div class="flex flex-wrap gap-3 justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-white">Quản lý Code Súng</h2>
-                <button id="addDefaultGunCodesButton" onclick="addDefaultGunCodes()" class="tool-btn">＋ Thêm mã mặc định</button>
+                <button id="restoreDefaultGunCodesButton" onclick="restoreDefaultGunCodes()" class="tool-btn" aria-describedby="gunDefaultsHelp">↺ Khôi phục mã mặc định</button>
                 <button onclick="toggleGunTrash()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold shadow transition">
                     🗑️ Thùng rác (<span id="gunTrashCount">0</span>)
                 </button>
             </div>
+
+            <p id="gunDefaultsHelp" class="text-sm text-gray-200 mb-4">Lấy lại mã mặc định bị thiếu từ Thùng rác hoặc bản gốc có sẵn trong app, kể cả khi đã xóa vĩnh viễn. Giữ nguyên các mã đang có; không khôi phục mã tự thêm.</p>
 
             <!-- Khu vực nhập trực tiếp Code Súng mới -->
             <div class="bg-gray-800 p-4 rounded-lg mb-6 border border-gray-700 shadow-sm flex flex-col md:flex-row gap-3">
@@ -266,6 +268,6 @@
     <script src="ai.js?v=contrast-1"></script>
     <script src="quest.js?v=contrast-1"></script>
     <script src="image.js?v=contrast-1"></script>
-    <script src="gun.js?v=contrast-1"></script>
+    <script src="gun.js?v=restore-defaults-1"></script>
 </body>
 </html>
