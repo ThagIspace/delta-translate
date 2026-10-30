@@ -127,6 +127,12 @@ báo nhầm là kết quả bị ngắt. Đã sửa nhánh kiểm tra phản h�
 liên quan cho cả Gemini/Groq cùng các luồng thành công. Kết quả 70/70 ở
 `d46e111` là bằng chứng lịch sử riêng.
 
-API thật, độ chính xác dịch/vị trí trên ảnh game, mobile QA, test suite và
+Đợt chỉnh UI tiếp theo đã chạy 24/24 kiểm tra tại viewport 320, 390, 768 và
+1280 px với dữ liệu giả, vẫn chặn API thật. Nút chọn ảnh có nhãn tiếng Việt,
+dùng được bằng chuột/bàn phím; hướng dẫn bắt đầu đổi giữa một/ba cột; nút
+Lưu/Đóng của Cài đặt AI nằm trong khung khi cuộn phần nhập key. Đây là kiểm tra
+bố cục bằng kích thước trình duyệt giả lập, chưa phải điện thoại thật.
+
+API thật, độ chính xác dịch/vị trí trên ảnh game, QA trên điện thoại thật, test suite và
 lint/typecheck: **NOT RUN**. CI: **NOT CHECKED**. Kết quả giả lập không chứng
 minh quyền truy cập model, hạn mức hoặc chất lượng dịch thực tế.
