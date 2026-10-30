@@ -114,6 +114,19 @@ Xóa dữ liệu trang trong trình duyệt có thể làm mất dữ liệu và
 - `image.js`: nhận/giải mã ảnh, trạng thái toàn ảnh, dựng canvas, phóng to và xuất PNG.
 - `gun.js`: tính năng code súng hiện có, không sửa trong đợt này.
 
-Đợt thay đổi này chỉ rà source/diff. Local tests, browser QA, lint/typecheck và
-API thật: **NOT RUN**. CI: **NOT CHECKED**. Kết quả QA giả lập 70/70 trước đây
-thuộc commit `d46e111`, không chứng minh các tính năng mới trong đợt này.
+Ngày 30/10/2026 đã chạy browser QA local với ảnh/key/phản hồi giả, thay `fetch`
+và chặn kết nối API bằng CSP `connect-src 'none'` trên địa chỉ QA riêng.
+130/130 phép kiểm tra hợp lệ đạt: điều hướng/hướng dẫn, key cũ và cách lưu key,
+chọn provider, hai luồng dịch, dữ liệu lỗi, hủy/phản hồi muộn, timeout, PNG,
+backup không chứa key/ảnh và dữ liệu danh sách cũ. Bốn phép đo ban đầu không
+hợp lệ do ô password bị che hoặc đọc trước khi file tải xong đã được thay bằng
+kiểm tra yêu cầu giả/đợi đúng trạng thái, không tính vào 130 phép kiểm tra.
+
+QA bắt đầu từ `7772e8f`, phát hiện phản hồi HTTP 200 không đọc được JSON bị Groq
+báo nhầm là kết quả bị ngắt. Đã sửa nhánh kiểm tra phản hồi và chạy lại nhánh
+liên quan cho cả Gemini/Groq cùng các luồng thành công. Kết quả 70/70 ở
+`d46e111` là bằng chứng lịch sử riêng.
+
+API thật, độ chính xác dịch/vị trí trên ảnh game, mobile QA, test suite và
+lint/typecheck: **NOT RUN**. CI: **NOT CHECKED**. Kết quả giả lập không chứng
+minh quyền truy cập model, hạn mức hoặc chất lượng dịch thực tế.

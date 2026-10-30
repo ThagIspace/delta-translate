@@ -177,6 +177,9 @@ async function requestAiTranslation(mode, image, provider, { signal, onProgress 
             try { data = await response.json(); }
             catch (error) { if (error.name !== 'SyntaxError') throw error; data = null; }
             if (!response.ok || data?.error) throw describeAiError(response.ok ? Number(data.error.code) || 500 : response.status, data?.error, provider);
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                throw new AiRequestError('AI chưa trả bản dịch hợp lệ. Hãy thử lại.', 'format', true);
+            }
             let text;
             if (provider === 'gemini') {
                 if (data?.promptFeedback?.blockReason) throw new AiRequestError('AI từ chối xử lý ảnh này. Hãy chọn ảnh khác.', 'blocked');
