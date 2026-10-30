@@ -2,6 +2,21 @@
 
 Web HTML/CSS/JavaScript thuần cho Delta Force, không có backend, database hay bước build.
 
+## Trạng thái bàn giao — 30/10/2026
+
+Tạm dừng phát triển tại bản xem thử Wiki Quest. Đã triển khai giao diện code súng
+gọn với khung chi tiết, ghim và chuyển đến số thứ tự; menu có kéo thả, nút trái/phải,
+tự lưu và khôi phục thứ tự. Khi bấm **Xong**, dòng trạng thái sắp xếp được xóa.
+Wiki Quest hiện có 3 nhiệm vụ Zero Dam song ngữ, cây/danh sách và tìm kiếm.
+
+Các thay đổi mới đã rà source/diff; tests/browser QA cho code súng, menu và Wiki
+Quest: **NOT RUN**. CI: **NOT CHECKED**. Người dùng đã phản hồi menu sắp xếp dùng
+được trước khi sửa dòng trạng thái; đây không phải kết quả QA toàn bộ.
+
+Khi tiếp tục: ưu tiên QA local bằng dữ liệu giả, không gọi Gemini/Groq thật;
+đối chiếu tên quest Trung với bản game người dùng chơi trước khi mở rộng dữ liệu.
+Đây là đề xuất bước tiếp theo, chưa thực hiện. Wiki Item vẫn để sau cùng.
+
 ## Chạy local trên Windows
 
 Yêu cầu Python 3 có lệnh `python`. Mở PowerShell trong thư mục project:
@@ -32,6 +47,10 @@ Dùng cùng trình duyệt, địa chỉ và cổng để thấy lại dữ li�
   Chưa kiểm chứng khả năng nhập các mã này trong game.
 - **Wiki Item:** chỉ có thông báo sẽ làm sau cùng. `item.js` cũ được giữ nguyên
   trong repo nhưng không tải vào trang vì chứa bản sao các khai báo của quest.
+- **Wiki Quest:** bản xem thử 3 quest Zero Dam, tên/mục tiêu Trung–Việt là bản
+  dịch tham khảo từ nguồn tiếng Anh. Có tìm kiếm, cây cuộn ngang, danh sách,
+  chi tiết và link nguồn từng quest; không cần API key. Chưa có cây đầy đủ,
+  phóng to/thu nhỏ hoặc kéo vùng trống để di chuyển cây.
 
 Lần truy cập đầu có khung bắt đầu, có thể bỏ qua. **Hướng dẫn** luôn mở được
 qua thanh trên; **Cài đặt AI** chứa liên kết lấy key Gemini/Groq.
