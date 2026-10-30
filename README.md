@@ -119,6 +119,14 @@ không phân biệt chữ hoa và dấu tiếng Việt. Xóa ô tìm để bỏ 
 thự trong các mục đang hiện và cùng trạng thái ghim. **Xóa tất cả đã tick**
 chuyển mọi nhiệm vụ đã tick vào thùng rác, kể cả mục bị bộ lọc ẩn; có xác nhận số mục.
 
+Thanh điều hướng có nút **Sắp xếp menu**. Kéo tay nắm ⠿ sang trái/phải,
+hoặc dùng nút ←/→ hay phím mũi tên khi focus ở tay nắm. Vạch sáng báo vị trí
+thả; kéo gần mép thanh menu để cuộn ngang. Bấm **Xong** để trở lại dùng các mục.
+Trong chế độ sắp xếp, các mục không chuyển tab/mở Yandex. Tab hiện tại giữ nguyên.
+**Khôi phục thứ tự ban đầu** đưa menu về thứ tự gốc. Thứ tự tự lưu theo trình
+duyệt và địa chỉ trang, không đồng bộ thiết bị và không nằm trong Xuất/Nhập Data.
+Không đọc được dữ liệu thứ tự thì dùng mặc định; mục mới sẽ được bổ sung cuối menu.
+
 Code súng dùng danh sách gọn có vùng cuộn riêng và ô tìm kiếm luôn ở phía trên.
 Chọn một dòng để xem mã đầy đủ, copy, sửa hoặc xóa trong khung chi tiết;
 trên điện thoại, dùng nút **Danh sách** để quay lại. Tìm kiếm gồm tên, mã và ghi chú.
@@ -203,3 +211,6 @@ khôi phục từ Thùng rác hoặc bản gốc: **NOT RUN**.
 Đợt giao diện code súng gọn, khung chi tiết, ghim và chuyển đến vị trí chỉ rà
 source/diff. Tests/browser QA, lưu lại và nhập/xuất backup cho thay đổi này:
 **NOT RUN**. CI: **NOT CHECKED**.
+
+Đợt sắp xếp thanh điều hướng chỉ rà source/diff. Tests/browser QA cho kéo thả,
+cảm ứng, cuộn khi kéo, bàn phím và lưu thứ tự: **NOT RUN**. CI: **NOT CHECKED**.

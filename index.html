@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=gun-workspace-1">
+    <link rel="stylesheet" href="style.css?v=nav-order-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -21,15 +21,21 @@
                 <input type="file" id="importFile" accept=".json" hidden onchange="importData(event)">
                 <button onclick="openAiSettings()" class="tool-btn">⚙️ Cài đặt AI</button>
                 <button onclick="openGuide()" class="tool-btn">❓ Hướng dẫn</button>
+                <button id="navArrangeButton" type="button" class="tool-btn" aria-pressed="false" aria-controls="nav-tabs">↔ Sắp xếp menu</button>
             </div>
         </div>
         <nav class="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto" id="nav-tabs" aria-label="Chức năng">
             <button data-tab="tab-quests" onclick="switchTab('tab-quests', this)" aria-current="page" class="nav-btn text-blue-400 border-blue-500">📝 Dịch nhiệm vụ</button>
             <button data-tab="tab-full" onclick="switchTab('tab-full', this)" class="nav-btn text-gray-200 border-transparent">🖼️ Dịch toàn ảnh</button>
-            <a href="https://translate.yandex.com/en/?source_lang=zh&amp;target_lang=vi" target="_blank" rel="noopener noreferrer" class="nav-link">Yandex ↗</a>
+            <a data-nav-id="yandex" href="https://translate.yandex.com/en/?source_lang=zh&amp;target_lang=vi" target="_blank" rel="noopener noreferrer" class="nav-link">Yandex ↗</a>
             <button data-tab="tab-guns" onclick="switchTab('tab-guns', this)" class="nav-btn text-gray-200 border-transparent">🔫 Code súng</button>
             <button data-tab="tab-items" onclick="switchTab('tab-items', this)" class="nav-btn text-gray-200 border-transparent">🎒 Wiki Item</button>
         </nav>
+        <div id="navArrangeHelp" class="max-w-7xl mx-auto px-4 py-2 text-sm" hidden>
+            <p>Kéo tay nắm ⠿ hoặc dùng ← / → để đổi vị trí. Thứ tự tự lưu trên trình duyệt này.</p>
+            <button id="navResetButton" type="button" class="tool-btn mt-2">Khôi phục thứ tự ban đầu</button>
+        </div>
+        <p id="navOrderStatus" class="nav-order-status" role="status" aria-live="polite"></p>
     </header>
 
     <!-- MAIN CONTENT -->
@@ -270,6 +276,7 @@
     </dialog>
     <script src="shared/dialog/dialog.js?v=1"></script>
     <script src="app.js?v=gun-workspace-1"></script>
+    <script src="nav.js?v=1"></script>
     <script src="ai.js?v=contrast-1"></script>
     <script src="quest.js?v=contrast-1"></script>
     <script src="image.js?v=contrast-1"></script>
