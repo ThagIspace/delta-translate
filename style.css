@@ -14,4 +14,36 @@ to { opacity: 1; transform: translateY(0); }
 }
 
 /* STREAMING_CHUNK: Chế độ thu gọn Ẩn UI dư thừa */
-.mini-mode #apiKeyContainer, .mini-mode #pasteArea { display: none; }
+.mini-mode #pasteArea { display: none; }
+
+[hidden] { display: none !important; }
+button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.tool-btn, .primary-btn { padding: .5rem .8rem; border-radius: .4rem; font-size: .875rem; font-weight: 600; }
+.tool-btn { background: #374151; border: 1px solid #4b5563; }
+.tool-btn:hover:not(:disabled) { background: #4b5563; }
+.primary-btn { background: #2563eb; color: white; }
+.primary-btn:hover:not(:disabled) { background: #1d4ed8; }
+.nav-btn, .nav-link { white-space: nowrap; padding: .9rem 1rem; border-bottom-width: 2px; font-weight: 600; }
+.nav-link { border-color: transparent; color: #9ca3af; }
+.nav-btn:hover, .nav-link:hover { background: #374151; }
+.image-drop { border: 2px dashed #3b82f6; border-radius: .6rem; padding: 1.5rem; text-align: center; background: #1f2937; }
+.preview-button { max-width: 100%; border: 1px solid #4b5563; border-radius: .5rem; overflow: hidden; }
+.source-preview { display: block; max-height: 220px; max-width: 100%; object-fit: contain; }
+.image-surface { background: #111827; border: 1px solid #4b5563; border-radius: .5rem; overflow: auto; }
+.image-surface img, .image-surface canvas { display: block; max-width: 100%; height: auto; margin: auto; }
+.app-dialog, .image-dialog { background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: .75rem; padding: 1.25rem; width: min(94vw, 700px); max-height: 90dvh; overflow: auto; }
+dialog::backdrop { background: rgb(0 0 0 / .75); }
+.dialog-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+.dialog-heading h2 { font-size: 1.25rem; font-weight: 700; }
+.settings-group { padding: 1rem; border: 1px solid #4b5563; border-radius: .5rem; margin-bottom: 1rem; }
+.settings-input { width: 100%; padding: .65rem; background: #111827; color: #fff; border: 1px solid #4b5563; border-radius: .4rem; }
+.image-dialog { width: 96vw; }
+.viewer-surface { overflow: auto; max-height: 72dvh; }
+.viewer-surface img { display: block; max-width: 100%; max-height: 70dvh; object-fit: contain; margin: auto; }
+.viewer-surface img.natural-size { max-width: none; max-height: none; }
+@media (max-width: 600px) {
+    .nav-btn, .nav-link { padding: .8rem; font-size: .875rem; }
+    .dialog-heading { flex-wrap: wrap; }
+}

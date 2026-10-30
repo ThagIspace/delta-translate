@@ -11,71 +11,67 @@
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
 
-    <!-- HEADER / NAVIGATION TABS -->
-    <header class="bg-gray-800 border-b border-gray-700 shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
-            <div class="flex items-center gap-4 mr-8">
-                <h1 class="text-xl font-bold text-white py-4">Delta Tools</h1>
-
-                <!-- BẮT ĐẦU: Cụm nút Export/Import Data -->
-                <div class="hidden sm:flex gap-2 items-center">
-                    <button onclick="exportData()" class="bg-slate-700 hover:bg-slate-600 text-blue-400 border border-slate-600 text-xs px-3 py-1.5 rounded font-bold transition flex items-center gap-1">
-                        💾 Xuất Data
-                    </button>
-                    <button onclick="document.getElementById('importFile').click()" class="bg-slate-700 hover:bg-slate-600 text-green-400 border border-slate-600 text-xs px-3 py-1.5 rounded font-bold transition flex items-center gap-1">
-                        📂 Nhập Data
-                    </button>
-                    <!-- Input file ẩn dùng để mở hộp thoại chọn file -->
-                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                </div>
-                <!-- KẾT THÚC: Cụm nút Export/Import Data -->
-
+    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <h1 class="text-xl font-bold text-white">Delta Tools</h1>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="exportData()" class="tool-btn">💾 Xuất Data</button>
+                <button onclick="document.getElementById('importFile').click()" class="tool-btn">📂 Nhập Data</button>
+                <input type="file" id="importFile" accept=".json" hidden onchange="importData(event)">
+                <button onclick="openAiSettings()" class="tool-btn">⚙️ Cài đặt AI</button>
+                <button onclick="openGuide()" class="tool-btn">❓ Hướng dẫn</button>
             </div>
-
-            <nav class="flex space-x-1" id="nav-tabs">
-                <button onclick="switchTab('tab-quests', this)" class="nav-btn active px-4 py-4 font-semibold text-blue-400 border-b-2 border-blue-500 hover:bg-gray-700 transition">
-                    📝 Dịch Nhiệm Vụ
-                </button>
-                <button onclick="switchTab('tab-guns', this)" class="nav-btn px-4 py-4 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-200 hover:bg-gray-700 transition">
-                    🔫 Code Súng
-                </button>
-                <button onclick="switchTab('tab-items', this)" class="nav-btn px-4 py-4 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-200 hover:bg-gray-700 transition">
-                    🎒 Từ Điển Item
-                </button>
-            </nav>
         </div>
+        <nav class="max-w-7xl mx-auto px-4 flex gap-1 overflow-x-auto" id="nav-tabs" aria-label="Chức năng">
+            <button data-tab="tab-quests" onclick="switchTab('tab-quests', this)" aria-current="page" class="nav-btn text-blue-400 border-blue-500">📝 Dịch nhiệm vụ</button>
+            <button data-tab="tab-full" onclick="switchTab('tab-full', this)" class="nav-btn text-gray-400 border-transparent">🖼️ Dịch toàn ảnh</button>
+            <a href="https://translate.yandex.com/en/?source_lang=zh&amp;target_lang=vi" target="_blank" rel="noopener noreferrer" class="nav-link">Yandex ↗</a>
+            <button data-tab="tab-guns" onclick="switchTab('tab-guns', this)" class="nav-btn text-gray-400 border-transparent">🔫 Code súng</button>
+            <button data-tab="tab-items" onclick="switchTab('tab-items', this)" class="nav-btn text-gray-400 border-transparent">🎒 Wiki Item</button>
+        </nav>
     </header>
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
+        <section id="welcomePanel" class="max-w-5xl mx-auto mb-6 p-5 bg-gray-800 rounded-lg border border-blue-500" hidden aria-labelledby="welcomeTitle">
+            <h2 id="welcomeTitle" class="text-xl font-bold mb-2">Bắt đầu với Delta Tools</h2>
+            <p class="mb-3">① Chọn Gemini hoặc Groq trong Cài đặt AI. ② Lấy và nhập key của một nhà cung cấp. ③ Chọn kiểu dịch rồi dán ảnh bằng Ctrl+V hoặc chọn file.</p>
+            <p class="text-gray-400 text-sm mb-3">Code súng và liên kết Yandex dùng được ngay, không cần nhập key vào app. Hướng dẫn luôn mở lại được ở thanh trên.</p>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="dismissWelcome(); openAiSettings()" class="primary-btn">Thiết lập AI</button>
+                <button onclick="dismissWelcome(); openGuide()" class="tool-btn">Xem hướng dẫn</button>
+                <button onclick="dismissWelcome()" class="tool-btn">Để sau</button>
+            </div>
+        </section>
+
 
         <!-- ========================================= -->
         <!-- TAB 1: DỊCH NHIỆM VỤ -->
         <!-- ========================================= -->
         <div id="tab-quests" class="tab-content active max-w-5xl mx-auto w-full">
 
-            <div id="apiKeyContainer" class="mb-4">
-                <div class="relative w-full">
-                    <input type="password" id="apiKey" placeholder="Nhập Gemini API Key vào đây..." onchange="saveApiKey()"
-                           class="w-full p-3 pr-24 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
-                        <button onclick="toggleApiKeyVisibility()" class="text-gray-400 hover:text-white p-1 rounded transition" title="Ẩn/Hiện Key">👁️</button>
-                        <button onclick="copyApiKey(this)" class="text-gray-400 hover:text-white p-1 rounded transition" title="Copy Key">📋</button>
-                    </div>
-                </div>
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                <p data-provider-badge class="text-sm text-gray-400"></p>
+                <button onclick="openAiSettings()" class="tool-btn">Chọn AI / nhập key</button>
             </div>
-
-            <div id="pasteArea" class="border-2 border-dashed border-blue-500 rounded-lg p-10 text-center bg-gray-800 cursor-pointer hover:bg-gray-750 transition mb-6">
-                <p class="text-blue-400 font-semibold text-lg">Click vào đây và nhấn <strong class="text-white">Ctrl + V</strong> để dán ảnh quest</p>
+            <div id="pasteArea" class="image-drop mb-4">
+                <p class="text-blue-400 font-semibold mb-2">Dán ảnh nhiệm vụ bằng Ctrl+V hoặc chọn ảnh</p>
+                <label for="questImageFile" class="text-sm text-gray-400">PNG, JPEG, WebP · tối đa 2 MB</label>
+                <input id="questImageFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="handleImageSelection(event, 'quest')" class="block mx-auto mt-2 max-w-full">
+                <p class="text-xs text-gray-400 mt-2">Ảnh được gửi đến nhà cung cấp AI đang chọn để dịch. Chỉ mục tiêu nhiệm vụ được thêm vào danh sách.</p>
+            </div>
+            <div id="questPreview" class="mb-4" hidden>
+                <p class="text-sm text-gray-400 mb-2">Ảnh nhiệm vụ gần nhất · bấm ảnh để phóng to</p>
+                <button onclick="openImageViewer('quest')" class="preview-button" aria-label="Phóng to ảnh nhiệm vụ"><img id="questOriginal" alt="Ảnh nhiệm vụ gốc" class="source-preview"></button>
             </div>
 
             <div class="flex flex-wrap gap-4 mb-6 bg-gray-800 p-4 rounded-lg border border-gray-700 justify-between items-center">
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <button onclick="toggleViewMode()" id="btnViewMode" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">🔲 1 Cột</button>
                     <button onclick="toggleHideCompleted()" id="btnHideCompleted" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">👻 Hiện đã xong</button>
                     <button onclick="document.body.classList.toggle('mini-mode')" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold" title="Ẩn/Hiện nhập liệu">👁️</button>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <button onclick="addCustomNote()" class="bg-gray-700 text-yellow-400 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">📝 Ghi Chú</button>
                     <button onclick="toggleSelectAll()" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">☑️ Chọn mục đang hiện</button>
                     <button onclick="clearCompleted()" class="bg-yellow-600 text-black hover:bg-yellow-500 px-3 py-2 rounded text-sm font-bold">🧹 Xóa tất cả đã tick (<span id="completedCount">0</span>)</button>
@@ -90,13 +86,47 @@
             </div>
             <div id="questStatus" class="hidden mb-4 p-3 rounded bg-gray-800 border border-gray-700">
                 <p id="questStatusText" role="status" aria-live="polite"></p>
-                <button id="retryQuestButton" onclick="retryQuestImage()" class="hidden mt-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-3 py-2 rounded text-sm font-bold">Thử lại ảnh vừa dán</button>
+                <button id="retryQuestButton" onclick="retryQuestImage()" class="hidden mt-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-3 py-2 rounded text-sm font-bold">Thử lại ảnh vừa gửi</button>
+                <button id="otherQuestButton" onclick="retryQuestOtherProvider()" class="tool-btn mt-2" hidden></button>
+                <button id="cancelQuestButton" onclick="cancelQuestTranslation()" class="tool-btn mt-2" hidden>Hủy xử lý</button>
             </div>
             <div id="loading" class="hidden text-green-400 font-bold mb-4 text-center text-lg animate-pulse">Đang nhờ AI soi ảnh... ⏳</div>
             <div id="taskCount" class="text-gray-400 font-bold mb-4"></div>
 
             <div id="todoList" class="w-full"></div>
         </div>
+
+        <section id="tab-full" class="tab-content max-w-6xl mx-auto w-full" aria-label="Dịch toàn ảnh">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                <div><h2 class="text-2xl font-bold">Dịch toàn bộ chữ trong ảnh</h2><p data-provider-badge class="text-sm text-gray-400 mt-1"></p></div>
+                <button onclick="openAiSettings()" class="tool-btn">Chọn AI / nhập key</button>
+            </div>
+            <p class="text-sm text-gray-400 mb-4">Bản thử nghiệm: chữ Việt được đặt lên ô nền che chữ gốc. Vị trí/chữ nhỏ có thể sai; hãy đối chiếu ảnh gốc. Kết quả không được thêm vào danh sách nhiệm vụ.</p>
+            <div class="image-drop mb-4">
+                <p class="font-semibold text-blue-400 mb-2">Dán ảnh bằng Ctrl+V hoặc chọn file để dịch toàn ảnh</p>
+                <label for="fullImageFile" class="text-sm text-gray-400">PNG, JPEG, WebP · tối đa 2 MB</label>
+                <input id="fullImageFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="handleImageSelection(event, 'full')" class="block mx-auto mt-2 max-w-full">
+                <p class="text-xs text-gray-400 mt-2">Ảnh được gửi đến AI đang chọn. Chỉ giữ ảnh/kết quả trong phiên mở trang, không đưa vào backup.</p>
+            </div>
+            <div id="fullStatus" class="mb-4 p-3 rounded bg-gray-800 border border-gray-700" hidden>
+                <p id="fullStatusText" role="status" aria-live="polite"></p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <button id="retryFullButton" onclick="retryFullImage()" class="primary-btn" hidden>Thử lại ảnh vừa gửi</button>
+                    <button id="otherFullButton" onclick="retryFullOtherProvider()" class="tool-btn" hidden></button>
+                    <button id="cancelFullButton" onclick="cancelFullTranslation()" class="tool-btn" hidden>Hủy xử lý</button>
+                </div>
+            </div>
+            <div id="fullPreview" hidden>
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <button id="fullOriginalButton" onclick="showFullImage(false)" class="tool-btn" aria-pressed="true">Ảnh gốc</button>
+                    <button id="fullTranslatedButton" onclick="showFullImage(true)" class="tool-btn" aria-pressed="false" disabled>Ảnh dịch</button>
+                    <button onclick="openImageViewer('full')" class="tool-btn">Phóng to</button>
+                    <button id="downloadFullButton" onclick="downloadFullImage()" class="primary-btn" disabled>Tải ảnh dịch PNG</button>
+                </div>
+                <div class="image-surface"><img id="fullOriginal" alt="Ảnh gốc cần dịch"><canvas id="fullCanvas" role="img" aria-label="Ảnh với bản dịch tiếng Việt" hidden></canvas></div>
+                <details id="fullTextDetails" class="mt-4" hidden><summary class="cursor-pointer font-bold">Xem chữ gốc và bản dịch</summary><div id="fullTextList" class="mt-3 grid gap-3"></div></details>
+            </div>
+        </section>
 
         <!-- ========================================= -->
         <!-- TAB 2: CODE SÚNG -->
@@ -127,31 +157,10 @@
             <div id="gunCodeList" class="flex flex-col gap-3"></div>
         </div>
 
-        <!-- ========================================= -->
-        <!-- TAB 3: TỪ ĐIỂN ITEM -->
-        <!-- ========================================= -->
-        <div id="tab-items" class="tab-content max-w-7xl mx-auto w-full h-full">
-            <div class="flex flex-col lg:flex-row gap-6 h-full">
-                <!-- Cột trái: Danh sách Item -->
-                <div class="flex-1 flex flex-col">
-
-                    <div id="itemPasteArea" class="border-2 border-dashed border-purple-500 rounded-lg p-6 text-center bg-gray-800 cursor-pointer hover:bg-gray-750 transition mb-4">
-                        <p class="text-purple-400 font-semibold">Nhấn <strong class="text-white">Ctrl + V</strong> tại đây để dán ảnh kho đồ. AI sẽ tự đọc và phân loại.</p>
-                    </div>
-                    <div id="itemLoading" class="hidden text-purple-400 font-bold mb-4 text-center text-lg animate-pulse">Đang quét ảnh vật phẩm... ⏳</div>
-
-                    <div id="itemCategoryTabs" class="flex flex-wrap gap-2 mb-4"></div>
-                    <div id="itemGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto pr-2 pb-20"></div>
-                </div>
-
-                <!-- Cột phải: Chi tiết Item -->
-                <div class="w-full lg:w-1/3 bg-gray-800 rounded-lg border border-gray-700 p-6 sticky top-6 h-fit min-h-[300px]" id="itemDetailPanel">
-                    <div class="text-center text-gray-500 mt-10">
-                        👈 Chọn một vật phẩm để xem chi tiết
-                    </div>
-                </div>
-            </div>
-        </div>
+        <section id="tab-items" class="tab-content max-w-5xl mx-auto w-full">
+            <h2 class="text-2xl font-bold mb-3">Wiki Item</h2>
+            <p class="text-gray-400">Phần tra cứu vật phẩm sẽ được triển khai sau cùng. Hiện chưa có dữ liệu wiki hoặc chức năng quét item.</p>
+        </section>
 
     </main>
 
@@ -160,7 +169,7 @@
         <div class="bg-gray-800 w-[90%] max-w-2xl rounded-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center">
                 <h3 class="text-xl font-bold text-red-500">Thùng rác</h3>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <button onclick="emptyTrash()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-bold">🔥 Xóa sạch</button>
                     <button onclick="toggleTrash()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded font-bold">❌ Đóng</button>
                 </div>
@@ -174,7 +183,7 @@
         <div class="bg-gray-800 w-[90%] max-w-2xl rounded-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center">
                 <h3 class="text-xl font-bold text-red-500">Thùng rác Súng</h3>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <button onclick="emptyGunTrash()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-bold">🔥 Xóa sạch</button>
                     <button onclick="toggleGunTrash()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded font-bold">❌ Đóng</button>
                 </div>
@@ -183,36 +192,62 @@
         </div>
     </div>
 
-    <!-- SCRIPT TÁCH RỜI -->
-    <script>
-        // Các hàm phụ cho phần API Key
-        function toggleApiKeyVisibility() {
-            const input = document.getElementById('apiKey');
-            if (input.type === 'password') input.type = 'text';
-            else input.type = 'password';
-        }
+    <dialog id="aiSettingsDialog" class="app-dialog" aria-labelledby="settingsTitle">
+        <div class="dialog-heading"><h2 id="settingsTitle">Cài đặt AI</h2><button onclick="document.getElementById('aiSettingsDialog').close()" class="tool-btn" aria-label="Đóng cài đặt">Đóng</button></div>
+        <label for="aiProvider" class="block mb-2">Nhà cung cấp mặc định</label>
+        <select id="aiProvider" class="settings-input mb-4"><option value="gemini">Gemini</option><option value="groq">Groq</option></select>
+        <p class="text-sm text-gray-400 mb-4">Chỉ cần key của một nhà cung cấp. App không tự đổi nhà cung cấp hoặc tự gọi API khi mở trang/lưu cài đặt.</p>
+        <fieldset class="settings-group">
+            <legend class="font-bold">Gemini</legend>
+            <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline">Mở trang lấy key Gemini ↗</a>
+            <label for="geminiKey" class="block mt-3 mb-2">API key Gemini</label>
+            <input type="password" id="geminiKey" class="settings-input" autocomplete="off" spellcheck="false" autocapitalize="off">
+            <div class="flex flex-wrap gap-2 my-2">
+                <button onclick="toggleKeyVisibility('geminiKey')" class="tool-btn">Ẩn / hiện</button>
+                <button onclick="copySettingsKey('geminiKey', this)" class="tool-btn">Copy key</button>
+                <button onclick="clearAiKey('gemini')" class="tool-btn">Xóa key đã lưu</button>
+            </div>
+            <label class="text-sm"><input type="checkbox" id="geminiRemember"> Ghi nhớ key trên trình duyệt này</label>
+        </fieldset>
+        <fieldset class="settings-group">
+            <legend class="font-bold">Groq</legend>
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline">Mở trang lấy key Groq ↗</a>
+            <label for="groqKey" class="block mt-3 mb-2">API key Groq</label>
+            <input type="password" id="groqKey" class="settings-input" autocomplete="off" spellcheck="false" autocapitalize="off">
+            <div class="flex flex-wrap gap-2 my-2">
+                <button onclick="toggleKeyVisibility('groqKey')" class="tool-btn">Ẩn / hiện</button>
+                <button onclick="copySettingsKey('groqKey', this)" class="tool-btn">Copy key</button>
+                <button onclick="clearAiKey('groq')" class="tool-btn">Xóa key đã lưu</button>
+            </div>
+            <label class="text-sm"><input type="checkbox" id="groqRemember"> Ghi nhớ key trên trình duyệt này</label>
+        </fieldset>
 
-        async function copyApiKey(btn) {
-            const input = document.getElementById('apiKey');
-            if (!input.value || btn.disabled) return;
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            try {
-                await navigator.clipboard.writeText(input.value);
-                btn.textContent = '✔️';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                }, 1500);
-            } catch {
-                btn.disabled = false;
-                alert('Không thể copy API key. Vui lòng cho phép trình duyệt sao chép hoặc copy thủ công.');
-            }
-        }
-    </script>
+        <p class="text-sm text-gray-400 mb-4">Không chọn ghi nhớ: key dùng trong phiên tab hiện tại. Key đã ghi nhớ nằm trong bộ nhớ trình duyệt, không phù hợp máy dùng chung. File Xuất Data không chứa key.</p>
+        <button onclick="saveAiSettings()" class="primary-btn">Lưu cài đặt</button>
+        <p id="settingsStatus" role="status" aria-live="polite" class="mt-3 text-sm"></p>
+    </dialog>
+    <dialog id="guideDialog" class="app-dialog" aria-labelledby="guideTitle">
+        <div class="dialog-heading"><h2 id="guideTitle">Hướng dẫn sử dụng</h2><button onclick="document.getElementById('guideDialog').close()" class="tool-btn">Đóng</button></div>
+        <ol class="list-decimal pl-5 space-y-3 mb-5">
+            <li>Mở <strong>Cài đặt AI</strong>, chọn Gemini hoặc Groq. Bấm liên kết lấy key, đăng nhập tại nhà cung cấp và tạo key nếu tài khoản cho phép.</li>
+            <li>Dán key vào đúng ô, chọn ghi nhớ nếu muốn và bấm <strong>Lưu cài đặt</strong>. “Đã nhập key” chưa có nghĩa key đã hoạt động. Không cần nhập cả hai key.</li>
+            <li>Chọn <strong>Dịch nhiệm vụ</strong> để lấy riêng mục tiêu nhiệm vụ, hoặc <strong>Dịch toàn ảnh</strong> để đọc tất cả chữ và dựng ảnh tiếng Việt. Dán ảnh Ctrl+V hoặc chọn file PNG/JPEG/WebP tối đa 2 MB.</li>
+            <li>Gửi ảnh sẽ gọi AI đang chọn và có thể dùng hạn mức/phát sinh phí theo tài khoản. Ảnh được gửi trực tiếp tới nhà cung cấp. Khi lỗi, thử lại cùng ảnh hoặc chủ động bấm thử nhà cung cấp khác nếu đã nhập key.</li>
+            <li>Ảnh dịch dùng ô nền che chữ gốc; chữ nhỏ/vị trí có thể sai, nhất là chế độ Groq chưa được kiểm chứng với ảnh game. Đối chiếu ảnh gốc, phóng to hoặc tải PNG. Hai tab dịch giữ ảnh/kết quả riêng và mất khi tải lại trang.</li>
+            <li><strong>Code súng</strong> và <strong>Yandex ↗</strong> không cần key trong app. Yandex mở tab ngoài với Trung → Việt; bạn tự tải ảnh lên đó. Wiki Item sẽ làm sau.</li>
+        </ol>
+        <details class="mb-3"><summary class="cursor-pointer font-bold">Vì sao dịch không được?</summary><p class="mt-2 text-gray-300">Thiếu/sai key: kiểm tra đúng nhà cung cấp và lưu lại. Hạn mức: chờ hoặc kiểm tra tài khoản. Lỗi quyền/model: kiểm tra tại nhà cung cấp. Không đọc được chữ: dùng ảnh rõ hơn hoặc cắt vùng cần dịch trước khi gửi.</p></details>
+        <details class="mb-3"><summary class="cursor-pointer font-bold">Lưu dữ liệu và hủy xử lý</summary><p class="mt-2 text-gray-300">Nhiệm vụ/code súng lưu theo trình duyệt và địa chỉ trang. Xuất Data để sao lưu; Nhập Data ghi đè phần dữ liệu trong file. Ảnh và key không vào backup. Hủy xử lý dừng chờ/bỏ kết quả; yêu cầu đã gửi vẫn có thể bị nhà cung cấp tính lượt.</p></details>
+        <button onclick="document.getElementById('guideDialog').close(); openAiSettings()" class="primary-btn">Mở Cài đặt AI</button>
+    </dialog>
+    <dialog id="imageViewer" class="image-dialog" aria-labelledby="imageViewerTitle">
+        <div class="dialog-heading"><h2 id="imageViewerTitle">Xem ảnh</h2><div class="flex gap-2"><button onclick="document.getElementById('viewerImage').classList.toggle('natural-size')" class="tool-btn">Vừa khung / kích thước gốc</button><button onclick="document.getElementById('imageViewer').close()" class="tool-btn">Đóng</button></div></div>
+        <div class="viewer-surface"><img id="viewerImage" alt="Ảnh phóng to"></div>
+    </dialog>
     <script src="app.js"></script>
+    <script src="ai.js"></script>
     <script src="quest.js"></script>
+    <script src="image.js"></script>
     <script src="gun.js"></script>
-    <script src="item.js"></script>
 </body>
 </html>

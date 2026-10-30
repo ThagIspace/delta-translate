@@ -1,77 +1,119 @@
 # Delta Tools
 
-Web hỗ trợ dịch nhiệm vụ Delta Force từ ảnh bằng Gemini và quản lý code súng.
-Project dùng HTML/CSS/JavaScript thuần, không có backend, database hoặc bước build.
+Web HTML/CSS/JavaScript thuần cho Delta Force, không có backend, database hay bước build.
 
 ## Chạy local trên Windows
 
-Yêu cầu Python 3 có lệnh `python` (đã có trên máy tại thời điểm setup).
-Mở PowerShell trong thư mục project rồi chạy:
+Yêu cầu Python 3 có lệnh `python`. Mở PowerShell trong thư mục project:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\start-local.ps1
 ```
 
-Mở <http://127.0.0.1:8765>. Giữ cửa sổ PowerShell mở; nhấn `Ctrl+C` để dừng.
-Nếu cổng đang được sử dụng, có thể chọn cổng khác:
+Mở <http://127.0.0.1:8765>. Giữ cửa sổ PowerShell mở, nhấn `Ctrl+C` để dừng.
+Nếu cổng bận, thêm `-Port 8766` vào lệnh. Server chỉ lắng nghe trên máy local.
+Dùng cùng trình duyệt, địa chỉ và cổng để thấy lại dữ liệu; `localhost` và
+`127.0.0.1` có vùng lưu trữ riêng. Đây là server phát triển local.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\start-local.ps1 -Port 8766
-```
+## Điều hướng và hướng dẫn người mới
 
-Server chỉ lắng nghe trên máy local. Chỉ dùng server này cho phát triển local.
+- **Dịch nhiệm vụ:** đọc riêng mục tiêu nhiệm vụ từ ảnh, giữ danh sách, ghi chú,
+  tìm kiếm, ghim, tick, đổi thứ tự và thùng rác hiện có. Không tìm thấy nhiệm vụ
+  thì báo rõ và không thêm mục. Có ảnh gốc gần nhất và nút phóng to.
+- **Dịch toàn ảnh:** bản thử nghiệm đọc mọi vùng chữ rồi dựng chữ Việt trên ô nền
+  che vùng chữ gốc. Chuyển ảnh gốc/ảnh dịch, phóng to, xem đầy đủ chữ bên dưới
+  và tải PNG. Kết quả không đi vào danh sách nhiệm vụ.
+- **Yandex ↗:** mở đúng đường dẫn Trung → Việt trong tab ngoài. App không tự
+  tải ảnh lên Yandex; người dùng chủ động chọn ảnh tại đó.
+- **Code súng:** quản lý, tìm kiếm, copy, chỉnh sửa và thùng rác; không cần key.
+  Code khởi tạo là ví dụ.
+- **Wiki Item:** chỉ có thông báo sẽ làm sau cùng. `item.js` cũ được giữ nguyên
+  trong repo nhưng không tải vào trang vì chứa bản sao các khai báo của quest.
 
-## Dữ liệu và AI
+Lần truy cập đầu có khung bắt đầu, có thể bỏ qua. **Hướng dẫn** luôn mở được
+qua thanh trên; **Cài đặt AI** chứa liên kết lấy key Gemini/Groq.
 
-- Nhiệm vụ, code súng và Gemini API key được lưu trong `localStorage` của trình duyệt.
-  Dùng cùng trình duyệt, địa chỉ và cổng để thấy lại dữ liệu. `localhost` và
-  `127.0.0.1` có vùng lưu trữ riêng. Xóa dữ liệu trang web có thể làm mất dữ liệu.
-- Dùng **Xuất Data** để sao lưu nhiệm vụ, cache dịch và code súng cùng thùng rác.
-  File xuất không chứa API key. **Nhập Data** ghi đè các phần dữ liệu có trong file.
-- Nhập Gemini API key ở tab **Dịch Nhiệm Vụ**, rồi dán ảnh bằng `Ctrl+V`.
-  Ảnh được gửi từ trình duyệt tới Gemini khi dùng chức năng này.
-- Giao diện tải Tailwind từ CDN; dịch AI cũng cần Internet và API key hợp lệ.
-  Không cần API key để quản lý code súng hoặc thêm ghi chú.
-- Không đưa API key vào source code hay commit. Không dùng key nhạy cảm trên
-  trình duyệt/máy dùng chung vì key được lưu tại trình duyệt.
+## Cài đặt AI và key
 
-## Tìm kiếm và trạng thái dịch
+1. Mở **Cài đặt AI**, chọn nhà cung cấp mặc định Gemini hoặc Groq.
+2. Mở [Google AI Studio](https://aistudio.google.com/api-keys) hoặc
+   [Groq Console](https://console.groq.com/keys), tự đăng nhập/tạo key nếu tài khoản
+   cho phép. Dán key vào đúng ô và bấm **Lưu cài đặt**. Chỉ cần một nhà cung cấp.
+3. Không chọn **Ghi nhớ key**: dùng `sessionStorage`, trong phiên tab hiện tại,
+   vẫn qua được tải lại trang. Chọn ghi nhớ: dùng `localStorage` trên trình duyệt.
+   Key Gemini đã lưu trước bản cập nhật vẫn được đọc từ khóa lưu cũ.
+4. Có nút ẩn/hiện, copy và xóa từng key. Xóa trong app không thu hồi key tại
+   nhà cung cấp. Không đưa key vào source, báo cáo hoặc commit. Key đã ghi nhớ
+   nằm trong bộ nhớ trình duyệt, không phù hợp máy dùng chung.
 
-- Ô tìm nhiệm vụ lọc theo bản dịch, chữ gốc và ghi chú; ô tìm code súng lọc theo
-  tên hoặc mã code. Có thể gõ không dấu, không phân biệt chữ hoa/thường.
-  Xóa nội dung ô tìm kiếm để xem lại danh sách. Bộ lọc không xóa dữ liệu.
-- **Chọn mục đang hiện** chỉ tick/bỏ tick các nhiệm vụ đang khớp bộ lọc.
-  Nút lên/xuống đổi thứ tự trong các nhiệm vụ đang hiện, cùng trạng thái ghim.
-  **Xóa tất cả đã tick** vẫn chuyển mọi nhiệm vụ đã tick vào thùng rác,
-  bao gồm mục đang bị bộ lọc ẩn; hộp xác nhận hiển thị tổng số mục sẽ chuyển.
-- Khu vực trạng thái dịch báo đang xử lý, thành công, không tìm thấy nhiệm vụ,
-  thiếu/key không hợp lệ, thiếu quyền, giới hạn API, lỗi kết nối, quá thời gian
-  hoặc kết quả AI không hợp lệ. Mã lỗi được đối chiếu với
-  [tài liệu GenerateContent của Google](https://ai.google.dev/gemini-api/docs/generate-content/api-errors).
-- Khi dịch thất bại hoặc không thấy nhiệm vụ, dùng **Thử lại ảnh vừa dán**.
-  Nút dùng API key đang nhập; không cần dán lại ảnh sau khi sửa key/kết nối.
-  Ảnh gần nhất chỉ nằm trong bộ nhớ trang, mất khi tải lại và không vào backup.
-  Bấm thử lại sẽ gọi AI và có thể tính vào hạn mức sử dụng.
-- Mỗi lần chỉ xử lý một ảnh. Nếu dán ảnh khác khi đang dịch, hãy chờ rồi dán lại.
-  Giữ hai model đã cấu hình; chỉ chuyển sang model dự phòng khi model không truy
-  cập được, dịch vụ lỗi hoặc kết quả không hợp lệ. Không tự lặp lại khi lỗi key,
-  quyền hoặc hạn mức. Chưa xác minh hai model bằng API thật.
+Mở trang, mở Cài đặt và lưu key không gọi AI. “Đã nhập key” không phải xác nhận
+key có quyền/model/hạn mức hợp lệ. App không tự kiểm tra key. Hai tab hiển thị
+nhà cung cấp mặc định; trạng thái xử lý ghi nhà cung cấp thực sự đang dùng.
 
-## Cấu trúc và hạn chế hiện tại
+App gọi REST trực tiếp bằng `fetch`, không thêm SDK/dependency:
 
-- `index.html`: giao diện và các tab.
-- `app.js`: API key, chuyển tab, dán ảnh và sao lưu/khôi phục.
-- `quest.js`: gọi Gemini, quản lý nhiệm vụ, ghi chú và thùng rác.
-- `gun.js`: quản lý code súng; dữ liệu khởi tạo là ví dụ.
-- `style.css`: CSS bổ sung.
-- `item.js`: hiện là bản sao của `quest.js`, trùng khai báo biến toàn cục khi
-  trang tải. Chưa có hàm `processItemImage`, nên tab **Từ Điển Item** chưa hoạt động.
+- Gemini: giữ hai model đã cấu hình `gemini-3.1-flash-lite`, `gemini-3.5-flash`;
+  key gửi bằng header `x-goog-api-key`.
+- Groq: `qwen/qwen3.8-27b`, đầu vào ảnh và JSON mode theo
+  [Groq Vision](https://console.groq.com/docs/vision) và
+  [Chat API](https://console.groq.com/docs/api-reference#chat-create).
+- Kết quả nhiệm vụ là JSON `{ "quests": [...] }`; kết quả toàn ảnh là
+  `{ "blocks": [{ "original": "...", "translated": "...", "box": [0, 0, 100, 100] }] }`.
+  Tọa độ vùng chữ theo `[ymin, xmin, ymax, xmax]`, chuẩn hóa 0–1000. App kiểm tra
+  kiểu dữ liệu, biên và kích thước vùng trước khi dựng ảnh; không coi dữ liệu AI
+  là HTML hoặc mã thực thi. Tham khảo
+  [Gemini image understanding](https://ai.google.dev/gemini-api/docs/image-understanding).
 
-Đã bổ sung xử lý ký tự HTML và đối số trong nút bấm cho dữ liệu nhiệm vụ/code
-súng, bao gồm thùng rác và ô chỉnh sửa. Màu nhóm chỉ nhận mã hex sáu ký tự.
-File backup được kiểm tra cấu trúc trước khi ghi đè dữ liệu; file chỉ chứa một
-phần dữ liệu vẫn được hỗ trợ. Nút copy API key nhận trực tiếp nút được bấm;
-copy API key/code súng có thông báo khi trình duyệt không cho sao chép.
-Các thay đổi này đã được rà diff, chưa được kiểm chứng bằng browser QA.
+Không tự chuyển nhà cung cấp khi lỗi. Sau lỗi có nút thử lại ghi rõ tên AI;
+nhà cung cấp còn lại chỉ được gọi khi người dùng bấm nút tương ứng và đã nhập key.
+Gemini có thể thử model dự phòng cùng nhà cung cấp khi lỗi model, máy chủ hoặc
+kết quả không hợp lệ; không tự lặp khi lỗi key/quyền/hạn mức. Mỗi lần thử có
+thời gian chờ 25 giây, gồm cả đọc phản hồi.
 
-Chưa chạy test, browser QA hoặc gọi Gemini để xác minh bản dịch/model/quota.
+## Gửi ảnh, kết quả và giới hạn
+
+- Dán ảnh bằng Ctrl+V tại tab dịch hoặc chọn file PNG/JPEG/WebP, tối đa 2 MiB.
+  Giới hạn giải mã: 16 triệu điểm ảnh, tối đa 10.000 px mỗi cạnh. Cắt/thu nhỏ
+  ảnh trước khi gửi nếu vượt giới hạn. Không đổi nhãn MIME để giả định dạng ảnh.
+- Gửi ảnh và thử lại sẽ gửi ảnh đến AI được chọn, có thể dùng hạn mức/phát sinh
+  phí theo tài khoản. Chưa xác minh quyền truy cập/model/hạn mức bằng API thật.
+- Hai tab giữ ảnh, kết quả, trạng thái và yêu cầu riêng. Đổi tab không chuyển ảnh
+  hoặc hủy yêu cầu. Khi đang xử lý, ảnh mới trong cùng tab được từ chối kèm nhắc
+  chờ/hủy rồi gửi lại. Nếu clipboard có nhiều ảnh, chỉ lấy ảnh đầu tiên.
+- Nút **Hủy xử lý** hủy chờ và bỏ kết quả trả muộn, không hứa hoàn lượt/phí của
+  yêu cầu đã gửi. Lưu cài đặt giữa lúc dịch không thay key/provider của yêu cầu đó.
+- Ảnh và kết quả toàn ảnh chỉ nằm trong bộ nhớ trang, mất khi tải lại và không
+  vào backup. Nhiệm vụ/code súng tiếp tục lưu theo các khóa cũ.
+- Bản dựng ảnh dùng ô nền màu tối và chữ sáng; không phục hồi nền phía sau chữ.
+  Chữ quá dài được thu nhỏ/giới hạn trong vùng, có cảnh báo và danh sách chữ đầy
+  đủ bên dưới. Vị trí chữ, nhận diện chữ nhỏ và bản dịch có thể sai. Khả năng
+  định vị chữ của Groq trên ảnh game chưa được kiểm chứng. Không cam kết chất
+  lượng tương đương Yandex.
+- Giao diện tải Tailwind từ CDN; AI cũng cần Internet. Không tự nhúng trang
+  Yandex hoặc gọi API không chính thức của Yandex.
+
+## Dữ liệu cũ, tìm kiếm và sao lưu
+
+Tìm kiếm nhiệm vụ theo bản dịch/chữ gốc/ghi chú, tìm code súng theo tên/mã;
+không phân biệt chữ hoa và dấu tiếng Việt. Xóa ô tìm để bỏ lọc.
+**Chọn mục đang hiện** chỉ tick/bỏ tick kết quả đang lọc. Nút lên/xuống đổi thứ
+thự trong các mục đang hiện và cùng trạng thái ghim. **Xóa tất cả đã tick**
+chuyển mọi nhiệm vụ đã tick vào thùng rác, kể cả mục bị bộ lọc ẩn; có xác nhận số mục.
+
+**Xuất Data** giữ định dạng backup nhiệm vụ/cache dịch/code súng và thùng rác
+hiện có. Không xuất key, ảnh hoặc cấu hình AI. **Nhập Data** kiểm tra cấu trúc
+trước khi ghi đè các phần có trong file; vẫn hỗ trợ backup chỉ chứa một phần.
+Xóa dữ liệu trang trong trình duyệt có thể làm mất dữ liệu và key đã lưu.
+
+## Cấu trúc và trạng thái kiểm chứng
+
+- `index.html`, `style.css`: các mục điều hướng, hộp Cài đặt/Hướng dẫn, khung ảnh.
+- `app.js`: chuyển tab, định tuyến dán ảnh, tìm kiếm và backup.
+- `ai.js`: key/provider, onboarding, gọi API và kiểm tra kết quả JSON.
+- `quest.js`: xử lý nhiệm vụ và dữ liệu danh sách hiện có.
+- `image.js`: nhận/giải mã ảnh, trạng thái toàn ảnh, dựng canvas, phóng to và xuất PNG.
+- `gun.js`: tính năng code súng hiện có, không sửa trong đợt này.
+
+Đợt thay đổi này chỉ rà source/diff. Local tests, browser QA, lint/typecheck và
+API thật: **NOT RUN**. CI: **NOT CHECKED**. Kết quả QA giả lập 70/70 trước đây
+thuộc commit `d46e111`, không chứng minh các tính năng mới trong đợt này.

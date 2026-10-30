@@ -12,149 +12,68 @@ tasks.forEach((t, i) => {
     if (t.isPinned === undefined) t.isPinned = false; // Thêm cờ ghim
 });
 
-// Chỉ giữ ảnh gần nhất trong bộ nhớ của trang, không ghi ảnh vào localStorage.
+// Ảnh và yêu cầu của tab nhiệm vụ độc lập với tab dịch toàn ảnh.
 let lastQuestImage = null;
-let questProcessing = false;
+let questRun = null;
+let lastQuestStatus = null;
 
 function setQuestStatus(message, state, canRetry = true) {
+    lastQuestStatus = [message, state, canRetry];
     document.getElementById('questStatus').classList.remove('hidden');
     const text = document.getElementById('questStatusText');
     text.textContent = message;
     text.className = state === 'error' ? 'text-red-400' : state === 'success' ? 'text-green-400' : 'text-gray-200';
+    const busy = !!questRun;
+    document.getElementById('loading').style.display = busy ? 'block' : 'none';
     const retry = document.getElementById('retryQuestButton');
-    retry.classList.toggle('hidden', !canRetry || !lastQuestImage);
-    retry.disabled = questProcessing;
+    retry.textContent = `Thử lại bằng ${AI_PROVIDERS[aiProvider].name}`;
+    retry.classList.toggle('hidden', busy || !canRetry || !lastQuestImage);
+    retry.disabled = busy;
+    document.getElementById('cancelQuestButton').hidden = !busy;
+    const other = otherAiProvider(aiProvider);
+    const otherButton = document.getElementById('otherQuestButton');
+    otherButton.hidden = busy || !canRetry || !lastQuestImage || !getAiKey(other);
+    otherButton.textContent = `Thử ảnh này bằng ${AI_PROVIDERS[other].name}`;
 }
-
-function retryQuestImage() {
-    if (lastQuestImage && !questProcessing) {
-        processQuestImage(lastQuestImage.base64Data, lastQuestImage.mimeType);
-    }
+function retryQuestImage() { if (lastQuestImage && !questRun) processQuestImage(lastQuestImage); }
+function retryQuestOtherProvider() {
+    if (lastQuestImage && !questRun) processQuestImage(lastQuestImage, otherAiProvider(aiProvider));
 }
-
-function getQuestApiError(httpStatus, error) {
-    const reasons = Array.isArray(error?.details) ? error.details.map(detail => detail?.reason) : [];
-    const invalidKey = reasons.some(reason => ['API_KEY_INVALID', 'API_KEY_EXPIRED'].includes(reason))
-        || /api key not valid|api key expired/i.test(error?.message || '');
-    if (httpStatus === 401 || invalidKey) {
-        return { message: 'API key không hợp lệ hoặc đã hết hiệu lực. Mở ô API key bằng nút 👁️ trên thanh công cụ, sửa key rồi bấm Thử lại.' };
-    }
-    if (httpStatus === 403) return { message: 'API key hoặc project chưa được phép dùng dịch vụ này. Kiểm tra quyền và trạng thái project trong Google AI Studio.' };
-    if (httpStatus === 402) return { message: 'Tài khoản API đã hết số dư trả trước. Kiểm tra thanh toán trong Google AI Studio trước khi thử lại.' };
-    if (httpStatus === 429 || error?.status === 'RESOURCE_EXHAUSTED') {
-        return { message: 'Đã chạm giới hạn lượt dùng hoặc hạn mức API. Hãy chờ rồi thử lại; nếu vẫn lỗi, kiểm tra hạn mức trong Google AI Studio.' };
-    }
-    if (httpStatus === 404) return { message: 'Không truy cập được model dịch đã cấu hình. Cần kiểm tra model hoặc quyền truy cập nếu thử lại vẫn lỗi.', fallback: true };
-    if (httpStatus === 408 || httpStatus === 504) return { message: 'Dịch ảnh mất quá nhiều thời gian. Hãy thử lại hoặc dán ảnh nhỏ, rõ hơn.' };
-    if (httpStatus >= 500) return { message: 'Dịch vụ AI đang lỗi hoặc quá tải. Vui lòng đợi một lúc rồi thử lại.', fallback: true };
-    if (httpStatus === 400) return { message: 'AI không chấp nhận yêu cầu hoặc ảnh này. Hãy thử ảnh PNG/JPEG khác; nếu vẫn lỗi, cần kiểm tra cấu hình dịch.' };
-    return { message: `Không thể dịch ảnh (mã lỗi ${httpStatus}). Hãy thử lại sau.` };
+function cancelQuestTranslation() {
+    if (!questRun) return;
+    questRun.controller.abort();
+    questRun = null;
+    setQuestStatus('Đã hủy xử lý; yêu cầu đã gửi vẫn có thể tính vào hạn mức của nhà cung cấp.', 'info');
 }
-
-async function processQuestImage(base64Data, mimeType) {
-    if (questProcessing) {
-        setQuestStatus('Đang dịch ảnh trước. Vui lòng chờ xong rồi dán ảnh mới.', 'info', false);
-        return;
-    }
-    lastQuestImage = { base64Data, mimeType };
-    const apiKeys = (document.getElementById('apiKey').value || HARDCODED_API_KEY)
-        .split(',').map(key => key.trim()).filter(Boolean);
-    if (!apiKeys.length) {
-        document.body.classList.remove('mini-mode');
-        setQuestStatus('Chưa có API key. Nhập Gemini API key rồi bấm Thử lại ảnh vừa dán.', 'error');
-        return;
-    }
-    if (!navigator.onLine) {
-        setQuestStatus('Đang mất kết nối Internet. Khi có mạng trở lại, bấm Thử lại ảnh vừa dán.', 'error');
-        return;
-    }
-
-    questProcessing = true;
-    document.getElementById('loading').style.display = 'block';
-    setQuestStatus('Đang đọc và dịch ảnh nhiệm vụ…', 'info', false);
-    const promptText = `Trích xuất nhiệm vụ game Delta Force. Tìm 'Mục tiêu hành động cụ thể'. Bỏ qua cốt truyện. Trả về MỘT mảng JSON: [{"id_goc": "Chữ Trung", "dich_nghia": "Dịch Việt"}]. NẾU ảnh không chứa nhiệm vụ, trả về: []`;
-    const MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash'];
+async function processQuestImage(image, provider = aiProvider) {
+    if (questRun) return;
+    lastQuestImage = image;
+    document.getElementById('questOriginal').src = image.dataUrl;
+    document.getElementById('questPreview').hidden = false;
+    const run = { controller: new AbortController(), provider };
+    questRun = run;
+    setQuestStatus(`Đang dịch nhiệm vụ bằng ${AI_PROVIDERS[provider].name}…`, 'info', false);
     try {
-        for (let i = 0; i < MODELS.length; i++) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 25000);
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELS[i]}:generateContent?key=${encodeURIComponent(apiKeys[0])}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }, { inlineData: { mimeType, data: base64Data } }] }],
-                        generationConfig: { responseMimeType: 'application/json' }
-                    }),
-                    signal: controller.signal
-                });
-                // Một số lỗi máy chủ không trả JSON; vẫn phân loại theo HTTP status.
-                let data;
-                try {
-                    data = await response.json();
-                } catch (error) {
-                    if (error.name !== 'SyntaxError') throw error;
-                    data = null;
-                }
-                if (!response.ok || data?.error) {
-                    const issue = getQuestApiError(response.ok ? Number(data.error.code) || 500 : response.status, data?.error);
-                    if (issue.fallback && i < MODELS.length - 1) {
-                        setQuestStatus('Model đầu chưa xử lý được ảnh. Đang thử model dự phòng…', 'info', false);
-                        continue;
-                    }
-                    setQuestStatus(issue.message, 'error');
-                    return;
-                }
-                if (data?.promptFeedback?.blockReason) {
-                    setQuestStatus('AI đã từ chối xử lý ảnh này. Hãy dán ảnh nhiệm vụ khác, rõ và chỉ chứa nội dung game.', 'error');
-                    return;
-                }
-                let newQuests;
-                try {
-                    const candidate = data?.candidates?.[0];
-                    if (candidate?.finishReason && candidate.finishReason !== 'STOP') throw new Error('Incomplete response');
-                    const resultText = candidate?.content?.parts?.map(part => part.text || '').join('');
-                    const parsed = JSON.parse(resultText);
-                    if (!Array.isArray(parsed) || !parsed.every(quest => quest
-                        && typeof quest.id_goc === 'string' && quest.id_goc.trim()
-                        && typeof quest.dich_nghia === 'string' && quest.dich_nghia.trim())) {
-                        throw new Error('Invalid quest data');
-                    }
-                    newQuests = parsed.map(quest => ({ id_goc: quest.id_goc.trim(), dich_nghia: quest.dich_nghia.trim() }));
-                } catch {
-                    if (i < MODELS.length - 1) {
-                        setQuestStatus('AI trả kết quả chưa đọc được. Đang thử model dự phòng…', 'info', false);
-                        continue;
-                    }
-                    setQuestStatus('AI chưa trả được bản dịch hợp lệ hoặc kết quả bị ngắt. Hãy thử lại hoặc dán ảnh rõ hơn.', 'error');
-                    return;
-                }
-                if (!newQuests.length) {
-                    setQuestStatus('AI không tìm thấy nhiệm vụ trong ảnh. Hãy dán ảnh rõ phần mục tiêu nhiệm vụ.', 'info');
-                    return;
-                }
-                try {
-                    mergeQuests(newQuests);
-                } catch {
-                    setQuestStatus('Đã đọc ảnh nhưng không lưu hoặc hiển thị được kết quả. Hãy xuất dữ liệu để sao lưu và kiểm tra dung lượng lưu trữ của trình duyệt.', 'error', false);
-                    return;
-                }
-                setQuestStatus(`Đã xử lý ${newQuests.length} nhiệm vụ. Nhiệm vụ trùng được dùng lại trong danh sách.`, 'success', false);
-                return;
-            } catch (error) {
-                const message = error.name === 'AbortError'
-                    ? 'Dịch ảnh đã quá 25 giây nên được dừng lại. Bấm Thử lại hoặc dán ảnh nhỏ hơn.'
-                    : 'Không kết nối được với dịch vụ AI. Kiểm tra Internet hoặc kết nối trình duyệt rồi bấm Thử lại.';
-                setQuestStatus(message, 'error');
-                return;
-            } finally {
-                clearTimeout(timeoutId);
-            }
+        const result = await requestAiTranslation('quest', image, provider, {
+            signal: run.controller.signal,
+            onProgress: message => { if (questRun === run) setQuestStatus(message, 'info', false); }
+        });
+        if (questRun !== run) return;
+        questRun = null;
+        if (!result.items.length) {
+            setQuestStatus('AI không tìm thấy nhiệm vụ trong ảnh. Hãy gửi ảnh rõ phần mục tiêu nhiệm vụ.', 'info');
+            return;
         }
-    } finally {
-        questProcessing = false;
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('retryQuestButton').disabled = false;
+        try { mergeQuests(result.items); }
+        catch {
+            setQuestStatus('Đã đọc ảnh nhưng không lưu/hiển thị được nhiệm vụ. Xuất Data để sao lưu và kiểm tra dung lượng trình duyệt.', 'error', false);
+            return;
+        }
+        setQuestStatus(`Đã xử lý ${result.items.length} nhiệm vụ bằng ${AI_PROVIDERS[provider].name}. Mục trùng được dùng lại. Nếu chưa thấy, kiểm tra bộ lọc tìm kiếm.`, 'success', false);
+    } catch (error) {
+        if (questRun !== run) return;
+        questRun = null;
+        setQuestStatus(error instanceof AiRequestError ? error.message : 'Không xử lý được ảnh nhiệm vụ. Hãy thử lại.', 'error');
     }
 }
 
