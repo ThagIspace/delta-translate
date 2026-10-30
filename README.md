@@ -212,5 +212,13 @@ khôi phục từ Thùng rác hoặc bản gốc: **NOT RUN**.
 source/diff. Tests/browser QA, lưu lại và nhập/xuất backup cho thay đổi này:
 **NOT RUN**. CI: **NOT CHECKED**.
 
+Wiki Quest có bản xem thử gồm 3 quest Zero Dam: Bridges and Shanties,
+A Small Breakthrough và Fair Trade. Có cây cuộn ngang, danh sách, tìm kiếm và
+khung chi tiết mục tiêu/phần thưởng/quan hệ trước-sau. Dữ liệu tóm tắt từ Delta
+Force Wiki (Fandom), dẫn nguồn từng quest và ghi công CC BY-SA; tên và mục tiêu
+Trung/Việt là bản dịch tham khảo, chưa xác nhận theo game/phiên bản. Không cần
+API key, không gọi AI, chưa có bản đồ vị trí hoặc cây đầy đủ. Tests/browser QA
+cho Wiki Quest: **NOT RUN**. CI: **NOT CHECKED**.
+
 Đợt sắp xếp thanh điều hướng chỉ rà source/diff. Tests/browser QA cho kéo thả,
 cảm ứng, cuộn khi kéo, bàn phím và lưu thứ tự: **NOT RUN**. CI: **NOT CHECKED**.

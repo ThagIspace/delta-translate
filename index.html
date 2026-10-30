@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=nav-order-1">
+    <link rel="stylesheet" href="style.css?v=wiki-preview-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -30,6 +30,7 @@
             <a data-nav-id="yandex" href="https://translate.yandex.com/en/?source_lang=zh&amp;target_lang=vi" target="_blank" rel="noopener noreferrer" class="nav-link">Yandex ↗</a>
             <button data-tab="tab-guns" onclick="switchTab('tab-guns', this)" class="nav-btn text-gray-200 border-transparent">🔫 Code súng</button>
             <button data-tab="tab-items" onclick="switchTab('tab-items', this)" class="nav-btn text-gray-200 border-transparent">🎒 Wiki Item</button>
+            <button data-tab="tab-wiki-quests" onclick="switchTab('tab-wiki-quests', this)" class="nav-btn text-gray-200 border-transparent">📚 Wiki Quest</button>
         </nav>
         <div id="navArrangeHelp" class="max-w-7xl mx-auto px-4 py-2 text-sm" hidden>
             <p>Kéo tay nắm ⠿ hoặc dùng ← / → để đổi vị trí. Thứ tự tự lưu trên trình duyệt này.</p>
@@ -183,6 +184,21 @@
             </div>
         </div>
 
+        <section id="tab-wiki-quests" class="tab-content max-w-7xl mx-auto w-full" aria-labelledby="wikiTitle">
+            <h2 id="wikiTitle" class="text-2xl font-bold mb-3">Wiki Quest · Zero Dam</h2>
+            <p class="text-gray-200 mb-4">Bản xem thử · 3 quest. Tiếng Trung và Việt là bản dịch tham khảo từ wiki tiếng Anh, chưa đối chiếu tên trong game. Dữ liệu có thể khác phiên bản bạn chơi.</p>
+            <div class="wiki-toolbar">
+                <span class="tool-btn">Bản đồ: Zero Dam</span>
+                <span class="tool-btn">Đơn vị: Assault Battalion</span>
+                <label class="flex-1">Tìm quest<input id="wikiSearch" type="search" class="settings-input" placeholder="Tên Trung, Việt, Anh hoặc mục tiêu..."></label>
+                <label>Hiển thị<select id="wikiView" class="settings-input"><option value="tree">Cây nhiệm vụ</option><option value="list">Danh sách</option></select></label>
+            </div>
+            <p id="wikiCount" class="text-sm text-gray-200 my-3" role="status"></p>
+            <div id="wikiQuestList" class="wiki-tree" aria-label="Các nhiệm vụ mẫu"></div>
+            <section id="wikiQuestDetail" class="wiki-detail mt-4" aria-label="Chi tiết nhiệm vụ"></section>
+            <p class="text-sm text-gray-200 mt-4">Nguồn: Delta Force Wiki / Fandom, nội dung được tóm tắt và dịch lại. <a class="text-blue-300 underline" href="https://delta-force.fandom.com/wiki/Quests" target="_blank" rel="noopener noreferrer">Danh sách quest</a> · <a class="text-blue-300 underline" href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA</a>. Đây là một đoạn chuỗi nhiệm vụ, không phải cây đầy đủ.</p>
+        </section>
+
         <section id="tab-items" class="tab-content max-w-5xl mx-auto w-full">
             <h2 class="text-2xl font-bold mb-3">Wiki Item</h2>
             <p class="text-gray-200">Phần tra cứu vật phẩm sẽ được triển khai sau cùng. Hiện chưa có dữ liệu wiki hoặc chức năng quét item.</p>
@@ -281,5 +297,6 @@
     <script src="quest.js?v=contrast-1"></script>
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
+    <script src="wiki-quests.js?v=1"></script>
 </body>
 </html>
