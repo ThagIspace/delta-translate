@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=contrast-1">
+    <link rel="stylesheet" href="style.css?v=gun-workspace-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -142,7 +142,7 @@
         <!-- ========================================= -->
         <!-- TAB 2: CODE SÚNG -->
         <!-- ========================================= -->
-        <div id="tab-guns" class="tab-content max-w-4xl mx-auto w-full">
+        <div id="tab-guns" class="tab-content max-w-6xl mx-auto w-full">
             <div class="flex flex-wrap gap-3 justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-white">Quản lý Code Súng</h2>
                 <button id="restoreDefaultGunCodesButton" onclick="restoreDefaultGunCodes()" class="tool-btn" aria-describedby="gunDefaultsHelp">↺ Khôi phục mã mặc định</button>
@@ -159,17 +159,22 @@
                        class="w-full md:w-1/3 p-3 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
                 <input type="text" id="gunCodeInput" placeholder="Dán mã code súng vào đây... (Bắt buộc)"
                        class="w-full md:flex-1 p-3 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
-                <button onclick="addGunCode()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded font-bold shadow transition shrink-0">➕ Thêm Code</button>
+                <button id="addGunCodeButton" onclick="addGunCode()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded font-bold shadow transition shrink-0">➕ Thêm Code</button>
             </div>
 
-            <div class="mb-4">
-                <label for="gunSearch" class="block text-sm text-gray-300 mb-2">Tìm code súng</label>
-                <input type="search" id="gunSearch" oninput="renderGunCodes()" placeholder="Tìm theo tên súng, mã code hoặc ghi chú..."
-                       class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500">
+            <p class="text-sm text-gray-200 mb-4">Chọn súng để xem và copy mã. Ghim mã hay dùng bằng ★; số thứ tự luôn theo danh sách đầy đủ.</p>
+            <div id="gunWorkspace" class="gun-workspace">
+                <section class="gun-sidebar" aria-label="Danh sách code súng">
+                    <div class="gun-search-box">
+                        <label for="gunSearch" class="block text-sm text-gray-200 mb-2">Tìm code súng</label>
+                        <input type="search" id="gunSearch" oninput="renderGunCodes()" placeholder="Tên súng, mã hoặc ghi chú..."
+                               class="settings-input">
+                        <p id="gunCount" class="text-sm text-gray-200 mt-2" role="status"></p>
+                    </div>
+                    <div id="gunCodeList" class="gun-list"></div>
+                </section>
+                <section id="gunDetail" class="gun-detail" aria-label="Chi tiết code súng"></section>
             </div>
-            <p id="gunCount" class="text-gray-200 font-bold mb-4" role="status"></p>
-            <p class="text-sm text-gray-200 mb-4">Dùng ↑ ↓ để đổi vị trí trong kết quả đang hiện; thứ tự tự lưu. Số thứ tự theo danh sách đầy đủ. Ghi chú cấp độ không được copy cùng mã.</p>
-            <div id="gunCodeList" class="flex flex-col gap-3"></div>
         </div>
 
         <section id="tab-items" class="tab-content max-w-5xl mx-auto w-full">
@@ -264,10 +269,10 @@
         <div class="viewer-surface"><img id="viewerImage" alt="Ảnh phóng to"></div>
     </dialog>
     <script src="shared/dialog/dialog.js?v=1"></script>
-    <script src="app.js?v=contrast-1"></script>
+    <script src="app.js?v=gun-workspace-1"></script>
     <script src="ai.js?v=contrast-1"></script>
     <script src="quest.js?v=contrast-1"></script>
     <script src="image.js?v=contrast-1"></script>
-    <script src="gun.js?v=restore-defaults-1"></script>
+    <script src="gun.js?v=gun-workspace-1"></script>
 </body>
 </html>

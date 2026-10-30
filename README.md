@@ -119,11 +119,19 @@ không phân biệt chữ hoa và dấu tiếng Việt. Xóa ô tìm để bỏ 
 thự trong các mục đang hiện và cùng trạng thái ghim. **Xóa tất cả đã tick**
 chuyển mọi nhiệm vụ đã tick vào thùng rác, kể cả mục bị bộ lọc ẩn; có xác nhận số mục.
 
-Code súng có số thứ tự theo danh sách đầy đủ và nút ↑/↓ để hoán đổi với mục
-liền kề trong kết quả đang hiện. Thứ tự lưu cùng danh sách, không thêm trường
-`order`. Khi đang chỉnh sửa, nút đổi thứ tự tạm khóa để giữ nội dung đang nhập.
-Ghi chú có thể sửa/xóa trong ô chỉnh sửa và đi theo mã vào thùng rác/backup.
-Tìm kiếm code súng cũng tìm trong ghi chú.
+Code súng dùng danh sách gọn có vùng cuộn riêng và ô tìm kiếm luôn ở phía trên.
+Chọn một dòng để xem mã đầy đủ, copy, sửa hoặc xóa trong khung chi tiết;
+trên điện thoại, dùng nút **Danh sách** để quay lại. Tìm kiếm gồm tên, mã và ghi chú.
+**Ghim** tạo lối tắt ở đầu vùng danh sách, không thay đổi thứ tự gốc; mã đã ghim
+vẫn xuất hiện trong phần **Tất cả** với cùng số thứ tự.
+
+Trong khung chi tiết, dùng **Chuyển đến…** để nhập số thứ tự, **Lên đầu**,
+**Xuống cuối** hoặc ↑/↓. Mục được lấy khỏi vị trí cũ và chèn vào vị trí mới;
+các mục còn lại giữ thứ tự tương đối. Khi tìm kiếm, thao tác đổi thứ tự tạm khóa.
+Thứ tự lưu theo mảng hiện có, không thêm trường `order`. Trạng thái ghim dùng
+trường tùy chọn `isPinned` và đi theo mã vào thùng rác/backup; backup cũ vẫn nhập được.
+Khi chỉnh sửa, tìm kiếm, chọn mục khác, thêm mã và khôi phục mặc định tạm khóa
+để giữ nội dung đang nhập. Ghi chú có thể sửa/xóa và không copy cùng mã.
 
 Danh sách đã lưu, kể cả danh sách rỗng, không bị tự thay bằng mặc định mới. Bấm
 **Khôi phục mã mặc định** để lấy lại mã mặc định còn thiếu trong danh sách:
@@ -191,3 +199,7 @@ việc tái dùng trên site khác bằng chạy thực tế.
 
 Đợt đổi nút sang Khôi phục mã mặc định chỉ rà source/diff; test/QA cho hành vi
 khôi phục từ Thùng rác hoặc bản gốc: **NOT RUN**.
+
+Đợt giao diện code súng gọn, khung chi tiết, ghim và chuyển đến vị trí chỉ rà
+source/diff. Tests/browser QA, lưu lại và nhập/xuất backup cho thay đổi này:
+**NOT RUN**. CI: **NOT CHECKED**.

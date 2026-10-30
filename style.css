@@ -57,6 +57,37 @@ dialog::backdrop { background: rgb(0 0 0 / .75); }
 .viewer-surface { overflow: auto; max-height: 72dvh; }
 .viewer-surface img { display: block; max-width: 100%; max-height: 70dvh; object-fit: contain; margin: auto; }
 .viewer-surface img.natural-size { max-width: none; max-height: none; }
+.gun-workspace { display: grid; grid-template-columns: minmax(260px, 2fr) minmax(0, 3fr); gap: 1rem; align-items: start; }
+.gun-sidebar, .gun-detail { min-width: 0; background: #1f2937; border: 1px solid #4b5563; border-radius: .65rem; }
+.gun-sidebar { display: flex; flex-direction: column; max-height: 65dvh; overflow: hidden; }
+.gun-search-box { padding: 1rem; border-bottom: 1px solid #4b5563; flex-shrink: 0; }
+.gun-list { min-height: 140px; overflow-y: auto; overscroll-behavior: contain; padding: .5rem; }
+.gun-list-heading { padding: .6rem .5rem; font-size: .8rem; font-weight: 700; color: #fde68a; }
+.gun-row { display: flex; align-items: center; gap: .65rem; width: 100%; padding: .75rem .6rem; border: 1px solid transparent; border-radius: .4rem; text-align: left; color: #fff; }
+.gun-row:hover:not(:disabled) { background: #374151; }
+.gun-row.selected { background: #1e3a8a; border-color: #60a5fa; }
+.gun-row:focus-visible, .gun-back:focus-visible { outline: 2px solid #93c5fd; outline-offset: -2px; }
+.gun-ordinal { color: #e5e7eb; font-size: .8rem; min-width: 2.2rem; }
+.gun-row-body { flex: 1; min-width: 0; }
+.gun-row-name, .gun-row-note { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gun-row-name { font-weight: 700; }
+.gun-row-note { color: #fde68a; font-size: .75rem; margin-top: .2rem; }
+.gun-detail { padding: 1.25rem; max-height: 65dvh; overflow-y: auto; }
+.gun-full-code { padding: 1rem; background: #111827; border: 1px solid #4b5563; border-radius: .4rem; color: #86efac; font-family: monospace; overflow-wrap: anywhere; user-select: all; }
+.gun-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.gun-order { border-top: 1px solid #4b5563; margin-top: 1.25rem; padding-top: 1rem; }
+.gun-edit-fields { display: grid; gap: 1rem; }
+.gun-edit-fields input { display: block; margin-top: .35rem; }
+.gun-back { display: none; margin-bottom: 1rem; }
+@media (max-width: 700px) {
+    .gun-workspace { grid-template-columns: minmax(0, 1fr); }
+    .gun-detail { display: none; }
+    .gun-workspace.show-detail .gun-sidebar { display: none; }
+    .gun-workspace.show-detail .gun-detail { display: block; }
+    .gun-back { display: inline-block; }
+    .gun-sidebar, .gun-detail { max-height: 70dvh; }
+    .gun-row, .gun-actions button { min-height: 44px; }
+}
 @media (max-width: 600px) {
     .nav-btn, .nav-link { padding: .8rem; font-size: .875rem; }
     .dialog-heading { flex-wrap: wrap; }

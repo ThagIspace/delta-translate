@@ -12,81 +12,152 @@ const defaultGunCodes = [
 
 let gunCodes = JSON.parse(localStorage.getItem('delta_gun_codes')) || defaultGunCodes.map(gun => ({ ...gun }));
 let gunTrash = JSON.parse(localStorage.getItem('delta_gun_codes_trash')) || []; // Dữ liệu Thùng rác súng
-let editingGunId = null; // Biến lưu ID súng đang được sửa
+let editingGunId = null;
+let selectedGunId = null;
 
 function getVisibleGunCodes() {
     const query = document.getElementById('gunSearch').value;
     return gunCodes.filter(gun => matchesSearch(query, gun.name, gun.code, gun.note));
 }
 
-function renderGunCodes() {
-    const list = document.getElementById('gunCodeList');
-
-    // Cập nhật số lượng thùng rác
-    const trashCountEl = document.getElementById('gunTrashCount');
-    if (trashCountEl) trashCountEl.innerText = gunTrash.length;
-
-    list.innerHTML = '';
-    const visibleGunCodes = getVisibleGunCodes();
-    document.getElementById('restoreDefaultGunCodesButton').disabled = editingGunId !== null;
-    document.getElementById('gunCount').textContent = `Đang hiển thị: ${visibleGunCodes.length} / ${gunCodes.length} code súng`;
-    if (!visibleGunCodes.length) {
-        list.textContent = gunCodes.length ? 'Không tìm thấy code súng phù hợp.' : 'Chưa có code súng. Thêm code ở phía trên.';
-    }
-    visibleGunCodes.forEach((gun, visibleIndex) => {
-        const gunId = htmlArgument(gun.id);
-        const ordinal = gunCodes.indexOf(gun) + 1;
-        const disableUp = editingGunId !== null || visibleIndex === 0;
-        const disableDown = editingGunId !== null || visibleIndex === visibleGunCodes.length - 1;
-        const div = document.createElement('div');
-        div.className = 'bg-gray-800 p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-yellow-500 shadow-sm transition-all';
-
-        // KIỂM TRA: Nếu súng này đang ở trạng thái Edit
-        if (editingGunId === gun.id) {
-            div.innerHTML = `
-                <div class="flex-1 w-full flex flex-col gap-2">
-                    <span class="text-sm text-gray-200 font-bold">#${ordinal}</span>
-                    <input type="text" id="editGunName_${escapeHtml(gun.id)}" value="${escapeHtml(gun.name)}" placeholder="Tên súng..." class="w-full p-2 rounded bg-gray-900 border border-blue-500 text-white focus:outline-none">
-                    <input type="text" id="editGunCode_${escapeHtml(gun.id)}" value="${escapeHtml(gun.code)}" placeholder="Code súng..." class="w-full p-2 rounded bg-gray-900 border border-blue-500 text-green-400 font-mono focus:outline-none">
-                    <input type="text" id="editGunNote_${escapeHtml(gun.id)}" value="${escapeHtml(gun.note)}" placeholder="Ghi chú (không nằm trong mã copy)..." aria-label="Ghi chú code súng" class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-yellow-300 focus:outline-none">
-                </div>
-                <div class="flex gap-2 w-full sm:w-auto shrink-0 mt-3 sm:mt-0">
-                    <button class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="saveEditGunCode(${gunId})">💾 Lưu</button>
-                    <button class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="cancelEditGunCode()">❌ Hủy</button>
-                </div>
-            `;
-        }
-        // TRẠNG THÁI BÌNH THƯỜNG
-        else {
-            div.innerHTML = `
-                <div class="flex-1 w-full min-w-0">
-                    <div class="text-lg font-bold text-white mb-1 break-words"><span class="text-gray-200 mr-2">#${ordinal}</span>${escapeHtml(gun.name)}</div>
-                    <div class="font-mono bg-gray-900 text-green-400 px-3 py-1 rounded select-all break-all inline-block border border-gray-700 max-w-full">${escapeHtml(gun.code)}</div>
-                    ${gun.note ? `<p class="text-yellow-300 text-sm mt-2 whitespace-pre-wrap break-words">${escapeHtml(gun.note)}</p>` : ''}
-                </div>
-                <div class="flex flex-wrap gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
-                    <button class="tool-btn" ${disableUp ? 'disabled' : ''} onclick="moveGunCode(${gunId}, -1)" aria-label="Chuyển ${escapeHtml(gun.name)} lên" title="Chuyển lên trong kết quả đang hiện">↑</button>
-                    <button class="tool-btn" ${disableDown ? 'disabled' : ''} onclick="moveGunCode(${gunId}, 1)" aria-label="Chuyển ${escapeHtml(gun.name)} xuống" title="Chuyển xuống trong kết quả đang hiện">↓</button>
-                    <button class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="copyGunCode(${htmlArgument(gun.code)})">📋 Copy</button>
-                    <button class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="startEditGunCode(${gunId})">✏️ Sửa</button>
-                    <button class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded font-bold shadow flex-1 sm:flex-none" onclick="deleteGunCode(${gunId})">🗑️ Xóa</button>
-                </div>
-            `;
-        }
-        list.appendChild(div);
-    });
+function isGunOrderLocked() {
+    return editingGunId !== null || document.getElementById('gunSearch').value.trim() !== '';
 }
 
-function moveGunCode(id, direction) {
-    if (editingGunId !== null || ![-1, 1].includes(direction)) return;
+function selectGunCode(id) {
+    if (editingGunId !== null || !gunCodes.some(gun => gun.id === id)) return;
+    selectedGunId = id;
+    document.getElementById('gunWorkspace').classList.add('show-detail');
+    renderGunCodes();
+    document.getElementById('gunDetailHeading').focus();
+}
+
+function closeGunDetail() {
+    if (editingGunId !== null) return;
+    document.getElementById('gunWorkspace').classList.remove('show-detail');
+    document.getElementById('gunSearch').focus();
+}
+
+function renderGunCodes() {
+    const list = document.getElementById('gunCodeList');
+    const scrollTop = list.scrollTop;
     const visible = getVisibleGunCodes();
-    const index = visible.findIndex(gun => gun.id === id);
-    const next = index + direction;
-    if (index < 0 || next < 0 || next >= visible.length) return;
-    const from = gunCodes.indexOf(visible[index]);
-    const to = gunCodes.indexOf(visible[next]);
-    [gunCodes[from], gunCodes[to]] = [gunCodes[to], gunCodes[from]];
+    const ordinals = new Map(gunCodes.map((gun, index) => [gun, index + 1]));
+    // Giữ bản nháp trong khung chi tiết khi một thao tác ở thùng rác cập nhật danh sách.
+    if (editingGunId !== null && !gunCodes.some(gun => gun.id === editingGunId)) editingGunId = null;
+    if (editingGunId === null && !visible.some(gun => gun.id === selectedGunId)) {
+        selectedGunId = visible.length ? visible[0].id : null;
+    }
+    document.getElementById('gunTrashCount').textContent = gunTrash.length;
+    document.getElementById('restoreDefaultGunCodesButton').disabled = editingGunId !== null;
+    document.getElementById('addGunCodeButton').disabled = editingGunId !== null;
+    document.getElementById('gunSearch').disabled = editingGunId !== null;
+    document.getElementById('gunCount').textContent = `Đang hiển thị: ${visible.length} / ${gunCodes.length} code súng`;
+    list.replaceChildren();
+    function appendRow(gun) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'gun-row' + (gun.id === selectedGunId ? ' selected' : '');
+        button.disabled = editingGunId !== null;
+        button.setAttribute('aria-pressed', String(gun.id === selectedGunId));
+        button.title = gun.note ? `${gun.name} — ${gun.note}` : gun.name;
+        button.onclick = () => selectGunCode(gun.id);
+        button.innerHTML = `<span class="gun-ordinal">#${ordinals.get(gun)}</span>
+            <span class="gun-row-body"><span class="gun-row-name">${escapeHtml(gun.name)}</span>
+            ${gun.note ? `<span class="gun-row-note">${escapeHtml(gun.note)}</span>` : ''}</span>
+            ${gun.isPinned ? '<span aria-label="Đã ghim">★</span>' : ''}`;
+        list.appendChild(button);
+    }
+    function appendHeading(text) {
+        const heading = document.createElement('h3');
+        heading.className = 'gun-list-heading';
+        heading.textContent = text;
+        list.appendChild(heading);
+    }
+    const pinned = visible.filter(gun => gun.isPinned);
+    if (pinned.length) {
+        appendHeading('★ Đã ghim · Lối tắt');
+        pinned.forEach(gun => appendRow(gun));
+    }
+    if (visible.length) {
+        appendHeading('Tất cả · Theo thứ tự đã lưu');
+        visible.forEach(gun => appendRow(gun));
+    } else {
+        list.textContent = gunCodes.length ? 'Không tìm thấy code súng phù hợp.' : 'Chưa có code súng. Thêm code ở phía trên.';
+    }
+    list.scrollTop = scrollTop;
+    if (editingGunId === null) renderGunDetail();
+}
+
+function renderGunDetail() {
+    const detail = document.getElementById('gunDetail');
+    const gun = gunCodes.find(gun => gun.id === selectedGunId);
+    const back = '<button class="tool-btn gun-back" onclick="closeGunDetail()">← Danh sách</button>';
+    if (!gun) {
+        detail.innerHTML = back + '<p class="text-gray-200">Chọn một code súng trong danh sách để xem chi tiết.</p>';
+        return;
+    }
+    const id = htmlArgument(gun.id);
+    const ordinal = gunCodes.indexOf(gun) + 1;
+    const locked = isGunOrderLocked();
+    detail.innerHTML = `${back}
+        <p class="text-gray-200 text-sm mb-2">Vị trí #${ordinal} / ${gunCodes.length}</p>
+        <h3 id="gunDetailHeading" tabindex="-1" class="text-xl font-bold break-words mb-4">${escapeHtml(gun.name)}</h3>
+        <div class="gun-full-code">${escapeHtml(gun.code)}</div>
+        ${gun.note ? `<p class="text-yellow-300 whitespace-pre-wrap break-words mt-3">${escapeHtml(gun.note)}</p>` : ''}
+        <p class="text-sm text-gray-200 mt-3">Ghi chú không được copy cùng mã.</p>
+        <div class="gun-actions">
+            <button class="primary-btn" onclick="copyGunCode(${htmlArgument(gun.code)})">📋 Copy mã</button>
+            <button class="tool-btn" onclick="toggleGunPin(${id})" aria-pressed="${Boolean(gun.isPinned)}">${gun.isPinned ? '★ Bỏ ghim' : '☆ Ghim'}</button>
+            <button class="tool-btn" onclick="startEditGunCode(${id})">✏️ Sửa</button>
+            <button class="tool-btn text-red-300" onclick="deleteGunCode(${id})">🗑️ Xóa</button>
+        </div>
+        <div class="gun-order">
+            <h4 class="font-bold mb-2">Đổi vị trí</h4>
+            <p class="text-sm text-gray-200 mb-3">${locked ? 'Xóa nội dung tìm kiếm để đổi vị trí trong toàn bộ danh sách.' : 'Chuyển thẳng đến số thứ tự bạn muốn. Thứ tự tự lưu; ghim chỉ tạo lối tắt.'}</p>
+            <div class="gun-actions">
+                <button class="tool-btn" ${locked || ordinal === 1 ? 'disabled' : ''} onclick="moveGunTo(${id}, 1)">Lên đầu</button>
+                <button class="tool-btn" ${locked || ordinal === 1 ? 'disabled' : ''} onclick="moveGunTo(${id}, ${ordinal - 1})" aria-label="Chuyển lên một vị trí">↑</button>
+                <button class="tool-btn" ${locked || ordinal === gunCodes.length ? 'disabled' : ''} onclick="moveGunTo(${id}, ${ordinal + 1})" aria-label="Chuyển xuống một vị trí">↓</button>
+                <button class="tool-btn" ${locked || gunCodes.length < 2 ? 'disabled' : ''} onclick="promptGunPosition(${id})">Chuyển đến…</button>
+                <button class="tool-btn" ${locked || ordinal === gunCodes.length ? 'disabled' : ''} onclick="moveGunTo(${id}, ${gunCodes.length})">Xuống cuối</button>
+            </div>
+        </div>`;
+}
+
+function toggleGunPin(id) {
+    if (editingGunId !== null) return;
+    const gun = gunCodes.find(gun => gun.id === id);
+    if (!gun) return;
+    gun.isPinned = !gun.isPinned;
     saveGunCodes();
+}
+
+function moveGunTo(id, position) {
+    if (isGunOrderLocked() || !Number.isSafeInteger(position) || position < 1 || position > gunCodes.length) return;
+    const from = gunCodes.findIndex(gun => gun.id === id);
+    if (from < 0 || from === position - 1) return;
+    const [gun] = gunCodes.splice(from, 1);
+    gunCodes.splice(position - 1, 0, gun);
+    saveGunCodes();
+}
+
+async function promptGunPosition(id) {
+    if (isGunOrderLocked()) return;
+    const gun = gunCodes.find(gun => gun.id === id);
+    if (!gun) return;
+    const value = await appDialogs.prompt({
+        title: 'Chuyển đến vị trí', message: gun.name,
+        inputLabel: `Số thứ tự từ 1 đến ${gunCodes.length}`,
+        value: String(gunCodes.indexOf(gun) + 1), required: true, confirmText: 'Chuyển'
+    });
+    if (value === null || isGunOrderLocked()) return;
+    const position = Number(value.trim());
+    if (!/^\d+$/.test(value.trim()) || !Number.isSafeInteger(position) || position < 1 || position > gunCodes.length) {
+        await appDialogs.alert({ title: 'Vị trí không hợp lệ', message: `Nhập số nguyên từ 1 đến ${gunCodes.length}.` });
+        return;
+    }
+    moveGunTo(id, position);
 }
 
 async function restoreDefaultGunCodes() {
@@ -127,6 +198,7 @@ async function restoreDefaultGunCodes() {
 }
 
 async function addGunCode() {
+    if (editingGunId !== null) return;
     const nameInput = document.getElementById('gunNameInput');
     const codeInput = document.getElementById('gunCodeInput');
 
@@ -140,17 +212,36 @@ async function addGunCode() {
     }
     if (!name) name = "Súng ẩn danh #" + Math.floor(1000 + Math.random() * 9000);
 
-    gunCodes.unshift({ id: 'g_' + Date.now(), name: name, code: code });
+    const id = 'g_' + Date.now() + Math.random().toString(36).slice(2, 11);
+    gunCodes.unshift({ id, name, code });
+    selectedGunId = id;
+    document.getElementById('gunSearch').value = '';
+    document.getElementById('gunWorkspace').classList.add('show-detail');
     saveGunCodes();
 
     nameInput.value = '';
     codeInput.value = '';
 }
 
-/* ================= LORIC SỬA TRỰC TIẾP (INLINE) ================= */
 function startEditGunCode(id) {
+    if (editingGunId !== null) return;
+    const gun = gunCodes.find(gun => gun.id === id);
+    if (!gun) return;
+    selectedGunId = id;
     editingGunId = id;
     renderGunCodes();
+    document.getElementById('gunDetail').innerHTML = `
+        <h3 class="text-xl font-bold mb-4">Sửa code súng</h3>
+        <div class="gun-edit-fields">
+            <label>Tên súng<input id="editGunName_${escapeHtml(id)}" class="settings-input" value="${escapeHtml(gun.name)}"></label>
+            <label>Mã súng<input id="editGunCode_${escapeHtml(id)}" class="settings-input" value="${escapeHtml(gun.code)}"></label>
+            <label>Ghi chú (không copy cùng mã)<input id="editGunNote_${escapeHtml(id)}" class="settings-input" value="${escapeHtml(gun.note)}"></label>
+        </div>
+        <div class="gun-actions">
+            <button class="primary-btn" onclick="saveEditGunCode(${htmlArgument(id)})">💾 Lưu</button>
+            <button class="tool-btn" onclick="cancelEditGunCode()">Hủy</button>
+        </div>`;
+    document.getElementById(`editGunName_${id}`).focus();
 }
 
 function cancelEditGunCode() {
@@ -181,6 +272,7 @@ async function saveEditGunCode(id) {
 
 /* ================= LORIC THÙNG RÁC ================= */
 async function deleteGunCode(id) {
+    if (editingGunId !== null) return;
     const gun = gunCodes.find(item => item.id === id);
     if (!gun) return;
     if (await appDialogs.confirm({
@@ -190,7 +282,7 @@ async function deleteGunCode(id) {
         confirmText: 'Chuyển vào thùng rác'
     })) {
         const idx = gunCodes.findIndex(g => g.id === id);
-        if (idx !== -1) {
+        if (idx !== -1 && editingGunId === null) {
             gunTrash.push(gunCodes[idx]); // Đẩy vào thùng rác
             gunCodes.splice(idx, 1);      // Xóa khỏi list chính
             saveGunCodes();

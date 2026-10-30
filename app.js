@@ -90,7 +90,8 @@ function validateBackupData(data) {
         && ['history', 'redoHistory'].every(key => value[key] === undefined
             || (Array.isArray(value[key]) && value[key].every(text => typeof text === 'string')));
     const isGun = value => isObject(value) && ['id', 'name', 'code'].every(key => typeof value[key] === 'string')
-        && (value.note === undefined || typeof value.note === 'string');
+        && (value.note === undefined || typeof value.note === 'string')
+        && (value.isPinned === undefined || typeof value.isPinned === 'boolean');
     const validators = {
         delta_quests: value => Array.isArray(value) && value.every(isQuest),
         delta_quests_trash: value => Array.isArray(value) && value.every(isQuest),
