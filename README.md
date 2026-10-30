@@ -153,5 +153,9 @@ lint/typecheck: **NOT RUN**. CI: **NOT CHECKED**. Kết quả giả lập không
 minh quyền truy cập model, hạn mức hoặc chất lượng dịch thực tế.
 
 Đợt cập nhật danh sách code súng mặc định, ghi chú và đổi thứ tự chỉ rà diff;
-test/QA riêng cho thay đổi này: **NOT RUN**. Các kết quả QA phía trên là bằng
-chứng của các đợt trước, không xác minh tính năng code súng mới.
+sau đó đã xác nhận trên tab local thực tế hiển thị đủ 8 mã mới, số thứ tự,
+nút ↑/↓ và ghi chú LVL 33/40. Trang dùng mã phiên bản trên URL tài nguyên local
+để tránh HTML mới đi cùng JavaScript/CSS còn trong cache; đổi mã phiên bản khi
+cập nhật các tài nguyên này. Chưa chạy QA thao tác đổi thứ tự, copy, lưu lại
+hoặc backup cho thay đổi code súng mới. Các kết quả QA phía trên là bằng chứng
+của các đợt trước, không xác minh các thao tác mới đó.
