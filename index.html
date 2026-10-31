@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=wiki-graph-1">
+    <link rel="stylesheet" href="style.css?v=wiki-phases-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -195,8 +195,11 @@
                 <label>Hiển thị<select id="wikiView" class="settings-input"><option value="tree">Cây nhiệm vụ</option><option value="list">Danh sách</option></select></label>
             </div>
             <p id="wikiCount" class="text-sm text-gray-200 my-3" role="status"></p>
-            <div id="wikiQuestList" class="wiki-tree" aria-label="Các nhiệm vụ mẫu"></div>
-            <p class="text-sm text-gray-200 mt-3">Cuộn ngang để xem chuỗi · Bấm thẻ để xem chi tiết · Esc để đóng chi tiết.</p>
+            <div id="wikiGraphTools" class="flex flex-wrap gap-2 mb-3">
+                <button id="wikiZoomOut" class="tool-btn" aria-label="Thu nhỏ cây">−</button><output id="wikiZoomLabel" class="tool-btn" aria-live="polite">100%</output><button id="wikiZoomIn" class="tool-btn" aria-label="Phóng to cây">＋</button><button id="wikiFit" class="tool-btn">Vừa màn hình</button><button id="wikiResetView" class="tool-btn">Về đầu cây</button>
+            </div>
+            <div id="wikiViewport" class="wiki-viewport" tabindex="0" aria-label="Cây nhiệm vụ, kéo vùng trống hoặc cuộn để di chuyển"><div id="wikiQuestList"></div></div>
+            <p class="text-sm text-gray-200 mt-3">Kéo vùng trống hoặc cuộn để di chuyển cây · Bấm thẻ xem chi tiết · Esc đóng chi tiết.</p>
             <dialog id="wikiQuestDialog" class="wiki-modal" aria-labelledby="wikiDetailHeading">
                 <div class="wiki-modal-bar"><span class="wiki-mission-label">HỒ SƠ NHIỆM VỤ</span><button id="wikiCloseDetail" type="button" class="tool-btn" aria-label="Đóng chi tiết nhiệm vụ">✕ Đóng</button></div>
                 <div id="wikiQuestDetail"></div>
@@ -307,6 +310,6 @@
     <script src="quest.js?v=quest-undo-2"></script>
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
-    <script src="wiki-quests.js?v=3"></script>
+    <script src="wiki-quests.js?v=phases-1"></script>
 </body>
 </html>

@@ -74,6 +74,18 @@ input::placeholder, textarea::placeholder { color: #d1d5db; opacity: 1; }
 .wiki-mission-label { background: #34d399; color: #052e25; font-size: .75rem; font-weight: 800; padding: .3rem .6rem; letter-spacing: .05em; }
 .wiki-detail-en { font-size: clamp(1.5rem, 4vw, 2.4rem); text-transform: uppercase; font-weight: 800; line-height: 1.15; margin-bottom: .75rem; }
 .wiki-modal .wiki-objectives { border-block: 1px solid #64748b; background: rgb(255 255 255 / .035); padding: 1.25rem 1.25rem 1.25rem 2.5rem; }
+.wiki-viewport { position: relative; height: 62dvh; min-height: 330px; max-height: 700px; overflow: auto; border: 1px solid #64748b; border-radius: .5rem; background-color: #101e24; background-image: linear-gradient(rgb(110 231 183 / .04) 1px, transparent 1px), linear-gradient(90deg, rgb(110 231 183 / .04) 1px, transparent 1px); background-size: 28px 28px; cursor: grab; touch-action: none; }
+.wiki-viewport.panning { cursor: grabbing; user-select: none; }
+.wiki-viewport.is-list { height: auto; max-height: none; background: transparent; cursor: auto; touch-action: auto; padding: 1rem; }
+.wiki-graph-space { position: relative; }
+.wiki-canvas { position: absolute; left: 0; top: 0; transform-origin: top left; }
+.wiki-canvas .wiki-card { position: absolute; width: 230px; height: 190px; padding: .75rem; border-radius: 0; background: #28383d; overflow: hidden; }
+.wiki-canvas .wiki-card.selected { background: #24443f; }
+.wiki-canvas .wiki-card strong { font-size: .9rem; }
+.wiki-canvas .wiki-card small { font-size: .7rem; }
+.wiki-edges { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.wiki-edges path { fill: none; stroke: #6b9290; stroke-width: 2; }
+.wiki-source-note { padding: .75rem; border: 1px solid #fbbf24; color: #fef3c7; margin-bottom: 1rem; }
 @media (max-width: 600px) { .wiki-modal { padding: 1rem; } .wiki-tree { padding-inline: 1rem; } }
 .image-drop { border: 2px dashed #3b82f6; border-radius: .6rem; padding: 1.5rem; text-align: center; background: #1f2937; }
 .file-picker { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; position: relative; max-width: 100%; min-height: 44px; padding: .6rem 1rem; border-radius: .5rem; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
