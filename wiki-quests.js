@@ -2,33 +2,31 @@
 (() => {
     const quests = [
         {
-            id: 'bridges', en: 'Bridges and Shanties', zh: '桥梁与棚屋', vi: 'Cầu và lán trại',
-            type: 'Điều tra', previous: 'Base Firepower', next: 'A Small Breakthrough',
-            objectives: [
-                ['在零号大坝行动中，调查峡谷区域的管道。', 'Trong trận Zero Dam, điều tra đường ống ở khu vực khe núi.'],
-                ['在零号大坝行动中，调查峡谷区域的小屋。', 'Điều tra căn lán ở khu vực khe núi trong trận Zero Dam.']
-            ],
-            rewards: '2.100 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy · G18. Mở mua Bizon.',
-            source: 'Bridges_and_Shanties'
+            id: 'first', en: 'First Battle', zh: '初战', vi: 'Trận đầu', step: 1, map: 'Any', department: 'Assault Battalion',
+            type: 'Chiến đấu', previous: 'Chưa xác minh điều kiện mở khóa', next: 'Return',
+            objectives: [['进入任意行动，击杀5名敌方士兵。', 'Vào một trận Operations trên bất kỳ bản đồ nào và hạ 5 lính địch.']],
+            rewards: '1.200 EXP · +1 uy tín Assault Battalion · 15.000 Tekniq Alloy · CAR-15.',
+            source: 'First_Battle'
         },
         {
-            id: 'breakthrough', en: 'A Small Breakthrough', zh: '小小的突破', vi: 'Bước đột phá nhỏ',
-            type: 'Chiến đấu', previous: 'Bridges and Shanties', next: 'Fair Trade / Handicrafts',
+            id: 'return', en: 'Return', zh: '归来', vi: 'Trở về', step: 2, map: 'Zero Dam', department: 'Assault Battalion',
+            type: 'Chiến đấu / Rút lui', previous: 'First Battle', next: 'Substation Investigation / Showdown / New Beginning / In To The Clouds 1',
             objectives: [
-                ['在零号大坝行动中，使用AKS-74突击步枪，在20米内击杀5名敌方士兵。', 'Trong trận Zero Dam, dùng AKS-74 hạ 5 lính địch ở khoảng cách trong 20 m.']
+                ['在零号大坝行动中，击杀5名敌方士兵。', 'Trong trận Zero Dam, hạ 5 lính địch.'],
+                ['在零号大坝行动中，完成1次撤离，单局收益达到30,000哈夫币。', 'Rút lui 1 lần ở Zero Dam với thu nhập trong một trận đạt 30.000 Tekniq Alloy.']
             ],
-            rewards: '2.200 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy · 90 viên 9 × 19 mm PBP.',
-            source: 'A_Small_Breakthrough'
+            rewards: '1.300 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy · M870.',
+            source: 'Return'
         },
         {
-            id: 'trade', en: 'Fair Trade', zh: '公平交易', vi: 'Trao đổi công bằng',
-            type: 'Chiến đấu', previous: 'A Small Breakthrough', next: 'Outflanking Tactics / Precision Strike',
+            id: 'showdown', en: 'Showdown', zh: '交锋', vi: 'Đối đầu', step: 3, map: 'Zero Dam', department: 'Assault Battalion',
+            type: 'Điều tra', previous: 'Return', next: 'Decisive Strike / Assault Preparation',
             objectives: [
-                ['在零号大坝行动中，击杀2名特殊兵种敌人。', 'Trong trận Zero Dam, hạ 2 địch thuộc lớp đặc biệt: lính khiên, bắn tỉa, tên lửa, súng máy hoặc cận vệ trùm, thuộc bất kỳ phe nào.'],
-                ['在零号大坝行动中，完成1次高价值目标清除合约。', 'Hoàn thành 1 hợp đồng tiêu diệt mục tiêu giá trị cao (HVT Elimination) trong trận Zero Dam.']
+                ['在零号大坝行动中，前往管道区域调查。', 'Trong trận Zero Dam, điều tra khu vực đường ống.'],
+                ['在零号大坝行动中，前往军营指定地点调查。', 'Điều tra địa điểm được chỉ định trong khu doanh trại ở Zero Dam.']
             ],
-            rewards: '4.600 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy · 60 viên 9 × 39 mm SP6.',
-            source: 'Fair_Trade'
+            rewards: '1.300 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy.',
+            source: 'Showdown'
         }
     ];
     const list = document.getElementById('wikiQuestList');
@@ -37,10 +35,10 @@
     const detail = document.getElementById('wikiQuestDetail');
     let selected = quests[0].id;
     function render() {
-        const visible = quests.filter(q => matchesSearch(search.value, q.en, q.zh, q.vi, q.type, ...q.objectives.flat()));
+        const visible = quests.filter(q => matchesSearch(search.value, q.en, q.zh, q.vi, q.type, q.map, q.department, ...q.objectives.flat()));
         if (!visible.some(q => q.id === selected)) selected = visible[0]?.id;
         list.className = view.value === 'tree' ? 'wiki-tree' : 'wiki-list';
-        document.getElementById('wikiCount').textContent = `${visible.length} / ${quests.length} quest mẫu · Mũi tên chỉ liên kết giữa các quest mẫu liền nhau.`;
+        document.getElementById('wikiCount').textContent = `${visible.length} / ${quests.length} quest đầu của nhánh mẫu · Bước là thứ tự chuỗi, không phải level mở khóa. Các nhánh khác chưa hiển thị.`;
         list.replaceChildren();
         visible.forEach((q, index) => {
             if (view.value === 'tree' && index && visible[index - 1].next.split(' / ').includes(q.en)) {
@@ -53,7 +51,7 @@
             const button = document.createElement('button');
             button.className = 'wiki-card' + (selected === q.id ? ' selected' : '');
             button.setAttribute('aria-pressed', String(selected === q.id));
-            button.innerHTML = `<span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>${escapeHtml(q.en)}</small><small>Zero Dam · ${escapeHtml(q.type)}</small>`;
+            button.innerHTML = `<span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>${escapeHtml(q.en)}</small><small>Bước ${q.step} · ${q.map === 'Any' ? 'Mọi bản đồ (gồm Zero Dam)' : escapeHtml(q.map)}</small><small>${escapeHtml(q.department)} · ${escapeHtml(q.type)}</small><small>Level mở khóa: Chưa xác minh</small>`;
             button.onclick = () => { selected = q.id; render(); detail.querySelector('h3').focus(); };
             list.appendChild(button);
         });
@@ -65,6 +63,7 @@
         const q = quests.find(q => q.id === selected);
         detail.innerHTML = `<h3 tabindex="-1" class="text-xl font-bold mb-2"><span lang="zh">${escapeHtml(q.zh)}</span> · ${escapeHtml(q.vi)}</h3>
             <p class="text-gray-200 mb-3">${escapeHtml(q.en)} · Tên Trung/Việt: bản dịch tham khảo</p>
+            <p class="mb-3"><strong>Đơn vị:</strong> ${escapeHtml(q.department)} · <strong>Bản đồ:</strong> ${q.map === 'Any' ? 'Mọi bản đồ (gồm Zero Dam)' : escapeHtml(q.map)}<br><strong>Level mở khóa:</strong> Chưa xác minh. Bước ${q.step} chỉ là vị trí trong nhánh mẫu.</p>
             <h4 class="font-bold mb-2">Mục tiêu</h4>
             <ol class="wiki-objectives">${q.objectives.map(([zh, vi]) => `<li><p lang="zh">${escapeHtml(zh)}</p><p class="text-green-200 mt-1">${escapeHtml(vi)}</p></li>`).join('')}</ol>
             <p class="mt-4"><strong>Phần thưởng:</strong> ${escapeHtml(q.rewards)}</p>

@@ -240,8 +240,12 @@ khôi phục từ Thùng rác hoặc bản gốc: **NOT RUN**.
 source/diff. Tests/browser QA, lưu lại và nhập/xuất backup cho thay đổi này:
 **NOT RUN**. CI: **NOT CHECKED**.
 
-Wiki Quest có bản xem thử gồm 3 quest Zero Dam: Bridges and Shanties,
-A Small Breakthrough và Fair Trade. Có cây cuộn ngang, danh sách, tìm kiếm và
+Wiki Quest hiện dùng 3 quest đầu nhánh Assault Battalion: First Battle → Return
+→ Showdown, thay cho 3 quest giữa chuỗi ở bản mẫu trước. First Battle áp dụng mọi
+bản đồ; Return và Showdown ở Zero Dam. Map và đơn vị hiển thị theo từng bản ghi.
+Nguồn riêng từng quest xác nhận quan hệ chuỗi này, nhưng không nêu level mở khóa:
+UI ghi **Chưa xác minh**, số bước không được coi là level. Nhánh khác của Return
+được ghi trong chi tiết nhưng chưa dựng đủ thẻ. Có cây cuộn ngang, danh sách, tìm kiếm và
 khung chi tiết mục tiêu/phần thưởng/quan hệ trước-sau. Dữ liệu tóm tắt từ Delta
 Force Wiki (Fandom), dẫn nguồn từng quest và ghi công CC BY-SA; tên và mục tiêu
 Trung/Việt là bản dịch tham khảo, chưa xác nhận theo game/phiên bản. Không cần
