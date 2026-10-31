@@ -19,6 +19,12 @@ thể mở rộng. Giữ vị trí cuộn danh sách khi chọn quest; chuyển 
 lọc cũ và trở về danh sách trên mobile. Không thêm dữ liệu hoặc giả tiến độ game.
 Đợt này chỉ rà source/diff; tests/browser QA: **NOT RUN**, CI: **NOT CHECKED**.
 
+Chi tiết quest có nút chuyển tới tiền đề/quest tiếp theo đã nhập, hỗ trợ cả màn
+hai cột và popup từ cây. **Xem quest này trong cây** chọn đúng department, xóa bộ
+lọc cũ và đưa thẻ vào giữa vùng nhìn ở mức zoom 100%. Không tạo quest hoặc nối
+tắt tới phần dữ liệu chưa nhập. Thay đổi điều hướng này chỉ rà source/diff;
+tests/browser QA: **NOT RUN**, CI: **NOT CHECKED**.
+
 Phạm vi mới thay thế mốc level 35: nhập một nửa quest ghi rõ Zero Dam và không
 bắt buộc bản đồ khác. Dữ liệu Leyao có 333 quest department; 80 mục nhắc Zero Dam,
 loại 2 mục bắt buộc map khác còn 78. App nhập 39 mục đầu theo độ sâu chuỗi tiền đề
