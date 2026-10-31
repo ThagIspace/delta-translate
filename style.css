@@ -85,6 +85,8 @@ input::placeholder, textarea::placeholder { color: #d1d5db; opacity: 1; }
 .wiki-canvas .wiki-card small { font-size: .7rem; }
 .wiki-edges { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
 .wiki-edges path { fill: none; stroke: #6b9290; stroke-width: 2; }
+.wiki-edges path.highlighted { stroke: #6ee7b7; stroke-width: 4; }
+.wiki-card.ancestor { border-color: #6ee7b7; }
 .wiki-source-note { padding: .75rem; border: 1px solid #fbbf24; color: #fef3c7; margin-bottom: 1rem; }
 @media (max-width: 600px) { .wiki-modal { padding: 1rem; } .wiki-tree { padding-inline: 1rem; } }
 .image-drop { border: 2px dashed #3b82f6; border-radius: .6rem; padding: 1.5rem; text-align: center; background: #1f2937; }

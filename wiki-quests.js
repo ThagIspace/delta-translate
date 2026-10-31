@@ -1,34 +1,13 @@
 // Bản xem thử: dịch/tóm tắt từ các trang nguồn tiếng Anh, không phải tên CN chính thức.
 (() => {
-    const quests = [
-        {
-            id: 'first', en: 'First Battle', zh: '初战', vi: 'Trận đầu', step: 1, map: 'Any', department: 'Assault Battalion',
-            type: 'Chiến đấu', previous: 'Chưa xác minh điều kiện mở khóa', next: 'Return',
-            objectives: [['进入任意行动，击杀5名敌方士兵。', 'Vào một trận Operations trên bất kỳ bản đồ nào và hạ 5 lính địch.']],
-            rewards: '1.200 EXP · +1 uy tín Assault Battalion · 15.000 Tekniq Alloy · CAR-15.',
-            source: 'First_Battle'
-        },
-        {
-            id: 'return', en: 'Return', zh: '归来', vi: 'Trở về', step: 2, map: 'Zero Dam', department: 'Assault Battalion',
-            type: 'Chiến đấu / Rút lui', previous: 'First Battle', next: 'Substation Investigation / Showdown / New Beginning / In To The Clouds 1',
-            objectives: [
-                ['在零号大坝行动中，击杀5名敌方士兵。', 'Trong trận Zero Dam, hạ 5 lính địch.'],
-                ['在零号大坝行动中，完成1次撤离，单局收益达到30,000哈夫币。', 'Rút lui 1 lần ở Zero Dam với thu nhập trong một trận đạt 30.000 Tekniq Alloy.']
-            ],
-            rewards: '1.300 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy · M870.',
-            source: 'Return'
-        },
-        {
-            id: 'showdown', en: 'Showdown', zh: '交锋', vi: 'Đối đầu', step: 3, map: 'Zero Dam', department: 'Assault Battalion',
-            type: 'Điều tra', previous: 'Return', next: 'Decisive Strike / Assault Preparation',
-            objectives: [
-                ['在零号大坝行动中，前往管道区域调查。', 'Trong trận Zero Dam, điều tra khu vực đường ống.'],
-                ['在零号大坝行动中，前往军营指定地点调查。', 'Điều tra địa điểm được chỉ định trong khu doanh trại ở Zero Dam.']
-            ],
-            rewards: '1.300 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy.',
-            source: 'Showdown'
-        }
-    ];
+    const TARGET_LEVEL = 35;
+    const quests = WIKI_QUEST_DATA;
+    const ids = new Set();
+    quests.forEach(q => {
+        if (!q.id || ids.has(q.id) || !q.en || !q.department || !q.map || !q.source) throw new Error('Invalid quest metadata');
+        if (q.level !== null && (!Number.isSafeInteger(q.level) || q.level < 1)) throw new Error('Invalid quest level');
+        ids.add(q.id);
+    });
     const list = document.getElementById('wikiQuestList');
     const viewport = document.getElementById('wikiViewport');
     const search = document.getElementById('wikiSearch');
@@ -93,20 +72,35 @@
             <h4 class="font-bold mb-2">Mục tiêu</h4><ol class="wiki-objectives">${q.objectives.map(([zh, vi]) => `<li><p lang="zh">${escapeHtml(zh)}</p><p class="text-green-200 mt-1">${escapeHtml(vi)}</p></li>`).join('')}</ol>
             <p class="mt-4"><strong>Phần thưởng:</strong> ${escapeHtml(q.rewards)}</p>
             <p class="mt-3"><strong>Trước:</strong> ${escapeHtml(q.previous)}</p><p class="mt-1"><strong>Tiếp theo:</strong> ${escapeHtml(q.next)}</p>
-            <p class="text-sm text-gray-200 mt-4">Nguồn cộng đồng, chưa đối chiếu bản game hiện tại. Không coi thứ tự cây là level mở khóa.</p>
+            <p class="text-sm text-gray-200 mt-4">${escapeHtml(q.sourceVersion)} · Đối chiếu nguồn: ${escapeHtml(q.reviewedOn)}. Chưa xác minh tên Trung/level/chuỗi cho PC Trung Quốc. Không coi thứ tự cây là level mở khóa.</p>
             <a class="inline-block text-blue-300 underline mt-3" href="https://delta-force.fandom.com/wiki/${q.source}" target="_blank" rel="noopener noreferrer">Nguồn: ${escapeHtml(q.en)} ↗</a>`;
         dialog.showModal();
     }
     function render() {
-        const visible = quests.filter(q => matchesSearch(search.value, q.en, q.zh, q.vi, q.type, q.map, q.department, ...q.objectives.flat()));
+        const scope = document.getElementById('wikiDataScope').value;
+        const department = document.getElementById('wikiDepartment').value;
+        const map = document.getElementById('wikiMap').value;
+        const type = document.getElementById('wikiType').value;
+        const eligible = quests.filter(q => (q.level === null || q.level <= TARGET_LEVEL)
+            && (scope === 'reference' || (q.targetVerified && q.level !== null))
+            && (!department || q.department === department)
+            && (!map || q.map === map || (map === 'Zero Dam' && q.map === 'Any'))
+            && (!type || q.type === type));
+        const visible = eligible.filter(q => matchesSearch(search.value, q.en, q.zh, q.vi, q.type, q.map, q.department, ...q.objectives.flat()));
         document.getElementById('wikiCount').textContent = `${visible.length} / ${quests.length} quest · Cây theo điều kiện trước/sau; level chưa xác minh. Chưa phải danh mục đầy đủ.`;
+        const highlighted = new Set();
+        function markAncestors(q) {
+            if (!q || highlighted.has(q.id)) return;
+            highlighted.add(q.id); parents(q).forEach(markAncestors);
+        }
+        markAncestors(quests.find(q => q.id === selected));
         const tree = view.value === 'tree';
         document.getElementById('wikiGraphTools').hidden = !tree;
         viewport.classList.toggle('is-list', !tree);
         list.className = tree ? 'wiki-graph-space' : 'wiki-list';
         list.style.width = ''; list.style.height = '';
         list.replaceChildren();
-        if (!visible.length) { list.textContent = 'Không có quest phù hợp.'; return; }
+        if (!visible.length) { list.textContent = scope === 'verified' ? 'Chưa có quest được xác minh level ≤35 cho PC Trung Quốc. Chuyển sang Dữ liệu tham khảo để xem bản mẫu.' : 'Không có quest phù hợp. Thử xóa tìm kiếm hoặc đổi bộ lọc.'; return; }
         let canvas = list;
         if (tree) {
             canvas = document.createElement('div'); canvas.className = 'wiki-canvas';
@@ -120,13 +114,14 @@
                 const path = document.createElementNS(svg.namespaceURI, 'path');
                 const x = a.x + 230, y = a.y + 95, endY = b.y + 95, middle = (x + b.x) / 2;
                 path.setAttribute('d', `M${x} ${y} H${middle} V${endY} H${b.x}`);
+                if (highlighted.has(q.id) && highlighted.has(p.id)) path.classList.add('highlighted');
                 svg.appendChild(path);
             }));
             canvas.appendChild(svg);
         }
         visible.forEach(q => {
             const button = document.createElement('button'); button.type = 'button';
-            button.className = 'wiki-card' + (selected === q.id ? ' selected' : '');
+            button.className = 'wiki-card' + (selected === q.id ? ' selected' : highlighted.has(q.id) ? ' ancestor' : '');
             button.dataset.questId = q.id;
             button.setAttribute('aria-pressed', String(selected === q.id)); button.setAttribute('aria-haspopup', 'dialog');
             button.innerHTML = `<small class="wiki-node-step">${escapeHtml(q.department)}</small><span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>${escapeHtml(q.en)}</small><small class="wiki-node-meta">◇ ${q.map === 'Any' ? 'Mọi bản đồ' : escapeHtml(q.map)} · ${escapeHtml(q.type)}</small><small>Level: ${q.level ?? 'Chưa xác minh'}</small>`;
@@ -157,6 +152,22 @@
     }
     viewport.addEventListener('pointerup', endPan); viewport.addEventListener('pointercancel', endPan); viewport.addEventListener('lostpointercapture', endPan);
     window.addEventListener('blur', endPan);
+    for (const [id, key] of [['wikiDepartment', 'department'], ['wikiMap', 'map'], ['wikiType', 'type']]) {
+        const select = document.getElementById(id);
+        const values = [...new Set(quests.map(q => q[key]))];
+        values.forEach(value => {
+            const option = document.createElement('option'); option.value = value;
+            option.textContent = value === 'Any' ? 'Mọi bản đồ' : value;
+            select.appendChild(option);
+        });
+        select.addEventListener('change', render);
+    }
+    document.getElementById('wikiDataScope').addEventListener('change', render);
+    document.getElementById('wikiClearFilters').onclick = () => {
+        search.value = '';
+        ['wikiDepartment', 'wikiMap', 'wikiType'].forEach(id => { document.getElementById(id).value = ''; });
+        render();
+    };
     search.addEventListener('input', render);
     view.addEventListener('change', () => { endPan(); render(); viewport.scrollTo(0, 0); });
     render();
