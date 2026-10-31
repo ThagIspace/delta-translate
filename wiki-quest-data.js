@@ -27,4 +27,4 @@ const WIKI_QUEST_DATA = [
             rewards: '1.300 EXP · +1 uy tín Assault Battalion · 10.000 Tekniq Alloy.',
             source: 'Showdown'
         }
-    ].map(quest => ({ ...quest, level: null, targetVerified: false, sourceVersion: 'Fandom tiếng Anh; chưa đối chiếu PC Trung Quốc', reviewedOn: '2026-10-31' }));
+    ].map(quest => ({ ...quest, level: null, sourceVerified: true, sourceVersion: 'Fandom tiếng Anh; tên Trung là bản dịch tham khảo', reviewedOn: '2026-10-31' }));

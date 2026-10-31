@@ -2,6 +2,25 @@
 
 Web HTML/CSS/JavaScript thuần cho Delta Force, không có backend, database hay bước build.
 
+## Wiki Quest — cập nhật 31/10/2026
+
+Phạm vi hiện tại là quest Operations đến level 35, ưu tiên Zero Dam. Nguồn có
+thể là quốc tế/Garena hoặc Trung Quốc; không yêu cầu xác minh riêng bản Trung.
+Giữ nguồn/phiên bản từng quest, không mặc định mọi phiên bản giống hệt nhau.
+Cây có kéo vùng trống, zoom, vừa màn hình, đường nối và tô sáng nhánh trước;
+có bộ lọc đơn vị/map/loại và hộp chi tiết. Dữ liệu tách tại `wiki-quest-data.js`.
+
+Hiện vẫn có 3 quest Fandom tham khảo, level chưa xác nhận. Bộ lọc level đã xác
+nhận ≤35 không nhận quest chưa rõ level; chế độ tham khảo vẫn cho xem chúng.
+Leyao có dữ liệu 333 quest của 5 đơn vị, gồm tên Trung, cha/con, mục tiêu và
+phần thưởng. Đã đọc cấu trúc công khai, chưa nhập dữ liệu này vào app. Trường
+`sort` của nguồn là thứ tự hiển thị, không phải level mở khóa.
+
+QA giao diện trước thay đổi bỏ giới hạn bản Trung: 26 kiểm tra local PASS ở
+desktop/mobile, gồm bộ giả level 35/36 và nhánh rẽ; không gọi AI thật. Thay đổi
+đổi phạm vi nguồn lần này chỉ rà diff, chưa chạy lại QA. CI: **NOT CHECKED**.
+Các ghi chú bàn giao/QA phía dưới là lịch sử, không xác minh dữ liệu mới.
+
 ## Trạng thái bàn giao — 30/10/2026
 
 Tạm dừng phát triển tại bản xem thử Wiki Quest. Đã triển khai giao diện code súng

@@ -72,7 +72,7 @@
             <h4 class="font-bold mb-2">Mục tiêu</h4><ol class="wiki-objectives">${q.objectives.map(([zh, vi]) => `<li><p lang="zh">${escapeHtml(zh)}</p><p class="text-green-200 mt-1">${escapeHtml(vi)}</p></li>`).join('')}</ol>
             <p class="mt-4"><strong>Phần thưởng:</strong> ${escapeHtml(q.rewards)}</p>
             <p class="mt-3"><strong>Trước:</strong> ${escapeHtml(q.previous)}</p><p class="mt-1"><strong>Tiếp theo:</strong> ${escapeHtml(q.next)}</p>
-            <p class="text-sm text-gray-200 mt-4">${escapeHtml(q.sourceVersion)} · Đối chiếu nguồn: ${escapeHtml(q.reviewedOn)}. Chưa xác minh tên Trung/level/chuỗi cho PC Trung Quốc. Không coi thứ tự cây là level mở khóa.</p>
+            <p class="text-sm text-gray-200 mt-4">${escapeHtml(q.sourceVersion)} · Đối chiếu nguồn: ${escapeHtml(q.reviewedOn)}. Khác biệt giữa các phiên bản chưa được đối chiếu đầy đủ. Không coi thứ tự cây là level mở khóa.</p>
             <a class="inline-block text-blue-300 underline mt-3" href="https://delta-force.fandom.com/wiki/${q.source}" target="_blank" rel="noopener noreferrer">Nguồn: ${escapeHtml(q.en)} ↗</a>`;
         dialog.showModal();
     }
@@ -82,7 +82,7 @@
         const map = document.getElementById('wikiMap').value;
         const type = document.getElementById('wikiType').value;
         const eligible = quests.filter(q => (q.level === null || q.level <= TARGET_LEVEL)
-            && (scope === 'reference' || (q.targetVerified && q.level !== null))
+            && (scope === 'reference' || (q.sourceVerified && q.level !== null))
             && (!department || q.department === department)
             && (!map || q.map === map || (map === 'Zero Dam' && q.map === 'Any'))
             && (!type || q.type === type));
@@ -100,7 +100,7 @@
         list.className = tree ? 'wiki-graph-space' : 'wiki-list';
         list.style.width = ''; list.style.height = '';
         list.replaceChildren();
-        if (!visible.length) { list.textContent = scope === 'verified' ? 'Chưa có quest được xác minh level ≤35 cho PC Trung Quốc. Chuyển sang Dữ liệu tham khảo để xem bản mẫu.' : 'Không có quest phù hợp. Thử xóa tìm kiếm hoặc đổi bộ lọc.'; return; }
+        if (!visible.length) { list.textContent = scope === 'verified' ? 'Chưa có quest có level mở khóa được nguồn xác nhận trong mốc ≤35. Chuyển sang Dữ liệu tham khảo để xem bản mẫu.' : 'Không có quest phù hợp. Thử xóa tìm kiếm hoặc đổi bộ lọc.'; return; }
         let canvas = list;
         if (tree) {
             canvas = document.createElement('div'); canvas.className = 'wiki-canvas';
