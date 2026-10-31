@@ -4,6 +4,18 @@ Web HTML/CSS/JavaScript thuần cho Delta Force, không có backend, database ha
 
 ## Wiki Quest — Zero Dam, đợt 1 (31/10/2026)
 
+**Bổ sung Chiến thuật:** tổng hiện tại 50 quest: giữ 39 Zero Dam và thêm 11/32
+quest đầu của Chiến thuật từ Leyao, lấy theo độ sâu tiền đề rồi thứ tự nguồn.
+Dữ liệu Chiến thuật nằm riêng ở `wiki-quest-tactical-data.js`, tải sau bộ Zero Dam
+và trước các file giao diện. Có 4 quest chiến đấu mọi map (làm được ở Zero Dam),
+7 quest cải trang/nộp súng ngoài trận. Không gán nhầm tất cả thành map Zero Dam.
+Thẻ Chiến thuật đã mở được; bộ lọc Zero Dam nhận thêm quest mọi map, không nhận
+quest ngoài trận. Giữ số liệu phụ kiện/chỉ số, bản dịch ghi tên Trung khi cần
+đối chiếu; nguồn có vài cách ghi khác nhau XRO/XR0, XCOG/XC0G nên chưa coi tên
+phụ kiện là đã xác minh trong game. Đợt bổ sung này chỉ rà source/diff;
+tests/browser QA: **NOT RUN**, CI: **NOT CHECKED**. QA 33/33 dưới đây là lịch sử
+trước khi thêm Chiến thuật, không xác minh bộ 50 quest hiện tại.
+
 **QA sau tách file và hoàn thiện UI:** 33/33 kiểm tra trình duyệt local PASS
 tại 1280×900, 390×844 và 320×740. Đã kiểm tra màn chọn 5 department, trạng thái
 chưa có dữ liệu, chuyển department, bố cục 2 cột, chọn quest, tiền đề/tiếp theo,
@@ -40,6 +52,7 @@ tests/browser QA: **NOT RUN**, CI: **NOT CHECKED**.
 | File | Phần quản lý |
 | --- | --- |
 | `wiki-quest-data.js` | Dữ liệu 39 quest, bản dịch, ID tiền đề và nguồn |
+| `wiki-quest-tactical-data.js` | 11 quest Chiến thuật, nạp riêng rồi ghép với bộ Zero Dam |
 | `wiki-quest-detail.js` | HTML chi tiết, mục tiêu, phần thưởng và nút quest liên quan |
 | `wiki-quest-graph.js` | Bố cục cây, đường nối, zoom, kéo và đưa thẻ vào vùng nhìn |
 | `wiki-quests.js` | Chọn department, tìm/lọc và chuyển màn hình |

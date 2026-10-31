@@ -187,15 +187,15 @@
         </div>
 
         <section id="tab-wiki-quests" class="tab-content max-w-7xl mx-auto w-full" aria-labelledby="wikiTitle">
-            <h2 id="wikiTitle" class="text-2xl font-bold mb-3">Wiki Quest · Zero Dam</h2>
+            <h2 id="wikiTitle" class="text-2xl font-bold mb-3">Wiki Quest · Zero Dam &amp; Chiến thuật</h2>
             <div id="wikiDepartmentHome" class="wiki-department-home" aria-label="Chọn department"></div>
             <div id="wikiExplorer" hidden>
             <div class="wiki-game-nav"><button id="wikiBackHome" class="tool-btn">← Chọn department</button><strong id="wikiCurrentDepartment"></strong><button id="wikiToggleTree" class="tool-btn">◇ Cây nhiệm vụ</button></div>
             <div id="wikiDepartmentTabs" class="wiki-department-tabs" aria-label="Chuyển department"></div>
-            <details class="wiki-data-info"><summary>39 quest Zero Dam · Thông tin nguồn và bản dịch</summary><p>Đợt 1: 39/78 quest trong nguồn Leyao ghi rõ Zero Dam, không bắt buộc map khác. Tên Trung theo nguồn; bản Việt và mục tiêu song ngữ được dịch/tóm tắt để tham khảo. Nguồn không ghi level mở khóa.</p></details>
+            <details class="wiki-data-info"><summary>50 quest · Thông tin nguồn và bản dịch</summary><p>Gồm 39/78 quest Zero Dam và 11/32 quest đầu của department Chiến thuật. Quest Chiến thuật ghi đúng mọi map (có thể làm ở Zero Dam) hoặc cải trang/nộp súng ngoài trận. Tên Trung theo nguồn; bản Việt và mục tiêu song ngữ được dịch/tóm tắt. Nguồn không ghi level mở khóa.</p></details>
             <div class="wiki-toolbar">
-                <span class="tool-btn">Bản đồ: Zero Dam</span>
-                <span class="tool-btn">4 department có quest phù hợp</span>
+                <span class="tool-btn">Zero Dam · Chiến thuật mọi map/ngoài trận</span>
+                <span class="tool-btn">5 department có dữ liệu</span>
                 <label class="flex-1">Tìm quest<input id="wikiSearch" type="search" class="settings-input" placeholder="Tên Trung, Việt, Anh hoặc mục tiêu..."></label>
                 <label>Hiển thị<select id="wikiView" class="settings-input"><option value="tree">Cây nhiệm vụ</option><option value="list">Danh sách</option></select></label>
             </div>
@@ -221,7 +221,7 @@
                 <div class="wiki-modal-bar"><span class="wiki-mission-label">HỒ SƠ NHIỆM VỤ</span><button id="wikiCloseDetail" type="button" class="tool-btn" aria-label="Đóng chi tiết nhiệm vụ">✕ Đóng</button></div>
                 <div id="wikiQuestDetail"></div>
             </dialog>
-            <p class="text-sm text-gray-200 mt-4">Nguồn: <a class="text-blue-300 underline" href="https://leyao.fun/" target="_blank" rel="noopener noreferrer">Leyao · 部门任务</a> · Tóm tắt điều kiện, không sao chép cốt truyện. Tiền đề ngoài bộ 39 quest chỉ ghi trong chi tiết, không tạo đường nối tắt. Bản đồ được xác định từ mục tiêu của nguồn, chưa đối chiếu trực tiếp trong game. Còn 39 quest Zero Dam để bổ sung sau.</p>
+            <p class="text-sm text-gray-200 mt-4">Nguồn: <a class="text-blue-300 underline" href="https://leyao.fun/" target="_blank" rel="noopener noreferrer">Leyao · 部门任务</a> · Tóm tắt điều kiện, không sao chép cốt truyện. Tiền đề chưa nhập chỉ ghi chú, không nối tắt. Bản đồ được xác định từ mục tiêu nguồn, chưa đối chiếu trực tiếp trong game. Lọc Zero Dam gồm quest mọi map làm được tại đây; quest nộp súng xem ở mục Ngoài trận.</p>
             </div>
         </section>
 
@@ -329,8 +329,9 @@
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
     <script src="wiki-quest-data.js?v=zero-half-1"></script>
-    <script src="wiki-quest-detail.js?v=1"></script>
+    <script src="wiki-quest-tactical-data.js?v=1"></script>
+    <script src="wiki-quest-detail.js?v=tactical-1"></script>
     <script src="wiki-quest-graph.js?v=1"></script>
-    <script src="wiki-quests.js?v=split-1"></script>
+    <script src="wiki-quests.js?v=tactical-1"></script>
 </body>
 </html>

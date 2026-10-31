@@ -1,6 +1,6 @@
 // Điều khiển Wiki Quest: chọn department, lọc và chuyển màn. Dữ liệu/renderer/cây nằm ở file riêng.
 (() => {
-    const quests = WIKI_QUEST_DATA;
+    const quests = [...WIKI_QUEST_DATA, ...WIKI_TACTICAL_QUEST_DATA];
     const ids = new Set();
     quests.forEach(q => {
         if (!q.id || ids.has(q.id) || !q.en || !q.department || !q.map || !q.source) throw new Error('Invalid quest metadata');
@@ -64,7 +64,7 @@
         const departmentValue = document.getElementById('wikiDepartment').value;
         document.getElementById('wikiCurrentDepartment').textContent = departmentValue || 'Tất cả department';
         document.getElementById('wikiSidebarDepartment').textContent = departmentValue || 'Tất cả department';
-        document.getElementById('wikiSidebarCount').textContent = `${visible.length} nhiệm vụ đang hiển thị · Zero Dam`;
+        document.getElementById('wikiSidebarCount').textContent = `${visible.length} nhiệm vụ đang hiển thị`;
         document.querySelectorAll('#wikiDepartmentTabs button').forEach(button => {
             button.setAttribute('aria-pressed', String(button.dataset.department === departmentValue));
         });
@@ -76,7 +76,7 @@
             const button = document.createElement('button');
             button.type = 'button'; button.className = 'wiki-mission-row' + (selected === q.id ? ' active' : '');
             button.setAttribute('aria-pressed', String(selected === q.id));
-            button.innerHTML = `<span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>◇ Zero Dam</small>`;
+            button.innerHTML = `<span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>◇ ${escapeHtml(q.map === 'Any' ? 'Mọi map · gồm Zero Dam' : q.map)}</small>`;
             button.onclick = () => openQuest(q, false);
             missionList.appendChild(button);
         });
@@ -96,18 +96,18 @@
         const map = document.getElementById('wikiMap').value;
         const type = document.getElementById('wikiType').value;
         const eligible = quests.filter(q => (!department || q.department === department)
-            && (!map || q.map === map)
+            && (!map || q.map === map || (map === 'Zero Dam' && q.map === 'Any'))
             && (!type || q.type === type));
         const visible = eligible.filter(q => matchesSearch(search.value, q.en, q.zh, q.vi, q.type, q.map, q.department, ...q.objectives.flat()));
         renderGameScreen(visible);
-        document.getElementById('wikiCount').textContent = `${visible.length} / ${quests.length} quest đã nhập · 39/78 quest ghi rõ Zero Dam, không bắt buộc map khác. Không lọc theo level.`;
+        document.getElementById('wikiCount').textContent = `${visible.length} / ${quests.length} quest đã nhập · 39 Zero Dam + 11 Chiến thuật (mọi map/ngoài trận). Không lọc theo level.`;
         graphView.render(visible, selected);
     }
     const home = document.getElementById('wikiDepartmentHome');
     const departments = [
         ['Chiến đấu · 战斗部门', '战斗部门', 'Chiến đấu', '△', 'combat'],
         ['Y tế · 医疗部门', '医疗部门', 'Y tế', '✚', 'medical'],
-        ['', '战术部门', 'Chiến thuật', '◇', 'tactical'],
+        ['Chiến thuật · 战术部门', '战术部门', 'Chiến thuật', '◇', 'tactical'],
         ['Hậu cần · 后勤部门', '后勤部门', 'Hậu cần', '⬡', 'logistics'],
         ['Nghiên cứu · 研发部门', '研发部门', 'Nghiên cứu', '⌘', 'research']
     ];
@@ -116,7 +116,7 @@
         const button = document.createElement('button'); button.type = 'button';
         button.className = 'wiki-department-card dept-' + theme;
         button.disabled = count === 0;
-        button.innerHTML = `<span class="wiki-dept-kicker">DEPARTMENT / ZERO DAM</span><span class="wiki-dept-emblem" aria-hidden="true">${icon}</span><span class="wiki-dept-title" lang="zh">${zh}</span><strong>${vi}</strong><span class="wiki-dept-count">${count ? count + ' quest · Xem nhiệm vụ →' : 'Chưa có dữ liệu Zero Dam'}</span>`;
+        button.innerHTML = `<span class="wiki-dept-kicker">DEPARTMENT / ${theme === 'tactical' ? 'TACTICAL' : 'ZERO DAM'}</span><span class="wiki-dept-emblem" aria-hidden="true">${icon}</span><span class="wiki-dept-title" lang="zh">${zh}</span><strong>${vi}</strong><span class="wiki-dept-count">${count ? count + ' quest · Xem nhiệm vụ →' : 'Chưa có dữ liệu Zero Dam'}</span>`;
         const choose = () => {
             graphView.endPan();
             document.getElementById('wikiDepartment').value = value;
