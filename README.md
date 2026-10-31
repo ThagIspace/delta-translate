@@ -4,6 +4,16 @@ Web HTML/CSS/JavaScript thuần cho Delta Force, không có backend, database ha
 
 ## Wiki Quest — Zero Dam, đợt 1 (31/10/2026)
 
+**QA sau tách file và hoàn thiện UI:** 33/33 kiểm tra trình duyệt local PASS
+tại 1280×900, 390×844 và 320×740. Đã kiểm tra màn chọn 5 department, trạng thái
+chưa có dữ liệu, chuyển department, bố cục 2 cột, chọn quest, tiền đề/tiếp theo,
+chuyển từ chi tiết đến đúng thẻ cây, điều hướng trong modal, Esc, trạng thái
+rỗng, xóa bộ lọc, quay lại trên mobile, không tràn ngang, fit/zoom/kéo/reset cây
+và mở department bằng bàn phím. Không thấy lỗi console trong các luồng đã chạy.
+Cú pháp 4 file JS Wiki Quest PASS. Không phát hiện lỗi cần sửa trong phạm vi QA;
+không gọi AI thật, không sửa dữ liệu người dùng. Điện thoại thật, xác minh trong
+game và CI: **NOT CHECKED**. Các dòng NOT RUN ở các đợt dưới là lịch sử trước QA này.
+
 Bản giao diện cơ bản theo bố cục game: mở Wiki Quest sẽ thấy 5 thẻ department,
 chọn thẻ để vào màn danh sách bên trái và nội dung nhiệm vụ bên phải. Chiến thuật
 chưa có quest phù hợp nên hiển thị chưa có dữ liệu, không giả điều kiện khóa.
