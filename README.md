@@ -25,6 +25,21 @@ lọc cũ và đưa thẻ vào giữa vùng nhìn ở mức zoom 100%. Không t�
 tắt tới phần dữ liệu chưa nhập. Thay đổi điều hướng này chỉ rà source/diff;
 tests/browser QA: **NOT RUN**, CI: **NOT CHECKED**.
 
+### Các phần code Wiki Quest
+
+| File | Phần quản lý |
+| --- | --- |
+| `wiki-quest-data.js` | Dữ liệu 39 quest, bản dịch, ID tiền đề và nguồn |
+| `wiki-quest-detail.js` | HTML chi tiết, mục tiêu, phần thưởng và nút quest liên quan |
+| `wiki-quest-graph.js` | Bố cục cây, đường nối, zoom, kéo và đưa thẻ vào vùng nhìn |
+| `wiki-quests.js` | Chọn department, tìm/lọc và chuyển màn hình |
+| `wiki-quests.css` | CSS riêng của Wiki Quest |
+
+Thứ tự tải: `app.js` (hàm escape/tìm kiếm) → dữ liệu → renderer chi tiết và cây
+→ file điều khiển. Giữ JavaScript thuần, không thêm thư viện hoặc bước build.
+Đợt tách file giữ nguyên dữ liệu/chức năng và chỉ rà source/diff; tests/browser
+QA sau tách file: **NOT RUN**. Kết quả QA của bản trước không xác minh bản tách.
+
 Phạm vi mới thay thế mốc level 35: nhập một nửa quest ghi rõ Zero Dam và không
 bắt buộc bản đồ khác. Dữ liệu Leyao có 333 quest department; 80 mục nhắc Zero Dam,
 loại 2 mục bắt buộc map khác còn 78. App nhập 39 mục đầu theo độ sâu chuỗi tiền đề

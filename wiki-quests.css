@@ -1,0 +1,105 @@
+/* Giao diện Wiki Quest: department, nhiệm vụ và cây. */
+.wiki-toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; }
+.wiki-toolbar label { min-width: 180px; }
+.wiki-tree { display: flex; align-items: center; gap: 1rem; overflow-x: auto; padding: 1.5rem .5rem; min-height: 210px; border: 1px solid #475569; border-radius: .6rem; background: #111827; }
+.wiki-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+.wiki-card { flex: 0 0 260px; text-align: left; background: #1f2937; color: #fff; border: 1px solid #64748b; border-left: 4px solid #34d399; padding: 1rem; border-radius: .4rem; }
+.wiki-card:hover { background: #374151; }
+.wiki-card.selected { border-color: #6ee7b7; background: #064e3b; }
+.wiki-card > span, .wiki-card > strong, .wiki-card > small { display: block; overflow-wrap: anywhere; }
+.wiki-card > span { font-size: 1.15rem; margin-bottom: .3rem; }
+.wiki-card > small { margin-top: .5rem; color: #e5e7eb; }
+.wiki-arrow { color: #6ee7b7; font-size: 2rem; flex-shrink: 0; }
+.wiki-detail { padding: 1.25rem; border: 1px solid #475569; border-radius: .6rem; background: #1f2937; overflow-wrap: anywhere; }
+.wiki-detail:empty { display: none; }
+.wiki-objectives { padding-left: 1.5rem; list-style: decimal; }
+.wiki-objectives li + li { margin-top: 1rem; }
+.wiki-tree { gap: 0; min-height: 440px; padding: 100px 2rem; background-color: #101e24; background-image: linear-gradient(rgb(110 231 183 / .035) 1px, transparent 1px), linear-gradient(90deg, rgb(110 231 183 / .035) 1px, transparent 1px), radial-gradient(ellipse at 40% 60%, #203c40, transparent 70%); background-size: 28px 28px, 28px 28px, 100% 100%; }
+.wiki-tree .wiki-card { flex: 0 0 220px; border-radius: 0; padding: .85rem; background: rgb(43 54 58 / .95); box-shadow: 0 8px 24px rgb(0 0 0 / .25); }
+.wiki-tree .wiki-card.selected { background: #24443f; }
+.wiki-tree .wiki-arrow { display: flex; flex: 0 0 64px; color: #6b9290; }
+.wiki-node-step { color: #a7f3d0 !important; font-size: .65rem; letter-spacing: .08em; }
+.wiki-node-meta { border-top: 1px solid #64748b; padding-top: .5rem; }
+.wiki-modal { width: min(940px, calc(100vw - 2rem)); max-height: 88dvh; padding: 1.5rem; color: #f3f4f6; background: rgb(29 39 43 / .97); border: 1px solid #8ca6a3; border-top: 3px solid #6ee7b7; box-shadow: 0 24px 80px rgb(0 0 0 / .6); overflow-y: auto; }
+.wiki-modal::backdrop { background: rgb(4 13 17 / .7); backdrop-filter: blur(3px); }
+.wiki-modal-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.wiki-mission-label { background: #34d399; color: #052e25; font-size: .75rem; font-weight: 800; padding: .3rem .6rem; letter-spacing: .05em; }
+.wiki-detail-en { font-size: clamp(1.5rem, 4vw, 2.4rem); text-transform: uppercase; font-weight: 800; line-height: 1.15; margin-bottom: .75rem; }
+.wiki-modal .wiki-objectives { border-block: 1px solid #64748b; background: rgb(255 255 255 / .035); padding: 1.25rem 1.25rem 1.25rem 2.5rem; }
+.wiki-viewport { position: relative; height: 62dvh; min-height: 330px; max-height: 700px; overflow: auto; border: 1px solid #64748b; border-radius: .5rem; background-color: #101e24; background-image: linear-gradient(rgb(110 231 183 / .04) 1px, transparent 1px), linear-gradient(90deg, rgb(110 231 183 / .04) 1px, transparent 1px); background-size: 28px 28px; cursor: grab; touch-action: none; }
+.wiki-viewport.panning { cursor: grabbing; user-select: none; }
+.wiki-viewport.is-list { height: auto; max-height: none; background: transparent; cursor: auto; touch-action: auto; padding: 1rem; }
+.wiki-graph-space { position: relative; }
+.wiki-canvas { position: absolute; left: 0; top: 0; transform-origin: top left; }
+.wiki-canvas .wiki-card { position: absolute; width: 230px; height: 190px; padding: .75rem; border-radius: 0; background: #28383d; overflow: hidden; }
+.wiki-canvas .wiki-card.selected { background: #24443f; }
+.wiki-canvas .wiki-card strong { font-size: .9rem; }
+.wiki-canvas .wiki-card small { font-size: .7rem; }
+.wiki-edges { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.wiki-edges path { fill: none; stroke: #6b9290; stroke-width: 2; }
+.wiki-edges path.highlighted { stroke: #6ee7b7; stroke-width: 4; }
+.wiki-card.ancestor { border-color: #6ee7b7; }
+.wiki-source-note { padding: .75rem; border: 1px solid #fbbf24; color: #fef3c7; margin-bottom: 1rem; }
+.wiki-department-home { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; padding: 1.5rem 0; }
+.wiki-department-card { position: relative; display: flex; flex-direction: column; align-items: start; min-width: 0; min-height: 420px; padding: 1.25rem; text-align: left; color: #f3f4f6; border: 1px solid #647d82; border-top: 3px solid #6ee7b7; background: linear-gradient(155deg, #314e58, #14262d 58%, #243a42); overflow: hidden; transition: border-color .15s, background .15s; }
+.wiki-department-card:hover:not(:disabled), .wiki-department-card:focus-visible { border-color: #a7f3d0; background: linear-gradient(155deg, #40676b, #173730 58%, #314f51); }
+.wiki-department-card:disabled { opacity: .7; }
+.wiki-dept-kicker { font-size: .65rem; letter-spacing: .12em; color: #d1fae5; }
+.wiki-dept-emblem { align-self: center; margin: 2.5rem 0; font-size: 5rem; line-height: 1; color: #a7c8cd; text-shadow: 0 0 45px #6ee7b766; }
+.dept-medical .wiki-dept-emblem { color: #b5dfd2; }
+.dept-logistics .wiki-dept-emblem { color: #b9cfee; }
+.dept-research .wiki-dept-emblem { color: #d9d3f6; }
+.wiki-dept-title { margin-top: auto; font-size: 1rem; color: #e5e7eb; }
+.wiki-department-card strong { font-size: 1.45rem; margin-top: .4rem; }
+.wiki-dept-count { width: 100%; border-top: 1px solid #648084; padding-top: 1rem; margin-top: 1.25rem; font-size: .8rem; color: #d1fae5; }
+.wiki-game-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: .75rem 0; margin-bottom: 1rem; border-bottom: 1px solid #6ee7b7; }
+.wiki-game-nav strong { flex: 1; }
+.wiki-mission-screen { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2.5fr); gap: 1.5rem; background: radial-gradient(ellipse at top right, #29434d, #14252d 75%); padding: 1.25rem; border: 1px solid #506b74; min-height: 550px; }
+.wiki-mission-sidebar { min-width: 0; }
+.wiki-mission-list { max-height: 65dvh; overflow-y: auto; padding-right: .4rem; margin-top: 1rem; }
+.wiki-mission-row { display: block; width: 100%; text-align: left; padding: 1rem; background: #253c46; border: 1px solid #65808a; margin-bottom: .5rem; color: #f3f4f6; }
+.wiki-mission-row span, .wiki-mission-row strong, .wiki-mission-row small { display: block; overflow-wrap: anywhere; }
+.wiki-mission-row strong { margin-top: .25rem; }
+.wiki-mission-row small { color: #d1fae5; margin-top: .4rem; }
+.wiki-mission-row.active { background: #3a555f; border-color: #a7f3d0; border-left: 4px solid #34d399; }
+.wiki-mission-content { min-width: 0; max-height: 75dvh; overflow-y: auto; padding: .5rem 1rem; color: #f3f4f6; }
+.wiki-mission-content .wiki-objectives { background: #ffffff08; padding: 1rem 1rem 1rem 2.25rem; border-block: 1px solid #6b8790; }
+.wiki-back-missions { display: none; margin-bottom: 1rem; }
+.wiki-department-tabs { display: flex; gap: .4rem; overflow-x: auto; padding: .25rem 0 .75rem; margin-bottom: .75rem; }
+.wiki-department-tab { flex: 1 0 150px; min-height: 80px; padding: .7rem 1rem; text-align: left; border-bottom: 3px solid transparent; background: #20343c; color: #f3f4f6; }
+.wiki-department-tab span, .wiki-department-tab strong, .wiki-department-tab small { display: block; }
+.wiki-department-tab small { margin-top: .3rem; color: #d1fae5; }
+.wiki-department-tab[aria-pressed="true"] { border-color: #34d399; background: #31554f; }
+.wiki-department-tab:hover:not(:disabled) { background: #36525a; }
+.wiki-sidebar-banner { padding: 1.2rem 1rem; border: 1px solid #77929a; background: linear-gradient(125deg, #31565e, #1b2d35); }
+.wiki-sidebar-banner h3 { font-size: 1.1rem; font-weight: 700; margin-top: .8rem; overflow-wrap: anywhere; }
+.wiki-sidebar-banner p { font-size: .8rem; color: #d1fae5; margin-top: .5rem; }
+.wiki-mission-heading { padding-bottom: 1rem; border-bottom: 1px solid #6b8790; }
+.wiki-mission-heading .wiki-detail-en { margin-top: .9rem; }
+.wiki-detail-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; color: #d1fae5; font-size: .8rem; }
+.wiki-detail-meta span { padding: .25rem .5rem; border: 1px solid #648084; }
+.wiki-section-title { margin: 1.25rem 0 .7rem; font-size: .85rem; font-weight: 700; color: #d1fae5; text-transform: uppercase; letter-spacing: .07em; }
+.wiki-quest-relations { display: grid; gap: .5rem; margin: 1rem 0; font-size: .85rem; color: #e5e7eb; overflow-wrap: anywhere; }
+.wiki-reward-grid { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.25rem; }
+.wiki-reward-grid li { min-width: 105px; padding: 1rem .75rem; border: 1px solid #739099; background: linear-gradient(135deg, #35535c, #23353e); color: #fef3c7; font-weight: 700; overflow-wrap: anywhere; }
+.wiki-data-info { margin: 1rem 0; padding: .8rem; border: 1px solid #506b74; color: #e5e7eb; font-size: .85rem; }
+.wiki-data-info summary { cursor: pointer; color: #d1fae5; font-weight: 600; }
+.wiki-data-info p { margin-top: .75rem; line-height: 1.6; }
+.wiki-detail-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0 1rem; }
+.wiki-related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .6rem; margin: .75rem 0; }
+.wiki-related-quest { text-align: left; padding: .8rem; background: #203b40; border: 1px solid #6b9290; color: #f3f4f6; }
+.wiki-related-quest:hover { background: #31554f; border-color: #6ee7b7; }
+.wiki-related-quest small, .wiki-related-quest strong, .wiki-related-quest span { display: block; overflow-wrap: anywhere; }
+.wiki-related-quest small { color: #a7f3d0; margin-bottom: .4rem; }
+.wiki-related-quest span { color: #e5e7eb; font-size: .8rem; margin-top: .3rem; }
+.wiki-related-help { color: #e5e7eb; font-size: .75rem; margin: .5rem 0 1rem; }
+@media (max-width: 1000px) { .wiki-department-home { grid-template-columns: repeat(5, 210px); overflow-x: auto; } }
+@media (max-width: 700px) {
+    .wiki-mission-screen { grid-template-columns: minmax(0, 1fr); padding: 1rem; }
+    .wiki-mission-content { display: none; padding: 0; max-height: none; }
+    .wiki-mission-screen.show-mission-detail .wiki-mission-sidebar { display: none; }
+    .wiki-mission-screen.show-mission-detail .wiki-mission-content { display: block; }
+    .wiki-back-missions { display: inline-block; }
+    .wiki-department-card { min-height: 360px; }
+}
+@media (max-width: 600px) { .wiki-modal { padding: 1rem; } .wiki-tree { padding-inline: 1rem; } }
