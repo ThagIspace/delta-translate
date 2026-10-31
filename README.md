@@ -36,8 +36,8 @@ Danh sách dịch nhiệm vụ mặc định 3 cột trên màn hình rộng (t�
 màn hình nhỏ). Nút **Theo nhóm** gom theo nhóm ảnh đã dịch trong từng trạng thái
 hoàn thành/ghim; không tạo nhóm mới. Khi bật, nút lên/xuống đổi thứ tự trong cùng
 nhóm. Tick/bỏ tick, chọn tất cả mục đang hiện, đổi thứ tự và bật/tắt nhóm có toast
-**Hoàn tác** ở giữa cạnh phải. Toast giữ thao tác gần nhất đến khi đóng hoặc có
-thao tác mới, không lưu qua tải lại trang; hoàn tác chỉ khôi phục trường bị đổi
+**Hoàn tác** ở giữa cạnh phải. Toast tự đóng sau 3 giây; thao tác mới tính lại
+thời gian từ đầu. Không lưu qua tải lại trang; hoàn tác chỉ khôi phục trường bị đổi
 trên quest còn trong danh sách. Tests/browser QA cho thay đổi này: **NOT RUN**;
 CI: **NOT CHECKED**.
 

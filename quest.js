@@ -4,6 +4,7 @@ let translation_cache = JSON.parse(localStorage.getItem('delta_translation_cache
 let viewMode = 3;
 let sortByGroup = false;
 let questUndo = null;
+let questUndoTimer = null;
 let hideCompleted = false;
 const GROUP_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#f59e0b', '#f97316', '#3b82f6'];
 
@@ -144,11 +145,15 @@ function toggleHideCompleted() {
     saveAndRenderQuest();
 }
 function showQuestUndo(message, restore) {
+    clearTimeout(questUndoTimer);
     questUndo = restore;
     document.getElementById('questUndoMessage').textContent = message;
     document.getElementById('questUndoToast').hidden = false;
+    questUndoTimer = setTimeout(dismissQuestUndo, 3000);
 }
 function dismissQuestUndo() {
+    clearTimeout(questUndoTimer);
+    questUndoTimer = null;
     questUndo = null;
     document.getElementById('questUndoToast').hidden = true;
 }
