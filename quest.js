@@ -1,7 +1,9 @@
 let tasks = JSON.parse(localStorage.getItem('delta_quests')) || [];
 let trash = JSON.parse(localStorage.getItem('delta_quests_trash')) || [];
 let translation_cache = JSON.parse(localStorage.getItem('delta_translation_cache')) || {}; // Thêm cache dịch thuật
-let viewMode = 1;
+let viewMode = 3;
+let sortByGroup = false;
+let questUndo = null;
 let hideCompleted = false;
 const GROUP_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#f59e0b', '#f97316', '#3b82f6'];
 
@@ -141,15 +143,50 @@ function toggleHideCompleted() {
     document.getElementById('btnHideCompleted').innerHTML = hideCompleted ? '👻 Ẩn đã xong' : '👻 Hiện đã xong';
     saveAndRenderQuest();
 }
+function showQuestUndo(message, restore) {
+    questUndo = restore;
+    document.getElementById('questUndoMessage').textContent = message;
+    document.getElementById('questUndoToast').hidden = false;
+}
+function dismissQuestUndo() {
+    questUndo = null;
+    document.getElementById('questUndoToast').hidden = true;
+}
+function undoQuestAction() {
+    const restore = questUndo;
+    dismissQuestUndo();
+    if (restore) { restore(); saveAndRenderQuest(); }
+}
+function rememberQuestFields(entries, field, message) {
+    const changes = entries.map(task => ({ task, before: task[field] }));
+    return () => {
+        changes.forEach(change => { change.after = change.task[field]; });
+        showQuestUndo(message, () => changes.forEach(({ task, before, after }) => {
+            if (tasks.includes(task) && task[field] === after) task[field] = before;
+        }));
+    };
+}
+function toggleQuestGrouping() {
+    const before = sortByGroup;
+    sortByGroup = !sortByGroup;
+    saveAndRenderQuest();
+    showQuestUndo('Đã đổi cách sắp xếp nhóm.', () => { sortByGroup = before; });
+}
 function toggleSelectAll() {
     const vis = getVisibleTasks();
     const allC = vis.every(t => t.completed);
+    if (!vis.length) return;
+    const remember = rememberQuestFields(vis, 'completed', 'Đã đổi đánh dấu các quest đang hiện.');
     vis.forEach(t => t.completed = !allC);
+    remember();
     saveAndRenderQuest();
 }
 function toggleTask(id) {
     const task = tasks.find(t => t.id === id);
-    if (task) task.completed = !task.completed;
+    if (!task) return;
+    const remember = rememberQuestFields([task], 'completed', task.completed ? 'Đã bỏ đánh dấu hoàn thành.' : 'Đã đánh dấu hoàn thành quest.');
+    task.completed = !task.completed;
+    remember();
     saveAndRenderQuest();
 }
 async function clearCompleted() {
@@ -182,9 +219,14 @@ function renderTasks() {
     tasks.sort((a, b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
         if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+        if (sortByGroup && (a.groupId || 0) !== (b.groupId || 0)) {
+            return (a.groupId || Number.MAX_SAFE_INTEGER) - (b.groupId || Number.MAX_SAFE_INTEGER);
+        }
         return a.order - b.order;
     });
 
+    document.getElementById('btnQuestGrouping').textContent = sortByGroup ? '🔗 Theo nhóm: Bật' : '🔗 Theo nhóm: Tắt';
+    document.getElementById('btnQuestGrouping').setAttribute('aria-pressed', String(sortByGroup));
     document.getElementById('completedCount').innerText = tasks.filter(t => t.completed).length;
     const visibleTasks = getVisibleTasks();
     document.getElementById('taskCount').innerText = `Đang hiển thị: ${visibleTasks.length} / ${tasks.length} quest`;
@@ -214,14 +256,17 @@ function renderTasks() {
         let disableUp = false;
         let disableDown = false;
 
+        const sameGroup = t => !sortByGroup || (t.groupId || null) === (task.groupId || null);
+        const pinnedPeers = pinnedTasks.filter(sameGroup);
+        const unpinnedPeers = unpinnedTasks.filter(sameGroup);
         if (task.completed) {
             disableUp = true; disableDown = true;
         } else if (task.isPinned) {
-            if (pinnedTasks.indexOf(task) === 0) disableUp = true;
-            if (pinnedTasks.indexOf(task) === pinnedTasks.length - 1) disableDown = true;
+            if (pinnedPeers.indexOf(task) === 0) disableUp = true;
+            if (pinnedPeers.indexOf(task) === pinnedPeers.length - 1) disableDown = true;
         } else {
-            if (unpinnedTasks.indexOf(task) === 0) disableUp = true;
-            if (unpinnedTasks.indexOf(task) === unpinnedTasks.length - 1) disableDown = true;
+            if (unpinnedPeers.indexOf(task) === 0) disableUp = true;
+            if (unpinnedPeers.indexOf(task) === unpinnedPeers.length - 1) disableDown = true;
         }
 
         const btnUpStyle = disableUp ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-600';
@@ -323,7 +368,12 @@ function togglePin(id) {
 }
 
 function moveTask(id, direction) {
-    const workingTasks = getVisibleTasks().filter(task => !task.completed);
+    if (![-1, 1].includes(direction)) return;
+    const moving = tasks.find(task => task.id === id);
+    if (!moving) return;
+    const workingTasks = getVisibleTasks().filter(task => !task.completed
+        && task.isPinned === moving.isPinned
+        && (!sortByGroup || (task.groupId || null) === (moving.groupId || null)));
     const index = workingTasks.findIndex(t => t.id === id);
     if (index === -1) return;
     if (index + direction < 0 || index + direction >= workingTasks.length) return;
@@ -333,9 +383,11 @@ function moveTask(id, direction) {
 
     if(currentTask.isPinned !== targetTask.isPinned) return;
 
+    const remember = rememberQuestFields([currentTask, targetTask], 'order', 'Đã đổi thứ tự quest.');
     const tempOrder = currentTask.order;
     currentTask.order = targetTask.order;
     targetTask.order = tempOrder;
+    remember();
     saveAndRenderQuest();
 }
 

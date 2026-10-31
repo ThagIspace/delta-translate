@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=scroll-top-icon-1">
+    <link rel="stylesheet" href="style.css?v=quest-undo-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -82,7 +82,8 @@
 
             <div class="flex flex-wrap gap-4 mb-6 bg-gray-800 p-4 rounded-lg border border-gray-700 justify-between items-center">
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="toggleViewMode()" id="btnViewMode" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">🔲 1 Cột</button>
+                    <button onclick="toggleViewMode()" id="btnViewMode" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">🔲 3 Cột</button>
+                    <button onclick="toggleQuestGrouping()" id="btnQuestGrouping" class="tool-btn" aria-pressed="false">🔗 Theo nhóm: Tắt</button>
                     <button onclick="toggleHideCompleted()" id="btnHideCompleted" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold">👻 Hiện đã xong</button>
                     <button onclick="document.body.classList.toggle('mini-mode')" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm font-bold" title="Ẩn/Hiện nhập liệu">👁️</button>
                 </div>
@@ -295,7 +296,11 @@
     <script src="app.js?v=scroll-top-1"></script>
     <script src="nav.js?v=2"></script>
     <script src="ai.js?v=contrast-1"></script>
-    <script src="quest.js?v=contrast-1"></script>
+    <aside id="questUndoToast" class="quest-undo-toast" aria-label="Hoàn tác quest" hidden>
+        <p id="questUndoMessage" role="status"></p>
+        <div class="flex gap-2 mt-2"><button type="button" class="primary-btn" onclick="undoQuestAction()">↶ Hoàn tác</button><button type="button" class="tool-btn" onclick="dismissQuestUndo()" aria-label="Đóng thông báo hoàn tác">×</button></div>
+    </aside>
+    <script src="quest.js?v=quest-undo-1"></script>
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
     <script src="wiki-quests.js?v=1"></script>

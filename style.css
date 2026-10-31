@@ -19,6 +19,7 @@ to { opacity: 1; transform: translateY(0); }
 [hidden] { display: none !important; }
 .scroll-to-top { position: fixed; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 40; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; font-size: 1.5rem; border: 1px solid #93c5fd; border-radius: 999px; background: #2563eb; color: #fff; font-weight: 700; box-shadow: 0 4px 14px rgb(0 0 0 / .35); }
 .scroll-to-top:hover { background: #1d4ed8; }
+.quest-undo-toast { position: fixed; right: max(1rem, env(safe-area-inset-right)); top: 50%; transform: translateY(-50%); z-index: 45; width: min(280px, calc(100vw - 2rem)); padding: 1rem; background: #1f2937; color: #fff; border: 1px solid #93c5fd; border-radius: .6rem; box-shadow: 0 6px 24px rgb(0 0 0 / .4); }
 button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; }
 button:disabled { opacity: .45; cursor: not-allowed; }

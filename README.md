@@ -32,6 +32,15 @@ Dùng cùng trình duyệt, địa chỉ và cổng để thấy lại dữ li�
 
 ## Điều hướng và hướng dẫn người mới
 
+Danh sách dịch nhiệm vụ mặc định 3 cột trên màn hình rộng (tự giảm cột trên
+màn hình nhỏ). Nút **Theo nhóm** gom theo nhóm ảnh đã dịch trong từng trạng thái
+hoàn thành/ghim; không tạo nhóm mới. Khi bật, nút lên/xuống đổi thứ tự trong cùng
+nhóm. Tick/bỏ tick, chọn tất cả mục đang hiện, đổi thứ tự và bật/tắt nhóm có toast
+**Hoàn tác** ở giữa cạnh phải. Toast giữ thao tác gần nhất đến khi đóng hoặc có
+thao tác mới, không lưu qua tải lại trang; hoàn tác chỉ khôi phục trường bị đổi
+trên quest còn trong danh sách. Tests/browser QA cho thay đổi này: **NOT RUN**;
+CI: **NOT CHECKED**.
+
 - **Dịch nhiệm vụ:** đọc riêng mục tiêu nhiệm vụ từ ảnh, giữ danh sách, ghi chú,
   tìm kiếm, ghim, tick, đổi thứ tự và thùng rác hiện có. Không tìm thấy nhiệm vụ
   thì báo rõ và không thêm mục. Có ảnh gốc gần nhất và nút phóng to.
