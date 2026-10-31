@@ -4,6 +4,15 @@ Web HTML/CSS/JavaScript thuần cho Delta Force, không có backend, database ha
 
 ## Wiki Quest — Zero Dam, đợt 1 (31/10/2026)
 
+Bản giao diện cơ bản theo bố cục game: mở Wiki Quest sẽ thấy 5 thẻ department,
+chọn thẻ để vào màn danh sách bên trái và nội dung nhiệm vụ bên phải. Chiến thuật
+chưa có quest phù hợp nên hiển thị chưa có dữ liệu, không giả điều kiện khóa.
+Nút **Cây nhiệm vụ** mở sơ đồ hiện có; nút **Chọn department** quay về màn thẻ.
+Trên điện thoại, chọn quest để mở chi tiết và dùng nút quay lại danh sách.
+Ảnh nhân vật chưa bổ sung, hiện dùng biểu tượng và nền màu. Bản UI này chỉ rà
+source/diff; tests/browser QA: **NOT RUN**. Kết quả QA 14 kiểm tra bên dưới thuộc
+bản trước thay đổi bố cục này.
+
 Phạm vi mới thay thế mốc level 35: nhập một nửa quest ghi rõ Zero Dam và không
 bắt buộc bản đồ khác. Dữ liệu Leyao có 333 quest department; 80 mục nhắc Zero Dam,
 loại 2 mục bắt buộc map khác còn 78. App nhập 39 mục đầu theo độ sâu chuỗi tiền đề

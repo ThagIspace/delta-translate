@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=wiki-zero-half-1">
+    <link rel="stylesheet" href="style.css?v=wiki-game-preview-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -187,6 +187,9 @@
 
         <section id="tab-wiki-quests" class="tab-content max-w-7xl mx-auto w-full" aria-labelledby="wikiTitle">
             <h2 id="wikiTitle" class="text-2xl font-bold mb-3">Wiki Quest · Zero Dam</h2>
+            <div id="wikiDepartmentHome" class="wiki-department-home" aria-label="Chọn department"></div>
+            <div id="wikiExplorer" hidden>
+            <div class="wiki-game-nav"><button id="wikiBackHome" class="tool-btn">← Chọn department</button><strong id="wikiCurrentDepartment"></strong><button id="wikiToggleTree" class="tool-btn">◇ Cây nhiệm vụ</button></div>
             <p class="wiki-source-note">Đợt 1: 39/78 quest trong nguồn Leyao ghi rõ Zero Dam, không bắt buộc map khác. Lấy từ đầu chuỗi tiền đề, thay cho phạm vi level 35. Tên Trung theo nguồn; tên Việt và mục tiêu song ngữ được dịch/tóm tắt để tham khảo. Nguồn không ghi level mở khóa.</p>
             <div class="wiki-toolbar">
                 <span class="tool-btn">Bản đồ: Zero Dam</span>
@@ -201,16 +204,23 @@
                 <button id="wikiClearFilters" class="tool-btn">Xóa bộ lọc</button>
             </div>
             <p id="wikiCount" class="text-sm text-gray-200 my-3" role="status"></p>
+            <div id="wikiMissionScreen" class="wiki-mission-screen">
+                <aside class="wiki-mission-sidebar"><h3 class="wiki-mission-label">NHIỆM VỤ ZERO DAM</h3><div id="wikiMissionList" class="wiki-mission-list"></div></aside>
+                <article id="wikiMissionContent" class="wiki-mission-content" aria-label="Nội dung nhiệm vụ"></article>
+            </div>
+            <div id="wikiTreeScreen" hidden>
             <div id="wikiGraphTools" class="flex flex-wrap gap-2 mb-3">
                 <button id="wikiZoomOut" class="tool-btn" aria-label="Thu nhỏ cây">−</button><output id="wikiZoomLabel" class="tool-btn" aria-live="polite">100%</output><button id="wikiZoomIn" class="tool-btn" aria-label="Phóng to cây">＋</button><button id="wikiFit" class="tool-btn">Vừa màn hình</button><button id="wikiResetView" class="tool-btn">Về đầu cây</button>
             </div>
             <div id="wikiViewport" class="wiki-viewport" tabindex="0" aria-label="Cây nhiệm vụ, kéo vùng trống hoặc cuộn để di chuyển"><div id="wikiQuestList"></div></div>
             <p class="text-sm text-gray-200 mt-3">Kéo vùng trống hoặc cuộn để di chuyển cây · Bấm thẻ xem chi tiết · Esc đóng chi tiết.</p>
+            </div>
             <dialog id="wikiQuestDialog" class="wiki-modal" aria-labelledby="wikiDetailHeading">
                 <div class="wiki-modal-bar"><span class="wiki-mission-label">HỒ SƠ NHIỆM VỤ</span><button id="wikiCloseDetail" type="button" class="tool-btn" aria-label="Đóng chi tiết nhiệm vụ">✕ Đóng</button></div>
                 <div id="wikiQuestDetail"></div>
             </dialog>
             <p class="text-sm text-gray-200 mt-4">Nguồn: <a class="text-blue-300 underline" href="https://leyao.fun/" target="_blank" rel="noopener noreferrer">Leyao · 部门任务</a> · Tóm tắt điều kiện, không sao chép cốt truyện. Tiền đề ngoài bộ 39 quest chỉ ghi trong chi tiết, không tạo đường nối tắt. Bản đồ được xác định từ mục tiêu của nguồn, chưa đối chiếu trực tiếp trong game. Còn 39 quest Zero Dam để bổ sung sau.</p>
+            </div>
         </section>
 
         <section id="tab-items" class="tab-content max-w-5xl mx-auto w-full">
@@ -317,6 +327,6 @@
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
     <script src="wiki-quest-data.js?v=zero-half-1"></script>
-    <script src="wiki-quests.js?v=zero-half-1"></script>
+    <script src="wiki-quests.js?v=game-preview-1"></script>
 </body>
 </html>
