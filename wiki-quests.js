@@ -33,6 +33,9 @@
     const search = document.getElementById('wikiSearch');
     const view = document.getElementById('wikiView');
     const detail = document.getElementById('wikiQuestDetail');
+    const dialog = document.getElementById('wikiQuestDialog');
+    document.getElementById('wikiCloseDetail').onclick = () => dialog.close();
+    dialog.addEventListener('close', () => list.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true }));
     let selected = quests[0].id;
     function render() {
         const visible = quests.filter(q => matchesSearch(search.value, q.en, q.zh, q.vi, q.type, q.map, q.department, ...q.objectives.flat()));
@@ -44,15 +47,18 @@
             if (view.value === 'tree' && index && visible[index - 1].next.split(' / ').includes(q.en)) {
                 const arrow = document.createElement('span');
                 arrow.className = 'wiki-arrow';
-                arrow.textContent = '→';
+                arrow.innerHTML = '<svg width="64" height="90" viewBox="0 0 64 90"><path d="M0 80 H32 V10 H64" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+                arrow.style.transform = `translateY(${(2.5 - q.step) * 70}px)`;
                 arrow.setAttribute('aria-hidden', 'true');
                 list.appendChild(arrow);
             }
             const button = document.createElement('button');
             button.className = 'wiki-card' + (selected === q.id ? ' selected' : '');
             button.setAttribute('aria-pressed', String(selected === q.id));
-            button.innerHTML = `<span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>${escapeHtml(q.en)}</small><small>Bước ${q.step} · ${q.map === 'Any' ? 'Mọi bản đồ (gồm Zero Dam)' : escapeHtml(q.map)}</small><small>${escapeHtml(q.department)} · ${escapeHtml(q.type)}</small><small>Level mở khóa: Chưa xác minh</small>`;
-            button.onclick = () => { selected = q.id; render(); detail.querySelector('h3').focus(); };
+            if (view.value === 'tree') button.style.transform = `translateY(${(2 - q.step) * 70}px)`;
+            button.setAttribute('aria-haspopup', 'dialog');
+            button.innerHTML = `<small class="wiki-node-step">BƯỚC ${q.step} · ASSAULT</small><span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>${escapeHtml(q.en)}</small><small class="wiki-node-meta">◇ ${q.map === 'Any' ? 'Mọi bản đồ' : escapeHtml(q.map)} · ${escapeHtml(q.type)}</small>`;
+            button.onclick = () => { selected = q.id; render(); dialog.showModal(); };
             list.appendChild(button);
         });
         if (!visible.length) {
@@ -61,7 +67,7 @@
             return;
         }
         const q = quests.find(q => q.id === selected);
-        detail.innerHTML = `<h3 tabindex="-1" class="text-xl font-bold mb-2"><span lang="zh">${escapeHtml(q.zh)}</span> · ${escapeHtml(q.vi)}</h3>
+        detail.innerHTML = `<p class="wiki-detail-en">${escapeHtml(q.en)}</p><h3 id="wikiDetailHeading" class="text-xl font-bold mb-2"><span lang="zh">${escapeHtml(q.zh)}</span> · ${escapeHtml(q.vi)}</h3>
             <p class="text-gray-200 mb-3">${escapeHtml(q.en)} · Tên Trung/Việt: bản dịch tham khảo</p>
             <p class="mb-3"><strong>Đơn vị:</strong> ${escapeHtml(q.department)} · <strong>Bản đồ:</strong> ${q.map === 'Any' ? 'Mọi bản đồ (gồm Zero Dam)' : escapeHtml(q.map)}<br><strong>Level mở khóa:</strong> Chưa xác minh. Bước ${q.step} chỉ là vị trí trong nhánh mẫu.</p>
             <h4 class="font-bold mb-2">Mục tiêu</h4>

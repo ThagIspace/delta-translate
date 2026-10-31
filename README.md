@@ -245,7 +245,9 @@ Wiki Quest hiện dùng 3 quest đầu nhánh Assault Battalion: First Battle �
 bản đồ; Return và Showdown ở Zero Dam. Map và đơn vị hiển thị theo từng bản ghi.
 Nguồn riêng từng quest xác nhận quan hệ chuỗi này, nhưng không nêu level mở khóa:
 UI ghi **Chưa xác minh**, số bước không được coi là level. Nhánh khác của Return
-được ghi trong chi tiết nhưng chưa dựng đủ thẻ. Có cây cuộn ngang, danh sách, tìm kiếm và
+được ghi trong chi tiết nhưng chưa dựng đủ thẻ. Cây dùng thẻ nhỏ xếp bậc thang,
+đường nối gấp khúc và nền lưới tối; cuộn ngang để xem. Bấm thẻ mở hộp chi tiết
+phủ lên cây, đóng bằng nút Đóng hoặc Esc. Có chế độ danh sách và tìm kiếm;
 khung chi tiết mục tiêu/phần thưởng/quan hệ trước-sau. Dữ liệu tóm tắt từ Delta
 Force Wiki (Fandom), dẫn nguồn từng quest và ghi công CC BY-SA; tên và mục tiêu
 Trung/Việt là bản dịch tham khảo, chưa xác nhận theo game/phiên bản. Không cần

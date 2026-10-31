@@ -62,6 +62,19 @@ input::placeholder, textarea::placeholder { color: #d1d5db; opacity: 1; }
 .wiki-detail:empty { display: none; }
 .wiki-objectives { padding-left: 1.5rem; list-style: decimal; }
 .wiki-objectives li + li { margin-top: 1rem; }
+.wiki-tree { gap: 0; min-height: 440px; padding: 100px 2rem; background-color: #101e24; background-image: linear-gradient(rgb(110 231 183 / .035) 1px, transparent 1px), linear-gradient(90deg, rgb(110 231 183 / .035) 1px, transparent 1px), radial-gradient(ellipse at 40% 60%, #203c40, transparent 70%); background-size: 28px 28px, 28px 28px, 100% 100%; }
+.wiki-tree .wiki-card { flex: 0 0 220px; border-radius: 0; padding: .85rem; background: rgb(43 54 58 / .95); box-shadow: 0 8px 24px rgb(0 0 0 / .25); }
+.wiki-tree .wiki-card.selected { background: #24443f; }
+.wiki-tree .wiki-arrow { display: flex; flex: 0 0 64px; color: #6b9290; }
+.wiki-node-step { color: #a7f3d0 !important; font-size: .65rem; letter-spacing: .08em; }
+.wiki-node-meta { border-top: 1px solid #64748b; padding-top: .5rem; }
+.wiki-modal { width: min(940px, calc(100vw - 2rem)); max-height: 88dvh; padding: 1.5rem; color: #f3f4f6; background: rgb(29 39 43 / .97); border: 1px solid #8ca6a3; border-top: 3px solid #6ee7b7; box-shadow: 0 24px 80px rgb(0 0 0 / .6); overflow-y: auto; }
+.wiki-modal::backdrop { background: rgb(4 13 17 / .7); backdrop-filter: blur(3px); }
+.wiki-modal-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.wiki-mission-label { background: #34d399; color: #052e25; font-size: .75rem; font-weight: 800; padding: .3rem .6rem; letter-spacing: .05em; }
+.wiki-detail-en { font-size: clamp(1.5rem, 4vw, 2.4rem); text-transform: uppercase; font-weight: 800; line-height: 1.15; margin-bottom: .75rem; }
+.wiki-modal .wiki-objectives { border-block: 1px solid #64748b; background: rgb(255 255 255 / .035); padding: 1.25rem 1.25rem 1.25rem 2.5rem; }
+@media (max-width: 600px) { .wiki-modal { padding: 1rem; } .wiki-tree { padding-inline: 1rem; } }
 .image-drop { border: 2px dashed #3b82f6; border-radius: .6rem; padding: 1.5rem; text-align: center; background: #1f2937; }
 .file-picker { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; position: relative; max-width: 100%; min-height: 44px; padding: .6rem 1rem; border-radius: .5rem; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
 .file-picker:hover { background: #1d4ed8; }

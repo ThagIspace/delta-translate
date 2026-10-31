@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=quest-undo-1">
+    <link rel="stylesheet" href="style.css?v=wiki-graph-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -196,7 +196,11 @@
             </div>
             <p id="wikiCount" class="text-sm text-gray-200 my-3" role="status"></p>
             <div id="wikiQuestList" class="wiki-tree" aria-label="Các nhiệm vụ mẫu"></div>
-            <section id="wikiQuestDetail" class="wiki-detail mt-4" aria-label="Chi tiết nhiệm vụ"></section>
+            <p class="text-sm text-gray-200 mt-3">Cuộn ngang để xem chuỗi · Bấm thẻ để xem chi tiết · Esc để đóng chi tiết.</p>
+            <dialog id="wikiQuestDialog" class="wiki-modal" aria-labelledby="wikiDetailHeading">
+                <div class="wiki-modal-bar"><span class="wiki-mission-label">HỒ SƠ NHIỆM VỤ</span><button id="wikiCloseDetail" type="button" class="tool-btn" aria-label="Đóng chi tiết nhiệm vụ">✕ Đóng</button></div>
+                <div id="wikiQuestDetail"></div>
+            </dialog>
             <p class="text-sm text-gray-200 mt-4">Nguồn: Delta Force Wiki / Fandom, nội dung được tóm tắt và dịch lại. <a class="text-blue-300 underline" href="https://delta-force.fandom.com/wiki/Quests" target="_blank" rel="noopener noreferrer">Danh sách quest</a> · <a class="text-blue-300 underline" href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA</a>. Đây là một đoạn chuỗi nhiệm vụ, không phải cây đầy đủ.</p>
         </section>
 
@@ -303,6 +307,6 @@
     <script src="quest.js?v=quest-undo-2"></script>
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
-    <script src="wiki-quests.js?v=2"></script>
+    <script src="wiki-quests.js?v=3"></script>
 </body>
 </html>
