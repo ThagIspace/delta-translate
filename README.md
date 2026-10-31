@@ -2,24 +2,34 @@
 
 Web HTML/CSS/JavaScript thuần cho Delta Force, không có backend, database hay bước build.
 
-## Wiki Quest — cập nhật 31/10/2026
+## Wiki Quest — Zero Dam, đợt 1 (31/10/2026)
 
-Phạm vi hiện tại là quest Operations đến level 35, ưu tiên Zero Dam. Nguồn có
-thể là quốc tế/Garena hoặc Trung Quốc; không yêu cầu xác minh riêng bản Trung.
-Giữ nguồn/phiên bản từng quest, không mặc định mọi phiên bản giống hệt nhau.
-Cây có kéo vùng trống, zoom, vừa màn hình, đường nối và tô sáng nhánh trước;
-có bộ lọc đơn vị/map/loại và hộp chi tiết. Dữ liệu tách tại `wiki-quest-data.js`.
+Phạm vi mới thay thế mốc level 35: nhập một nửa quest ghi rõ Zero Dam và không
+bắt buộc bản đồ khác. Dữ liệu Leyao có 333 quest department; 80 mục nhắc Zero Dam,
+loại 2 mục bắt buộc map khác còn 78. App nhập 39 mục đầu theo độ sâu chuỗi tiền đề
+trong nguồn, rồi thứ tự department và thứ tự nguồn. Đây không phải 39 level đầu.
+Phân bổ: Chiến đấu 11, Hậu cần 11, Y tế 7, Nghiên cứu 10. Chiến thuật không có mục
+đáp ứng bộ lọc trên. Không gán quest mọi map thành quest riêng Zero Dam.
 
-Hiện vẫn có 3 quest Fandom tham khảo, level chưa xác nhận. Bộ lọc level đã xác
-nhận ≤35 không nhận quest chưa rõ level; chế độ tham khảo vẫn cho xem chúng.
-Leyao có dữ liệu 333 quest của 5 đơn vị, gồm tên Trung, cha/con, mục tiêu và
-phần thưởng. Đã đọc cấu trúc công khai, chưa nhập dữ liệu này vào app. Trường
-`sort` của nguồn là thứ tự hiển thị, không phải level mở khóa.
+Nguồn: [Leyao · 部门任务](https://leyao.fun/), đọc ngày 31/10/2026. Tên Trung,
+department, ID và quan hệ cha/con lấy từ nguồn. Tên Việt và mục tiêu song ngữ là
+bản dịch/tóm tắt tham khảo; phần thưởng giữ tên vật phẩm Trung nếu chưa có bản Việt.
+Không sao chép cốt truyện. Chưa đối chiếu toàn bộ điều kiện trong game hoặc xác
+nhận phiên bản của nguồn; không mặc định bản Trung/Garena/quốc tế giống hệt nhau.
+Level không có trong nguồn giữ null, không dùng `sort` hoặc độ sâu cây làm level.
 
-QA giao diện trước thay đổi bỏ giới hạn bản Trung: 26 kiểm tra local PASS ở
-desktop/mobile, gồm bộ giả level 35/36 và nhánh rẽ; không gọi AI thật. Thay đổi
-đổi phạm vi nguồn lần này chỉ rà diff, chưa chạy lại QA. CI: **NOT CHECKED**.
-Các ghi chú bàn giao/QA phía dưới là lịch sử, không xác minh dữ liệu mới.
+Dữ liệu ở `wiki-quest-data.js`; `parentIds` chỉ nối tiền đề có trong bộ 39 mục.
+Tiền đề bên ngoài chỉ ghi chú, không nối tắt sang tổ tiên xa hơn và không nhập
+quest của map khác. Cây có kéo vùng trống, zoom, vừa màn hình, tô sáng nhánh trước,
+lọc department/map/loại, tìm Trung–Việt và hộp chi tiết. Bố cục/fit tính lại theo
+kết quả lọc. Còn 39 quest phù hợp chưa nhập, không tự coi đợt 1 là cây đầy đủ.
+
+Kiểm tra đợt này: cú pháp 2 file JS PASS; 39 bản ghi duy nhất, tên Trung/parent ID
+khớp dữ liệu nguồn, map Zero Dam và level null PASS. Browser QA 14 kiểm tra PASS
+ở 1280 và 390 px: số mục, department, fit, modal, link nguồn, tìm kiếm Trung/Việt,
+trạng thái rỗng và mobile. Không thấy lỗi console trong luồng đã chạy. Không gọi
+AI thật. Kiểm chứng trong game: NOT RUN; CI: NOT CHECKED. Các ghi chú bên dưới là
+lịch sử và không thay thế trạng thái hiện tại ở mục này.
 
 ## Trạng thái bàn giao — 30/10/2026
 

@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=wiki-phases-1">
+    <link rel="stylesheet" href="style.css?v=wiki-zero-half-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -186,16 +186,15 @@
         </div>
 
         <section id="tab-wiki-quests" class="tab-content max-w-7xl mx-auto w-full" aria-labelledby="wikiTitle">
-            <h2 id="wikiTitle" class="text-2xl font-bold mb-3">Wiki Quest · Mục tiêu level 1–35</h2>
-            <p class="wiki-source-note">Có thể dùng nguồn quốc tế/Garena hoặc Trung Quốc; mỗi quest giữ thông tin nguồn và phiên bản. Hiện có 3 quest từ Fandom tiếng Anh, chưa xác nhận level mở khóa; tên Trung là bản dịch tham khảo. Chưa phải lộ trình đầy đủ level 1–35.</p>
+            <h2 id="wikiTitle" class="text-2xl font-bold mb-3">Wiki Quest · Zero Dam</h2>
+            <p class="wiki-source-note">Đợt 1: 39/78 quest trong nguồn Leyao ghi rõ Zero Dam, không bắt buộc map khác. Lấy từ đầu chuỗi tiền đề, thay cho phạm vi level 35. Tên Trung theo nguồn; tên Việt và mục tiêu song ngữ được dịch/tóm tắt để tham khảo. Nguồn không ghi level mở khóa.</p>
             <div class="wiki-toolbar">
-                <span class="tool-btn">Phạm vi: Zero Dam + quest mở đầu mọi bản đồ</span>
-                <span class="tool-btn">Đơn vị: Assault Battalion</span>
+                <span class="tool-btn">Bản đồ: Zero Dam</span>
+                <span class="tool-btn">4 department có quest phù hợp</span>
                 <label class="flex-1">Tìm quest<input id="wikiSearch" type="search" class="settings-input" placeholder="Tên Trung, Việt, Anh hoặc mục tiêu..."></label>
                 <label>Hiển thị<select id="wikiView" class="settings-input"><option value="tree">Cây nhiệm vụ</option><option value="list">Danh sách</option></select></label>
             </div>
             <div class="wiki-toolbar mt-3">
-                <label>Dữ liệu<select id="wikiDataScope" class="settings-input"><option value="reference">Tham khảo chưa xác minh</option><option value="verified">Có level được nguồn xác nhận ≤35</option></select></label>
                 <label>Department<select id="wikiDepartment" class="settings-input"><option value="">Tất cả đơn vị có dữ liệu</option></select></label>
                 <label>Bản đồ<select id="wikiMap" class="settings-input"><option value="">Tất cả bản đồ có dữ liệu</option></select></label>
                 <label>Loại nhiệm vụ<select id="wikiType" class="settings-input"><option value="">Tất cả loại</option></select></label>
@@ -211,7 +210,7 @@
                 <div class="wiki-modal-bar"><span class="wiki-mission-label">HỒ SƠ NHIỆM VỤ</span><button id="wikiCloseDetail" type="button" class="tool-btn" aria-label="Đóng chi tiết nhiệm vụ">✕ Đóng</button></div>
                 <div id="wikiQuestDetail"></div>
             </dialog>
-            <p class="text-sm text-gray-200 mt-4">Nguồn: Delta Force Wiki / Fandom, nội dung được tóm tắt và dịch lại. <a class="text-blue-300 underline" href="https://delta-force.fandom.com/wiki/Quests" target="_blank" rel="noopener noreferrer">Danh sách quest</a> · <a class="text-blue-300 underline" href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA</a>. Đây là một đoạn chuỗi nhiệm vụ, không phải cây đầy đủ.</p>
+            <p class="text-sm text-gray-200 mt-4">Nguồn: <a class="text-blue-300 underline" href="https://leyao.fun/" target="_blank" rel="noopener noreferrer">Leyao · 部门任务</a> · Tóm tắt điều kiện, không sao chép cốt truyện. Tiền đề ngoài bộ 39 quest chỉ ghi trong chi tiết, không tạo đường nối tắt. Bản đồ được xác định từ mục tiêu của nguồn, chưa đối chiếu trực tiếp trong game. Còn 39 quest Zero Dam để bổ sung sau.</p>
         </section>
 
         <section id="tab-items" class="tab-content max-w-5xl mx-auto w-full">
@@ -317,7 +316,7 @@
     <script src="quest.js?v=quest-undo-2"></script>
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
-    <script src="wiki-quest-data.js?v=2"></script>
-    <script src="wiki-quests.js?v=phases-3"></script>
+    <script src="wiki-quest-data.js?v=zero-half-1"></script>
+    <script src="wiki-quests.js?v=zero-half-1"></script>
 </body>
 </html>

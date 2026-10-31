@@ -1,6 +1,5 @@
 // Bản xem thử: dịch/tóm tắt từ các trang nguồn tiếng Anh, không phải tên CN chính thức.
 (() => {
-    const TARGET_LEVEL = 35;
     const quests = WIKI_QUEST_DATA;
     const ids = new Set();
     quests.forEach(q => {
@@ -18,26 +17,27 @@
     let zoom = 1;
     let graphSize = { width: 900, height: 400 };
     let pan = null;
-    const byName = new Map(quests.map(q => [q.en, q]));
-    const parents = q => q.previous.split(' / ').map(name => byName.get(name)).filter(Boolean);
-    function layout() {
+    const byId = new Map(quests.map(q => [q.id, q]));
+    const parents = q => (q.parentIds || []).map(id => byId.get(id)).filter(Boolean);
+    function layout(candidates = quests) {
+        const candidateIds = new Set(candidates.map(q => q.id));
         const positions = new Map();
         const ranks = new Map();
         function rank(q, visiting = new Set()) {
             if (ranks.has(q.id)) return ranks.get(q.id);
             if (visiting.has(q.id)) throw new Error('Quest dependency cycle');
             const next = new Set(visiting).add(q.id);
-            const value = Math.max(-1, ...parents(q).map(p => rank(p, next))) + 1;
+            const value = Math.max(-1, ...parents(q).filter(p => candidateIds.has(p.id)).map(p => rank(p, next))) + 1;
             ranks.set(q.id, value);
             return value;
         }
         const columns = new Map();
-        quests.forEach(q => { const col = rank(q); if (!columns.has(col)) columns.set(col, []); columns.get(col).push(q); });
+        candidates.forEach(q => { const col = rank(q); if (!columns.has(col)) columns.set(col, []); columns.get(col).push(q); });
         const maxRows = Math.max(1, ...Array.from(columns.values(), col => col.length));
         columns.forEach((col, x) => col.forEach((q, y) => positions.set(q.id, { x: 40 + x * 300, y: 40 + y * 230 + (maxRows - col.length) * 115 })));
         return { positions, width: 80 + columns.size * 300, height: 80 + maxRows * 230 };
     }
-    const graph = layout();
+    let graph = layout();
     graphSize = graph;
     function updateZoom() {
         if (view.value !== 'tree') return;
@@ -46,12 +46,12 @@
         const canvas = list.querySelector('.wiki-canvas');
         if (canvas) canvas.style.transform = `scale(${zoom})`;
         document.getElementById('wikiZoomLabel').textContent = `${Math.round(zoom * 100)}%`;
-        document.getElementById('wikiZoomOut').disabled = zoom <= .25;
+        document.getElementById('wikiZoomOut').disabled = zoom <= .05;
         document.getElementById('wikiZoomIn').disabled = zoom >= 2;
     }
     function setZoom(value) {
         const previous = zoom;
-        zoom = Math.max(.25, Math.min(2, value));
+        zoom = Math.max(.05, Math.min(2, value));
         const centerX = (viewport.scrollLeft + viewport.clientWidth / 2) / previous;
         const centerY = (viewport.scrollTop + viewport.clientHeight / 2) / previous;
         updateZoom();
@@ -59,35 +59,33 @@
         viewport.scrollTop = centerY * zoom - viewport.clientHeight / 2;
     }
     function fit() {
-        zoom = Math.max(.25, Math.min(1, (viewport.clientWidth - 16) / graphSize.width, (viewport.clientHeight - 16) / graphSize.height));
+        zoom = Math.max(.05, Math.min(1, (viewport.clientWidth - 16) / graphSize.width, (viewport.clientHeight - 16) / graphSize.height));
         updateZoom(); viewport.scrollTo(0, 0);
     }
     function openQuest(q) {
         selected = q.id;
         render();
         detail.innerHTML = `<p class="wiki-detail-en">${escapeHtml(q.en)}</p><h3 id="wikiDetailHeading" class="text-xl font-bold mb-3"><span lang="zh">${escapeHtml(q.zh)}</span> · ${escapeHtml(q.vi)}</h3>
-            <p class="text-gray-200 mb-3">Trung/Việt: bản dịch tham khảo · Level mở khóa: ${q.level ?? 'Chưa xác minh'}</p>
+            <p class="text-gray-200 mb-3">Tên Trung theo nguồn · Bản Việt và mục tiêu song ngữ là bản tóm tắt tham khảo. Level mở khóa: ${q.level ?? 'Nguồn không ghi'}</p>
             <p class="mb-4"><strong>Đơn vị:</strong> ${escapeHtml(q.department)} · <strong>Bản đồ:</strong> ${q.map === 'Any' ? 'Mọi bản đồ (gồm Zero Dam)' : escapeHtml(q.map)}</p>
             ${q.note ? `<p class="wiki-source-note">${escapeHtml(q.note)}</p>` : ''}
             <h4 class="font-bold mb-2">Mục tiêu</h4><ol class="wiki-objectives">${q.objectives.map(([zh, vi]) => `<li><p lang="zh">${escapeHtml(zh)}</p><p class="text-green-200 mt-1">${escapeHtml(vi)}</p></li>`).join('')}</ol>
             <p class="mt-4"><strong>Phần thưởng:</strong> ${escapeHtml(q.rewards)}</p>
             <p class="mt-3"><strong>Trước:</strong> ${escapeHtml(q.previous)}</p><p class="mt-1"><strong>Tiếp theo:</strong> ${escapeHtml(q.next)}</p>
             <p class="text-sm text-gray-200 mt-4">${escapeHtml(q.sourceVersion)} · Đối chiếu nguồn: ${escapeHtml(q.reviewedOn)}. Khác biệt giữa các phiên bản chưa được đối chiếu đầy đủ. Không coi thứ tự cây là level mở khóa.</p>
-            <a class="inline-block text-blue-300 underline mt-3" href="https://delta-force.fandom.com/wiki/${q.source}" target="_blank" rel="noopener noreferrer">Nguồn: ${escapeHtml(q.en)} ↗</a>`;
+            <a class="inline-block text-blue-300 underline mt-3" href="${escapeHtml(q.sourceUrl)}" target="_blank" rel="noopener noreferrer">Nguồn Leyao ↗ — mở mục 部门任务, tìm ${escapeHtml(q.zh)}</a>`;
         dialog.showModal();
     }
     function render() {
-        const scope = document.getElementById('wikiDataScope').value;
         const department = document.getElementById('wikiDepartment').value;
         const map = document.getElementById('wikiMap').value;
         const type = document.getElementById('wikiType').value;
-        const eligible = quests.filter(q => (q.level === null || q.level <= TARGET_LEVEL)
-            && (scope === 'reference' || (q.sourceVerified && q.level !== null))
-            && (!department || q.department === department)
-            && (!map || q.map === map || (map === 'Zero Dam' && q.map === 'Any'))
+        const eligible = quests.filter(q => (!department || q.department === department)
+            && (!map || q.map === map)
             && (!type || q.type === type));
         const visible = eligible.filter(q => matchesSearch(search.value, q.en, q.zh, q.vi, q.type, q.map, q.department, ...q.objectives.flat()));
-        document.getElementById('wikiCount').textContent = `${visible.length} / ${quests.length} quest · Cây theo điều kiện trước/sau; level chưa xác minh. Chưa phải danh mục đầy đủ.`;
+        document.getElementById('wikiCount').textContent = `${visible.length} / ${quests.length} quest đã nhập · 39/78 quest ghi rõ Zero Dam, không bắt buộc map khác. Không lọc theo level.`;
+        graph = layout(visible); graphSize = graph;
         const highlighted = new Set();
         function markAncestors(q) {
             if (!q || highlighted.has(q.id)) return;
@@ -100,7 +98,7 @@
         list.className = tree ? 'wiki-graph-space' : 'wiki-list';
         list.style.width = ''; list.style.height = '';
         list.replaceChildren();
-        if (!visible.length) { list.textContent = scope === 'verified' ? 'Chưa có quest có level mở khóa được nguồn xác nhận trong mốc ≤35. Chuyển sang Dữ liệu tham khảo để xem bản mẫu.' : 'Không có quest phù hợp. Thử xóa tìm kiếm hoặc đổi bộ lọc.'; return; }
+        if (!visible.length) { list.textContent = 'Không có quest phù hợp. Thử xóa tìm kiếm hoặc đổi bộ lọc.'; return; }
         let canvas = list;
         if (tree) {
             canvas = document.createElement('div'); canvas.className = 'wiki-canvas';
@@ -124,7 +122,7 @@
             button.className = 'wiki-card' + (selected === q.id ? ' selected' : highlighted.has(q.id) ? ' ancestor' : '');
             button.dataset.questId = q.id;
             button.setAttribute('aria-pressed', String(selected === q.id)); button.setAttribute('aria-haspopup', 'dialog');
-            button.innerHTML = `<small class="wiki-node-step">${escapeHtml(q.department)}</small><span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small>${escapeHtml(q.en)}</small><small class="wiki-node-meta">◇ ${q.map === 'Any' ? 'Mọi bản đồ' : escapeHtml(q.map)} · ${escapeHtml(q.type)}</small><small>Level: ${q.level ?? 'Chưa xác minh'}</small>`;
+            button.innerHTML = `<small class="wiki-node-step">${escapeHtml(q.department)}</small><span lang="zh">${escapeHtml(q.zh)}</span><strong>${escapeHtml(q.vi)}</strong><small class="wiki-node-meta">◇ ${q.map === 'Any' ? 'Mọi bản đồ' : escapeHtml(q.map)} · ${escapeHtml(q.type)}</small><small>Level: ${q.level ?? 'Chưa xác minh'}</small>`;
             if (tree) { const pos = graph.positions.get(q.id); button.style.left = `${pos.x}px`; button.style.top = `${pos.y}px`; }
             button.onclick = () => openQuest(q); canvas.appendChild(button);
         });
@@ -162,7 +160,6 @@
         });
         select.addEventListener('change', render);
     }
-    document.getElementById('wikiDataScope').addEventListener('change', render);
     document.getElementById('wikiClearFilters').onclick = () => {
         search.value = '';
         ['wikiDepartment', 'wikiMap', 'wikiType'].forEach(id => { document.getElementById(id).value = ''; });
