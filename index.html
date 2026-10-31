@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=wiki-game-preview-1">
+    <link rel="stylesheet" href="style.css?v=wiki-game-detail-1">
     <link rel="stylesheet" href="shared/dialog/dialog.css?v=2">
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col font-sans">
@@ -190,7 +190,8 @@
             <div id="wikiDepartmentHome" class="wiki-department-home" aria-label="Chọn department"></div>
             <div id="wikiExplorer" hidden>
             <div class="wiki-game-nav"><button id="wikiBackHome" class="tool-btn">← Chọn department</button><strong id="wikiCurrentDepartment"></strong><button id="wikiToggleTree" class="tool-btn">◇ Cây nhiệm vụ</button></div>
-            <p class="wiki-source-note">Đợt 1: 39/78 quest trong nguồn Leyao ghi rõ Zero Dam, không bắt buộc map khác. Lấy từ đầu chuỗi tiền đề, thay cho phạm vi level 35. Tên Trung theo nguồn; tên Việt và mục tiêu song ngữ được dịch/tóm tắt để tham khảo. Nguồn không ghi level mở khóa.</p>
+            <div id="wikiDepartmentTabs" class="wiki-department-tabs" aria-label="Chuyển department"></div>
+            <details class="wiki-data-info"><summary>39 quest Zero Dam · Thông tin nguồn và bản dịch</summary><p>Đợt 1: 39/78 quest trong nguồn Leyao ghi rõ Zero Dam, không bắt buộc map khác. Tên Trung theo nguồn; bản Việt và mục tiêu song ngữ được dịch/tóm tắt để tham khảo. Nguồn không ghi level mở khóa.</p></details>
             <div class="wiki-toolbar">
                 <span class="tool-btn">Bản đồ: Zero Dam</span>
                 <span class="tool-btn">4 department có quest phù hợp</span>
@@ -205,7 +206,7 @@
             </div>
             <p id="wikiCount" class="text-sm text-gray-200 my-3" role="status"></p>
             <div id="wikiMissionScreen" class="wiki-mission-screen">
-                <aside class="wiki-mission-sidebar"><h3 class="wiki-mission-label">NHIỆM VỤ ZERO DAM</h3><div id="wikiMissionList" class="wiki-mission-list"></div></aside>
+                <aside class="wiki-mission-sidebar"><div class="wiki-sidebar-banner"><span class="wiki-mission-label">DEPARTMENT</span><h3 id="wikiSidebarDepartment"></h3><p id="wikiSidebarCount"></p></div><div id="wikiMissionList" class="wiki-mission-list"></div></aside>
                 <article id="wikiMissionContent" class="wiki-mission-content" aria-label="Nội dung nhiệm vụ"></article>
             </div>
             <div id="wikiTreeScreen" hidden>
@@ -327,6 +328,6 @@
     <script src="image.js?v=contrast-1"></script>
     <script src="gun.js?v=gun-workspace-1"></script>
     <script src="wiki-quest-data.js?v=zero-half-1"></script>
-    <script src="wiki-quests.js?v=game-preview-1"></script>
+    <script src="wiki-quests.js?v=game-detail-1"></script>
 </body>
 </html>

@@ -64,15 +64,15 @@
         updateZoom(); viewport.scrollTo(0, 0);
     }
     function questHTML(q) {
-        return `<p class="wiki-detail-en">${escapeHtml(q.en)}</p><h3 id="wikiDetailHeading" class="text-xl font-bold mb-3"><span lang="zh">${escapeHtml(q.zh)}</span> · ${escapeHtml(q.vi)}</h3>
-            <p class="text-gray-200 mb-3">Tên Trung theo nguồn · Bản Việt và mục tiêu song ngữ là bản tóm tắt tham khảo. Level mở khóa: ${q.level ?? 'Nguồn không ghi'}</p>
-            <p class="mb-4"><strong>Đơn vị:</strong> ${escapeHtml(q.department)} · <strong>Bản đồ:</strong> ${q.map === 'Any' ? 'Mọi bản đồ (gồm Zero Dam)' : escapeHtml(q.map)}</p>
-            ${q.note ? `<p class="wiki-source-note">${escapeHtml(q.note)}</p>` : ''}
-            <h4 class="font-bold mb-2">Mục tiêu</h4><ol class="wiki-objectives">${q.objectives.map(([zh, vi]) => `<li><p lang="zh">${escapeHtml(zh)}</p><p class="text-green-200 mt-1">${escapeHtml(vi)}</p></li>`).join('')}</ol>
-            <p class="mt-4"><strong>Phần thưởng:</strong> ${escapeHtml(q.rewards)}</p>
-            <p class="mt-3"><strong>Trước:</strong> ${escapeHtml(q.previous)}</p><p class="mt-1"><strong>Tiếp theo:</strong> ${escapeHtml(q.next)}</p>
-            <p class="text-sm text-gray-200 mt-4">${escapeHtml(q.sourceVersion)} · Đối chiếu nguồn: ${escapeHtml(q.reviewedOn)}. Khác biệt giữa các phiên bản chưa được đối chiếu đầy đủ. Không coi thứ tự cây là level mở khóa.</p>
-            <a class="inline-block text-blue-300 underline mt-3" href="${escapeHtml(q.sourceUrl)}" target="_blank" rel="noopener noreferrer">Nguồn Leyao ↗ — mở mục 部门任务, tìm ${escapeHtml(q.zh)}</a>`;
+        return `<div class="wiki-mission-heading"><span class="wiki-mission-label">${escapeHtml(q.type)}</span><p class="wiki-detail-en" lang="zh">${escapeHtml(q.zh)}</p><h3 id="wikiDetailHeading" class="text-xl font-bold">${escapeHtml(q.vi)}</h3></div>
+            <div class="wiki-detail-meta"><span>◇ Zero Dam</span><span>${escapeHtml(q.department)}</span><span>Level: ${q.level ?? 'Nguồn không ghi'}</span></div>
+            <h4 class="wiki-section-title">Mục tiêu nhiệm vụ</h4><ol class="wiki-objectives">${q.objectives.map(([zh, vi]) => `<li><p lang="zh">${escapeHtml(zh)}</p><p class="text-green-200 mt-2">${escapeHtml(vi)}</p></li>`).join('')}</ol>
+            <div class="wiki-quest-relations"><p><strong>Tiền đề:</strong> ${escapeHtml(q.previous)}</p><p><strong>Tiếp theo:</strong> ${escapeHtml(q.next)}</p></div>
+            <h4 class="wiki-section-title">Phần thưởng</h4><ul class="wiki-reward-grid">${q.rewards.split(' · ').filter(Boolean).map(reward => `<li>${escapeHtml(reward)}</li>`).join('')}</ul>
+            <details class="wiki-data-info"><summary>Nguồn và lưu ý bản dịch</summary>
+            ${q.note ? `<p>${escapeHtml(q.note)}</p>` : ''}
+            <p>${escapeHtml(q.sourceVersion)} · Đối chiếu nguồn: ${escapeHtml(q.reviewedOn)}. Mục tiêu song ngữ được tóm tắt; chưa đối chiếu mọi khác biệt giữa các phiên bản. Thứ tự cây không phải level mở khóa.</p>
+            <a class="inline-block text-blue-300 underline mt-3" href="${escapeHtml(q.sourceUrl)}" target="_blank" rel="noopener noreferrer">Nguồn Leyao ↗ — mở 部门任务, tìm ${escapeHtml(q.zh)}</a></details>`;
     }
     function openQuest(q, modal = true) {
         selected = q.id;
@@ -90,9 +90,16 @@
         document.getElementById('wikiTreeScreen').hidden = screen !== 'tree';
         view.parentElement.hidden = screen !== 'tree';
         document.getElementById('wikiToggleTree').textContent = screen === 'tree' ? '☷ Danh sách nhiệm vụ' : '◇ Cây nhiệm vụ';
-        document.getElementById('wikiCurrentDepartment').textContent = document.getElementById('wikiDepartment').value || 'Tất cả department';
+        const departmentValue = document.getElementById('wikiDepartment').value;
+        document.getElementById('wikiCurrentDepartment').textContent = departmentValue || 'Tất cả department';
+        document.getElementById('wikiSidebarDepartment').textContent = departmentValue || 'Tất cả department';
+        document.getElementById('wikiSidebarCount').textContent = `${visible.length} nhiệm vụ đang hiển thị · Zero Dam`;
+        document.querySelectorAll('#wikiDepartmentTabs button').forEach(button => {
+            button.setAttribute('aria-pressed', String(button.dataset.department === departmentValue));
+        });
         if (!visible.some(q => q.id === selected)) selected = visible[0]?.id || null;
         const missionList = document.getElementById('wikiMissionList');
+        const listScroll = missionList.scrollTop;
         missionList.replaceChildren();
         visible.forEach(q => {
             const button = document.createElement('button');
@@ -102,6 +109,7 @@
             button.onclick = () => openQuest(q, false);
             missionList.appendChild(button);
         });
+        missionList.scrollTop = listScroll;
         if (!visible.length) missionList.textContent = 'Không có quest phù hợp.';
         const content = document.getElementById('wikiMissionContent');
         const q = byId.get(selected);
@@ -179,17 +187,29 @@
         button.className = 'wiki-department-card dept-' + theme;
         button.disabled = count === 0;
         button.innerHTML = `<span class="wiki-dept-kicker">DEPARTMENT / ZERO DAM</span><span class="wiki-dept-emblem" aria-hidden="true">${icon}</span><span class="wiki-dept-title" lang="zh">${zh}</span><strong>${vi}</strong><span class="wiki-dept-count">${count ? count + ' quest · Xem nhiệm vụ →' : 'Chưa có dữ liệu Zero Dam'}</span>`;
-        button.onclick = () => {
+        const choose = () => {
+            endPan();
             document.getElementById('wikiDepartment').value = value;
             search.value = ''; document.getElementById('wikiType').value = ''; document.getElementById('wikiMap').value = '';
-            selected = null; screen = 'missions';
+            selected = null;
+            if (screen === 'home') screen = 'missions';
             document.getElementById('wikiMissionScreen').classList.remove('show-mission-detail');
+            document.getElementById('wikiMissionList').scrollTop = 0;
             render();
+            document.getElementById('wikiMissionContent').scrollTop = 0;
+            viewport.scrollTo(0, 0);
         };
+        button.onclick = choose;
+        const tab = document.createElement('button'); tab.type = 'button';
+        tab.className = 'wiki-department-tab'; tab.dataset.department = value || 'unavailable';
+        tab.disabled = count === 0;
+        tab.innerHTML = `<span lang="zh">${zh}</span><strong>${vi}</strong><small>${count ? count + ' quest' : 'Chưa có dữ liệu'}</small>`;
+        tab.onclick = choose;
+        document.getElementById('wikiDepartmentTabs').appendChild(tab);
         home.appendChild(button);
     });
-    document.getElementById('wikiBackHome').onclick = () => { screen = 'home'; render(); };
-    document.getElementById('wikiToggleTree').onclick = () => { screen = screen === 'tree' ? 'missions' : 'tree'; render(); };
+    document.getElementById('wikiBackHome').onclick = () => { endPan(); screen = 'home'; render(); };
+    document.getElementById('wikiToggleTree').onclick = () => { endPan(); screen = screen === 'tree' ? 'missions' : 'tree'; render(); };
     document.getElementById('wikiCloseDetail').onclick = () => dialog.close();
     dialog.addEventListener('close', () => list.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true }));
     document.getElementById('wikiZoomIn').onclick = () => setZoom(zoom + .15);
